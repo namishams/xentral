@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import { color } from "@xentral/config";
-import { AppShell, PageTitleRow, Button, StatusBadge, type BadgeTone, Panel, PanelHeader, PanelBody, FactStrip } from "@xentral/ui";
+import { AppShell, PageTitleRow, Button, StatusBadge, type BadgeTone, Panel, PanelHeader, PanelBody, FactStrip, AskAiButton } from "@xentral/ui";
 
 type Line = { name: string; description: string | null; qty: number; unitPrice: number; vatRate?: number; discountPct?: number; lineTotal: number };
 type Q = { id: string; number: string; status: string; total: number; subtotal: number; vatTotal: number; currency: string; issued: string | null; valid: string | null; validRaw: string | null; notes: string | null; token: string; customer: string; customerEmail: string | null };
@@ -58,7 +58,8 @@ export default function QuoteDetailPage({ params }: { params: { id: string } }) 
     <AppShell active="quotations">
       <PageTitleRow title={`Quote ${q.number}`} breadcrumb="Books · Quotations"
         badge={<StatusBadge tone={TONE[q.status] ?? "neutral"} label={q.status.toLowerCase()} />}
-        actions={<div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+        actions={<div style={{ display: "flex", gap: 8, flexWrap: "wrap", alignItems: "center" }}>
+          <AskAiButton label="Ask AI" seed={`Write a friendly follow-up email for quote ${q.number} to ${q.customer || "the customer"} (total ${aed(q.total, q.currency)}), encouraging them to accept.`} />
           <Button onClick={() => { window.location.href = "/quotations/" + params.id + "/edit"; }}>Edit items</Button>
           <Button onClick={openEdit}>Edit</Button>
           <Button onClick={openPdf}>Download PDF</Button>

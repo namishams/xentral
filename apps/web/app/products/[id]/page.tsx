@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import { color } from "@xentral/config";
-import { AppShell, PageTitleRow, KPICard, Button, StatusBadge, type BadgeTone, Panel, PanelHeader, PanelBody } from "@xentral/ui";
+import { AppShell, PageTitleRow, KPICard, Button, StatusBadge, type BadgeTone, Panel, PanelHeader, PanelBody, AskAiButton } from "@xentral/ui";
 
 type Item = {
   id: string; name: string; description: string; sku: string; category: string;
@@ -52,7 +52,8 @@ export default function ProductDetailPage({ params }: { params: { id: string } }
           <StatusBadge tone={it.active ? "positive" : "neutral"} label={it.active ? "active" : "inactive"} />
           {it.recurring ? <StatusBadge tone="info" label="recurring" /> : null}
         </div>}
-        actions={<div style={{ display: "flex", gap: 8 }}>
+        actions={<div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+          <AskAiButton label="Ask AI" seed={`Write a short, persuasive sales description for "${it.name}" (priced ${aed(it.unitPrice)}${it.category ? ", category " + it.category : ""}).`} />
           <Button onClick={openEdit}>Edit</Button>
           <a href="/invoices/new"><Button variant="primary">Add to invoice</Button></a>
         </div>} />

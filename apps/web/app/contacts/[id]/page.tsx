@@ -1,7 +1,7 @@
 import * as React from "react";
 import { color } from "@xentral/config";
 import { currentScope } from "@xentral/kernel";
-import { AppShell, PageTitleRow, KPICard, Button, StatusBadge, Panel, PanelHeader, PanelBody, FactStrip } from "@xentral/ui";
+import { AppShell, PageTitleRow, KPICard, Button, StatusBadge, Panel, PanelHeader, PanelBody, FactStrip, AskAiButton } from "@xentral/ui";
 import { loadContacts } from "@xentral/module-crm";
 
 export const dynamic = "force-dynamic";
@@ -28,7 +28,8 @@ export default async function ContactRecordPage({ params }: { params: { id: stri
     <AppShell active="contacts">
       <PageTitleRow title={c.name} breadcrumb="CRM · Contacts"
         badge={c.owner ? <StatusBadge tone="info" label={c.owner} /> : null}
-        actions={<div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+        actions={<div style={{ display: "flex", gap: 8, flexWrap: "wrap", alignItems: "center" }}>
+          <AskAiButton label="Ask AI" seed={`Draft a friendly follow-up email to ${c.name}${c.company ? " at " + c.company : ""}${c.title ? " (" + c.title + ")" : ""}.`} />
           {c.email ? <a href={`mailto:${c.email}`} style={{ textDecoration: "none" }}><Button>Email</Button></a> : null}
           {c.phone ? <a href={`tel:${c.phone}`} style={{ textDecoration: "none" }}><Button>Call</Button></a> : null}
           <Button variant="primary">+ New deal</Button>

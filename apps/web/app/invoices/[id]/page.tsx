@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import { color } from "@xentral/config";
-import { AppShell, PageTitleRow, Button, StatusBadge, type BadgeTone, Panel, PanelHeader, PanelBody, FactStrip } from "@xentral/ui";
+import { AppShell, PageTitleRow, Button, StatusBadge, type BadgeTone, Panel, PanelHeader, PanelBody, FactStrip, AskAiButton } from "@xentral/ui";
 
 type Line = { name: string; description: string | null; qty: number; unitPrice: number; vatRate?: number; discountPct?: number; lineTotal: number };
 type Inv = { id: string; number: string; status: string; total: number; amountPaid: number; subtotal: number; vatTotal: number; currency: string; issued: string | null; due: string | null; dueDateRaw: string | null; notes: string | null; customer: string; customerEmail: string | null };
@@ -59,7 +59,8 @@ export default function InvoiceDetailPage({ params }: { params: { id: string } }
     <AppShell active="invoice">
       <PageTitleRow title={`Invoice ${inv.number}`} breadcrumb="Books · Invoices"
         badge={<StatusBadge tone={TONE[inv.status] ?? "neutral"} label={inv.status.replace("_", " ").toLowerCase()} />}
-        actions={<div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+        actions={<div style={{ display: "flex", gap: 8, flexWrap: "wrap", alignItems: "center" }}>
+          <AskAiButton label="Ask AI" seed={`Draft a polite payment reminder email for invoice ${inv.number} to ${inv.customer || "the customer"}. Outstanding balance ${aed(bal, inv.currency)}, due ${inv.due || "soon"}.`} />
           <Button onClick={() => { window.location.href = "/invoices/" + params.id + "/edit"; }}>Edit items</Button>
           <Button onClick={openEdit}>Edit</Button>
           <Button onClick={openPdf}>Download PDF</Button>
