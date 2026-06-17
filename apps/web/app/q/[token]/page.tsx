@@ -1,50 +1,91 @@
 "use client";
 
 import * as React from "react";
-import { color } from "@xentral/config";
 
-const aed = (n: number) => `AED ${n.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
-
-const LINES = [
-  { d: "Scope of work — fixed price", qty: 1, amount: 63809.52 },
-  { d: "VAT 5%", qty: 1, amount: 3190.48 },
-];
+type Line = { name: string; qty: number; unitPrice: number; lineTotal: number };
+type Q = { number: string; status: string; total: number; subtotal: number; vatTotal: number; currency: string; valid: string | null; customer: string; merchant: string; logoUrl: string | null; accent: string; notes: string | null; lines: Line[] };
+const INK = "#1d2733", MUT = "#5b6b7b", LINE = "#e4e9ef";
+const money = (n: number, c = "AED") => `${c} ${(Number(n) || 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 
 export default function QuoteTokenPage({ params }: { params: { token: string } }) {
-  const total = 67000;
+  const [q, setQ] = React.useState<Q | null>(null);
+  const [loading, setLoading] = React.useState(true);
+  const [err, setErr] = React.useState("");
+  const [busy, setBusy] = React.useState(false);
+  const [decided, setDecided] = React.useState("");
+
+  React.useEffect(() => {
+    fetch(`/api/public/quote/${params.token}`).then((r) => r.json()).then((d) => {
+      if (d.error) setErr(d.error); else { setQ(d); if (["ACCEPTED", "REJECTED", "INVOICED"].includes(d.status)) setDecided(d.status); }
+      setLoading(false);
+    }).catch(() => { setErr("Could not load"); setLoading(false); });
+  }, [params.token]);
+
+  async function decide(action: "accept" | "reject") {
+    setBusy(true);
+    try {
+      const res = await fetch(`/api/public/quote/${params.token}/accept`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ action }) });
+      const d = await res.json();
+      if (res.ok) setDecided(d.status || d.already || (action === "accept" ? "ACCEPTED" : "REJECTED"));
+    } finally { setBusy(false); }
+  }
+
+  const accent = q?.accent || "#0064d9";
+  const wrap: React.CSSProperties = { minHeight: "100vh", background: "linear-gradient(160deg,#eef3f7,#e2ecf0)", padding: "44px 16px", fontFamily: "Inter, system-ui, sans-serif", color: INK };
+  const card: React.CSSProperties = { maxWidth: 600, margin: "0 auto", background: "#fff", borderRadius: 16, boxShadow: "0 20px 60px -20px rgba(20,40,60,0.28)", overflow: "hidden" };
+
   return (
-    <div style={{ minHeight: "100vh", background: color.surface.page, color: color.ink.DEFAULT, fontFamily: "system-ui, -apple-system, Segoe UI, Roboto, sans-serif", padding: "40px 20px" }}>
-      <div style={{ maxWidth: 620, margin: "0 auto" }}>
-        <div style={{ display: "inline-flex", alignItems: "center", gap: 9, marginBottom: 22 }}>
-          <span style={{ width: 28, height: 28, borderRadius: 8, background: color.brand.primary, color: color.ink.onPrimary, display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 700 }}>✕</span>
-          <span style={{ fontSize: 16, fontWeight: 700 }}>Xentral · Quotation</span>
+    <div style={wrap}>
+      <div style={card}>
+        <div style={{ height: 5, background: accent }} />
+        <div style={{ padding: 26 }}>
+          {loading ? <div style={{ padding: 40, textAlign: "center", color: MUT }}>Loading…</div>
+            : err ? <div style={{ padding: 40, textAlign: "center", color: "#b3261e" }}>{err}</div>
+              : q ? (
+                <>
+                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 20 }}>
+                    <div>
+                      {q.logoUrl ? <img src={q.logoUrl} alt={q.merchant} style={{ height: 34, marginBottom: 6 }} /> : <div style={{ fontSize: 18, fontWeight: 800, color: accent }}>{q.merchant}</div>}
+                      <div style={{ fontSize: 12.5, color: MUT }}>Quotation for {q.customer}</div>
+                    </div>
+                    <div style={{ textAlign: "right" }}>
+                      <div style={{ fontSize: 20, fontWeight: 800, color: accent }}>QUOTE</div>
+                      <div style={{ fontSize: 12.5, color: MUT }}>{q.number}</div>
+                      {q.valid ? <div style={{ fontSize: 11.5, color: MUT }}>Valid until {q.valid}</div> : null}
+                    </div>
+                  </div>
+
+                  <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 13.5, marginBottom: 8 }}>
+                    <thead><tr style={{ borderBottom: `1px solid ${LINE}`, color: MUT, textAlign: "left" }}><th style={{ padding: "8px 0" }}>Item</th><th style={{ textAlign: "right" }}>Qty</th><th style={{ textAlign: "right" }}>Amount</th></tr></thead>
+                    <tbody>{q.lines.map((l, i) => <tr key={i} style={{ borderBottom: `1px solid ${LINE}` }}><td style={{ padding: "9px 0" }}>{l.name}</td><td style={{ textAlign: "right", color: MUT }}>{Number(l.qty)}</td><td style={{ textAlign: "right", fontWeight: 600 }}>{money(l.lineTotal, q.currency)}</td></tr>)}</tbody>
+                  </table>
+                  <div style={{ display: "flex", justifyContent: "flex-end", marginBottom: 18 }}>
+                    <div style={{ width: 220 }}>
+                      <Row k="Subtotal" v={money(q.subtotal, q.currency)} />
+                      <Row k="VAT" v={money(q.vatTotal, q.currency)} />
+                      <div style={{ display: "flex", justifyContent: "space-between", fontSize: 16, fontWeight: 800, padding: "8px 0", borderTop: `2px solid ${accent}`, color: accent }}><span>Total</span><span>{money(q.total, q.currency)}</span></div>
+                    </div>
+                  </div>
+                  {q.notes ? <div style={{ fontSize: 12.5, color: MUT, borderTop: `1px solid ${LINE}`, paddingTop: 12, marginBottom: 18 }}>{q.notes}</div> : null}
+
+                  {decided ? (
+                    <div style={{ textAlign: "center", padding: "16px", borderRadius: 12, background: decided === "ACCEPTED" || decided === "INVOICED" ? "#e7f7ee" : "#fdeceb", color: decided === "ACCEPTED" || decided === "INVOICED" ? "#188918" : "#b3261e", fontWeight: 700 }}>
+                      {decided === "ACCEPTED" || decided === "INVOICED" ? "✓ Quote accepted — thank you!" : "Quote declined."}
+                    </div>
+                  ) : (
+                    <div style={{ display: "flex", gap: 10 }}>
+                      <button onClick={() => decide("accept")} disabled={busy} style={{ flex: 2, height: 48, border: 0, borderRadius: 11, background: accent, color: "#fff", fontSize: 15, fontWeight: 700, cursor: "pointer" }}>{busy ? "…" : "Accept quote"}</button>
+                      <button onClick={() => decide("reject")} disabled={busy} style={{ flex: 1, height: 48, borderRadius: 11, border: `1px solid ${LINE}`, background: "#fff", color: MUT, fontSize: 14, fontWeight: 600, cursor: "pointer" }}>Decline</button>
+                    </div>
+                  )}
+                </>
+              ) : null}
         </div>
-        <div style={{ background: color.surface.card, border: `1px solid ${color.line.DEFAULT}`, borderRadius: 14, padding: "24px 26px" }}>
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", flexWrap: "wrap", gap: 10 }}>
-            <div>
-              <div style={{ fontSize: 18, fontWeight: 700 }}>Quote Q-3009</div>
-              <div style={{ fontSize: 13, color: color.ink.soft }}>For Damac Properties · valid until 28 Jun 2026</div>
-            </div>
-            <span style={{ fontSize: 11, fontWeight: 600, background: color.brand.primaryTint, color: color.brand.primary, borderRadius: 999, padding: "3px 11px" }}>Awaiting approval</span>
-          </div>
-          <div style={{ marginTop: 18 }}>
-            {LINES.map((l, i) => (
-              <div key={i} style={{ display: "flex", justifyContent: "space-between", padding: "11px 0", borderTop: `1px solid ${color.line.DEFAULT}`, fontSize: 14 }}>
-                <span style={{ color: color.ink.mid }}>{l.d}</span><span style={{ fontWeight: 600 }}>{aed(l.amount)}</span>
-              </div>
-            ))}
-            <div style={{ display: "flex", justifyContent: "space-between", padding: "12px 0 0", borderTop: `2px solid ${color.line.strong}`, marginTop: 4 }}>
-              <span style={{ fontSize: 15, fontWeight: 700 }}>Total</span><span style={{ fontSize: 16, fontWeight: 700 }}>{aed(total)}</span>
-            </div>
-          </div>
-          <div style={{ display: "flex", gap: 10, marginTop: 22 }}>
-            <button style={{ flex: 1, height: 46, borderRadius: 10, border: 0, background: color.status.positive, color: "#fff", fontSize: 14.5, fontWeight: 600, cursor: "pointer" }}>✓ Accept quote</button>
-            <button style={{ height: 46, padding: "0 18px", borderRadius: 10, border: `1px solid ${color.line.strong}`, background: color.surface.card, color: color.ink.DEFAULT, fontSize: 14.5, fontWeight: 600, cursor: "pointer" }}>Decline</button>
-          </div>
-          <div style={{ fontSize: 11.5, color: color.ink.soft, textAlign: "center", marginTop: 14 }}>Accepting converts this quote to an order · link {params.token}</div>
-        </div>
-        <p style={{ fontSize: 11, color: color.ink.soft, textAlign: "center", marginTop: 16 }}>Public quote acceptance · token link · tokens-only, theme-aware</p>
       </div>
+      <p style={{ textAlign: "center", fontSize: 12, color: MUT, marginTop: 16 }}>Powered by Xentral</p>
     </div>
   );
+}
+function Row({ k, v }: { k: string; v: string }) {
+  return <div style={{ display: "flex", justifyContent: "space-between", fontSize: 13, color: "#5b6b7b", padding: "3px 0" }}><span>{k}</span><span>{v}</span></div>;
 }

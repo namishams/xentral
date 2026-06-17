@@ -2,117 +2,97 @@
 
 import * as React from "react";
 import { color } from "@xentral/config";
-import { AppShell, KPICard, Button, StatusBadge, DataTable, type Column, type BadgeTone } from "@xentral/ui";
-import { listQuotes, type QuoteStatus } from "@xentral/module-books";
+import { AppShell, PageTitleRow, Button, StatusBadge, type BadgeTone } from "@xentral/ui";
 
-const aed = (n: number) => `AED ${n.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+type Line = { name: string; description: string | null; qty: number; unitPrice: number; lineTotal: number };
+type Q = { id: string; number: string; status: string; total: number; subtotal: number; vatTotal: number; currency: string; issued: string | null; valid: string | null; notes: string | null; token: string; customer: string; customerEmail: string | null };
+const aed = (n: number, c = "AED") => `${c} ${(Number(n) || 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+const TONE: Record<string, BadgeTone> = { DRAFT: "neutral", SENT: "info", ACCEPTED: "positive", REJECTED: "critical", EXPIRED: "neutral", INVOICED: "positive" };
 
-const STATUS: Record<QuoteStatus, { label: string; tone: BadgeTone }> = {
-  draft: { label: "Draft", tone: "neutral" },
-  sent: { label: "Sent", tone: "info" },
-  accepted: { label: "Accepted", tone: "positive" },
-  rejected: { label: "Rejected", tone: "critical" },
-  expired: { label: "Expired", tone: "warning" },
-};
+export default function QuoteDetailPage({ params }: { params: { id: string } }) {
+  const [q, setQ] = React.useState<Q | null>(null);
+  const [lines, setLines] = React.useState<Line[]>([]);
+  const [loading, setLoading] = React.useState(true);
+  const [busy, setBusy] = React.useState(false);
+  const [toast, setToast] = React.useState("");
 
-type Line = { n: number; description: string; sub: string; qty: number; unit: number; vat: number; amount: number };
+  const load = React.useCallback(() => {
+    fetch(`/api/books/quotes/${params.id}`).then((r) => r.json()).then((d) => { setQ(d.quote ?? null); setLines(d.lines ?? []); setLoading(false); }).catch(() => setLoading(false));
+  }, [params.id]);
+  React.useEffect(() => { load(); }, [load]);
 
-function Panel({ title, sub, action, children }: { title: string; sub?: string; action?: React.ReactNode; children: React.ReactNode }) {
-  return (
-    <section style={{ background: color.surface.card, border: `1px solid ${color.line.DEFAULT}`, borderRadius: 10, padding: "16px 18px" }}>
-      <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 12, marginBottom: 12 }}>
-        <div><h2 style={{ fontSize: 14, fontWeight: 600, color: color.ink.DEFAULT, margin: 0 }}>{title}</h2>{sub ? <div style={{ fontSize: 12.5, color: color.ink.soft, marginTop: 2 }}>{sub}</div> : null}</div>
-        {action}
-      </div>
-      {children}
-    </section>
-  );
-}
-function SumRow({ label, children, strong }: { label: string; children: React.ReactNode; strong?: boolean }) {
-  return (
-    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "9px 0", borderTop: `1px solid ${color.line.DEFAULT}` }}>
-      <span style={{ fontSize: strong ? 14 : 13, fontWeight: strong ? 600 : 400, color: strong ? color.ink.DEFAULT : color.ink.soft }}>{label}</span>
-      <span style={{ fontSize: strong ? 15 : 13, fontWeight: strong ? 700 : 500, color: color.ink.DEFAULT }}>{children}</span>
-    </div>
-  );
-}
+  const viewUrl = q && typeof window !== "undefined" ? `${window.location.origin}/q/${q.token}` : "";
 
-export default function QuoteRecordPage({ params }: { params: { id: string } }) {
-  const quotes = listQuotes();
-  const q = quotes.find((x) => x.id === params.id) ?? quotes[0];
-  if (!q) return <AppShell active="quotations"><p style={{ fontSize: 13, color: color.ink.soft }}>Quote not found.</p></AppShell>;
-  const net = Math.round((q.total / 1.05) * 100) / 100;
-  const vat = Math.round((q.total - net) * 100) / 100;
-  const st = STATUS[q.status];
-  const lines: Line[] = [{ n: 1, description: "Scope of work", sub: "Per proposal — fixed price", qty: 1, unit: net, vat: 5, amount: Math.round(net * 1.05 * 100) / 100 }];
+  async function send() {
+    setBusy(true); setToast("");
+    try {
+      const res = await fetch(`/api/books/quotes/${params.id}/send`, { method: "POST" });
+      const d = await res.json();
+      if (res.ok) { setToast(`Sent to ${d.to}`); load(); } else setToast(d.error || "Could not send");
+    } catch { setToast("Network error"); } finally { setBusy(false); }
+  }
+  function copyLink() { navigator.clipboard?.writeText(viewUrl).then(() => setToast("Quote link copied")); }
 
-  const COLUMNS: Column<Line>[] = [
-    { key: "n", header: "#", width: 40, render: (r) => <span style={{ color: color.ink.soft }}>{r.n}</span> },
-    { key: "description", header: "Description", render: (r) => <span><span style={{ fontWeight: 600, color: color.ink.DEFAULT, display: "block" }}>{r.description}</span><span style={{ fontSize: 12, color: color.ink.soft }}>{r.sub}</span></span> },
-    { key: "qty", header: "Qty", width: 70, align: "right", render: (r) => <span style={{ color: color.ink.mid }}>{r.qty}</span> },
-    { key: "unit", header: "Unit", width: 130, align: "right", render: (r) => <span style={{ color: color.ink.mid }}>{aed(r.unit)}</span> },
-    { key: "vat", header: "VAT", width: 70, align: "right", render: (r) => <span style={{ color: color.ink.mid }}>{r.vat}%</span> },
-    { key: "amount", header: "Amount", width: 140, align: "right", render: (r) => <span style={{ fontWeight: 600, color: color.ink.DEFAULT }}>{aed(r.amount)}</span> },
-  ];
+  if (loading) return <AppShell active="quotations"><div style={{ padding: 40, textAlign: "center", color: color.ink.soft }}>Loading…</div></AppShell>;
+  if (!q) return <AppShell active="quotations"><div style={{ padding: 40, textAlign: "center", color: color.ink.soft }}>Quote not found. <a href="/quotations" style={{ color: color.brand.primary }}>Back to quotes</a></div></AppShell>;
 
   return (
     <AppShell active="quotations">
-      <a href="/quotations" style={{ fontSize: 13, color: color.ink.mid, textDecoration: "none" }}>← Quotations</a>
-      <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 16, margin: "8px 0 18px", flexWrap: "wrap" }}>
-        <div>
-          <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-            <h1 style={{ fontSize: 22, fontWeight: 700, color: color.ink.DEFAULT, margin: 0, letterSpacing: "0.02em" }}>{q.number}</h1>
-            <StatusBadge tone={st.tone} label={st.label} />
+      <PageTitleRow title={`Quote ${q.number}`} subtitle={`${q.customer || "—"}${q.issued ? ` · issued ${q.issued}` : ""}`}
+        actions={<div style={{ display: "flex", gap: 8 }}>
+          <Button onClick={copyLink}>Copy link</Button>
+          <a href={viewUrl} target="_blank" rel="noreferrer"><Button>Open quote page</Button></a>
+          <Button variant="primary" onClick={send} disabled={busy}>{busy ? "Sending…" : "Send to customer"}</Button>
+        </div>} />
+
+      {toast ? <div style={{ background: `color-mix(in srgb, ${color.brand.primary} 10%, ${color.surface.card})`, border: `1px solid ${color.brand.primary}`, color: color.brand.primary, borderRadius: 9, padding: "9px 13px", fontSize: 13, marginBottom: 14 }}>{toast}</div> : null}
+
+      <div style={{ display: "grid", gridTemplateColumns: "minmax(0,2fr) minmax(0,1fr)", gap: 16, alignItems: "start" }}>
+        <section style={{ background: color.surface.card, border: `1px solid ${color.line.DEFAULT}`, borderRadius: 12, padding: 22 }}>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 18 }}>
+            <StatusBadge tone={TONE[q.status] ?? "neutral"} label={q.status.toLowerCase()} />
+            <span style={{ fontSize: 12.5, color: color.ink.soft }}>{q.valid ? `Valid until ${q.valid}` : ""}</span>
           </div>
-          <div style={{ fontSize: 13, color: color.ink.mid, marginTop: 4 }}>{q.customer} · valid until {q.validUntil}</div>
-        </div>
-        <div style={{ display: "flex", gap: 8, flexShrink: 0, flexWrap: "wrap", justifyContent: "flex-end" }}>
-          <Button>PDF</Button>
-          <Button>Edit</Button>
-          <Button>Duplicate</Button>
-          <Button>Share link</Button>
-          <Button>Send</Button>
-          <Button variant="primary">Convert to invoice</Button>
-        </div>
-      </div>
-
-      <div style={{ display: "flex", gap: 12, marginBottom: 18, flexWrap: "wrap" }}>
-        <KPICard label="Total" value={aed(q.total)} note={q.currency} noteTone={color.ink.soft} />
-        <KPICard label="Status" value={st.label} note="quote lifecycle" noteTone={color.ink.soft} />
-        <KPICard label="Valid until" value={q.validUntil} note="2026" noteTone={color.ink.soft} />
-        <KPICard label="VAT 5%" value={aed(vat)} note="included" noteTone={color.ink.soft} />
-      </div>
-
-      <div style={{ display: "grid", gridTemplateColumns: "minmax(0,1fr) 320px", gap: 16, alignItems: "start" }}>
-        <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
-          <Panel title="Public acceptance" sub="Send a link the customer can open and accept online">
-            <div style={{ marginBottom: 12 }}><StatusBadge tone={q.status === "accepted" ? "positive" : "neutral"} label={q.status === "accepted" ? "Accepted by customer" : "Awaiting response"} /></div>
-            <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-              <Button>Copy accept link</Button>
-              <Button variant="primary">Send for signature</Button>
+          <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 13 }}>
+            <thead><tr style={{ borderBottom: `1px solid ${color.line.DEFAULT}`, color: color.ink.soft, textAlign: "left" }}>
+              <th style={{ padding: "7px 0", fontWeight: 700 }}>Item</th><th style={{ textAlign: "right", fontWeight: 700 }}>Qty</th><th style={{ textAlign: "right", fontWeight: 700 }}>Price</th><th style={{ textAlign: "right", fontWeight: 700 }}>Amount</th>
+            </tr></thead>
+            <tbody>
+              {lines.map((l, i) => (
+                <tr key={i} style={{ borderBottom: `1px solid ${color.line.DEFAULT}` }}>
+                  <td style={{ padding: "9px 0", color: color.ink.DEFAULT }}>{l.name}{l.description ? <span style={{ display: "block", fontSize: 12, color: color.ink.soft }}>{l.description}</span> : null}</td>
+                  <td style={{ textAlign: "right", color: color.ink.mid }}>{Number(l.qty)}</td>
+                  <td style={{ textAlign: "right", color: color.ink.mid }}>{aed(l.unitPrice, q.currency)}</td>
+                  <td style={{ textAlign: "right", fontWeight: 600 }}>{aed(l.lineTotal, q.currency)}</td>
+                </tr>
+              ))}
+              {lines.length === 0 ? <tr><td colSpan={4} style={{ padding: 16, textAlign: "center", color: color.ink.soft }}>No line items</td></tr> : null}
+            </tbody>
+          </table>
+          <div style={{ display: "flex", justifyContent: "flex-end", marginTop: 14 }}>
+            <div style={{ width: 220 }}>
+              <Row k="Subtotal" v={aed(q.subtotal, q.currency)} />
+              <Row k="VAT" v={aed(q.vatTotal, q.currency)} />
+              <div style={{ display: "flex", justifyContent: "space-between", fontSize: 15, fontWeight: 800, padding: "8px 0", borderTop: `2px solid ${color.ink.DEFAULT}`, color: color.ink.DEFAULT }}><span>Total</span><span>{aed(q.total, q.currency)}</span></div>
             </div>
-          </Panel>
-          <Panel title="Line items"><DataTable columns={COLUMNS} rows={lines} getKey={(r) => String(r.n)} /></Panel>
-          <Panel title="Activity &amp; notes" action={<Button>+ Note</Button>}>
-            <div style={{ display: "flex", gap: 10 }}>
-              <div style={{ flex: 1, height: 38, border: `1px solid ${color.line.strong}`, borderRadius: 9, display: "flex", alignItems: "center", padding: "0 13px", color: color.ink.soft, fontSize: 13 }}>Add an internal note…</div>
-              <Button variant="primary">Add note</Button>
-            </div>
-          </Panel>
-        </div>
-        <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
-          <Panel title="Summary">
-            <SumRow label="Subtotal">{aed(net)}</SumRow>
-            <SumRow label="VAT 5%">{aed(vat)}</SumRow>
-            <SumRow label="Total" strong>{aed(q.total)}</SumRow>
-            <SumRow label="Customer"><a href="/companies" style={{ color: color.brand.primary, textDecoration: "none" }}>{q.customer}</a></SumRow>
-          </Panel>
-          <Panel title="Attachments" action={<Button>Upload</Button>}>
-            <div style={{ fontSize: 12.5, color: color.ink.soft, padding: "4px 0" }}>No files yet — drawings, BOQs, terms.</div>
-          </Panel>
-        </div>
+          </div>
+          {q.notes ? <div style={{ marginTop: 16, fontSize: 12.5, color: color.ink.mid, borderTop: `1px solid ${color.line.DEFAULT}`, paddingTop: 12 }}>{q.notes}</div> : null}
+        </section>
+
+        <section style={{ background: color.surface.card, border: `1px solid ${color.line.DEFAULT}`, borderRadius: 12, padding: 20 }}>
+          <h2 style={{ fontSize: 13, fontWeight: 700, color: color.ink.DEFAULT, margin: "0 0 12px" }}>Customer</h2>
+          <div style={{ fontSize: 14, fontWeight: 600, color: color.ink.DEFAULT }}>{q.customer || "—"}</div>
+          <div style={{ fontSize: 13, color: color.ink.mid, marginBottom: 16 }}>{q.customerEmail || "No email on file"}</div>
+          <h2 style={{ fontSize: 13, fontWeight: 700, color: color.ink.DEFAULT, margin: "0 0 8px" }}>Shareable quote link</h2>
+          <div style={{ fontSize: 12, color: color.ink.soft, wordBreak: "break-all", background: color.surface.sunken, borderRadius: 8, padding: "8px 10px", marginBottom: 10 }}>{viewUrl}</div>
+          <Button onClick={copyLink}>Copy link</Button>
+          <p style={{ fontSize: 11.5, color: color.ink.soft, marginTop: 14, lineHeight: 1.5 }}>“Send to customer” emails a branded quote with a public <b>Accept / Decline</b> page. Accepting marks the quote as accepted automatically.</p>
+        </section>
       </div>
-      <p style={{ fontSize: 11, color: color.ink.soft, textAlign: "center", marginTop: 18 }}>Record template (quote) · locked AppShell + KPICard + DataTable + Button · tokens only</p>
     </AppShell>
   );
+}
+
+function Row({ k, v }: { k: string; v: string }) {
+  return <div style={{ display: "flex", justifyContent: "space-between", fontSize: 13, color: color.ink.mid, padding: "3px 0" }}><span>{k}</span><span>{v}</span></div>;
 }
