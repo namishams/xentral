@@ -42,6 +42,8 @@ const NAV: NavGroup[] = [
     group: "Marketplace",
     items: [
       { id: "marketplace", label: "Marketplace", href: "/marketplace", glyph: "◫" },
+      { id: "reseller", label: "Reseller", href: "/reseller", glyph: "◎" },
+      { id: "partner", label: "Partner Program", href: "/partner", glyph: "◍" },
     ],
   },
   {
@@ -62,6 +64,7 @@ const NAV: NavGroup[] = [
       { id: "procurement", label: "Procurement", href: "/procurement", glyph: "◰" },
       { id: "suppliers", label: "Suppliers", href: "/suppliers", glyph: "◰" },
       { id: "projects", label: "Projects", href: "/projects", glyph: "▭" },
+      { id: "commerce", label: "Commerce", href: "/commerce", glyph: "▦" },
     ],
   },
   {
@@ -77,6 +80,7 @@ const NAV: NavGroup[] = [
       { id: "ledger", label: "Ledger", href: "/ledger", glyph: "≣" },
       { id: "payroll", label: "Payroll", href: "/payroll", glyph: "◰" },
       { id: "price-lists", label: "Price Lists", href: "/price-lists", glyph: "▦" },
+      { id: "categories", label: "Categories", href: "/categories", glyph: "≣" },
     ],
   },
   {
