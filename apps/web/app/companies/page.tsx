@@ -2,6 +2,7 @@ import * as React from "react";
 import { color } from "@xentral/config";
 import { currentScope } from "@xentral/kernel";
 import { AppShell, PageTitleRow, Button } from "@xentral/ui";
+import { NewCrmButton } from "../../components/crm-quick-create";
 import { loadCompanies } from "@xentral/module-crm";
 import { CompaniesTable } from "./companies-table";
 
@@ -15,7 +16,7 @@ export default async function CompaniesPage() {
 
   return (
     <AppShell active="companies">
-      <PageTitleRow title="Companies" subtitle={`${rows.length} accounts`} actions={<Button variant="primary">+ New company</Button>} />
+      <PageTitleRow title="Companies" subtitle={`${rows.length} accounts`} actions={<NewCrmButton entity="company" label="+ New company" />} />
       <CompaniesTable rows={rows} />
       <p style={{ fontSize: 11, color: color.ink.soft, textAlign: "center", marginTop: 14 }}>
         Loaded via @xentral/module-crm · DataPort (seed on preview · live behind auth)
