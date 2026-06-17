@@ -44,3 +44,41 @@ export function listUsers(): UserRow[] {
     { id: "u5", name: "Tariq Aziz", email: "tariq@xentral.ae", role: "viewer", active: false, lastLogin: "2026-05-30" },
   ];
 }
+
+export type AuditEvent = {
+  id: string;
+  when: string;
+  actor: string;
+  action: string;
+  target: string;
+};
+
+/** Immutable audit log feed for the workspace. Seeded now; a real adapter replaces the body later. */
+export function listAuditEvents(): AuditEvent[] {
+  return [
+    { id: "a1", when: "2026-06-17 09:42", actor: "Nami", action: "invoice.sent", target: "INV-1042 · Gulf Trading" },
+    { id: "a2", when: "2026-06-17 09:18", actor: "Sara Khan", action: "deal.updated", target: "Skyline Tower fit-out" },
+    { id: "a3", when: "2026-06-16 17:05", actor: "system", action: "payment.received", target: "PAY-5522 · AED 5,725" },
+    { id: "a4", when: "2026-06-16 14:30", actor: "Nami", action: "user.invited", target: "lena@xentral.ae" },
+    { id: "a5", when: "2026-06-16 11:12", actor: "Omar Haddad", action: "contact.created", target: "Yusuf Khan" },
+  ];
+}
+
+export type ApiKeyStatus = "active" | "revoked";
+export type ApiKeyRow = {
+  id: string;
+  name: string;
+  prefix: string;
+  created: string;
+  lastUsed: string;
+  status: ApiKeyStatus;
+};
+
+/** List API keys for the workspace. Seeded now; a real adapter replaces the body later. */
+export function listApiKeys(): ApiKeyRow[] {
+  return [
+    { id: "k1", name: "Production server", prefix: "xk_live_8f3a…", created: "12 May", lastUsed: "2 min ago", status: "active" },
+    { id: "k2", name: "Zapier integration", prefix: "xk_live_2b9c…", created: "01 Jun", lastUsed: "1 h ago", status: "active" },
+    { id: "k3", name: "Old mobile app", prefix: "xk_live_55ad…", created: "10 Feb", lastUsed: "30 d ago", status: "revoked" },
+  ];
+}

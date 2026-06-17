@@ -135,3 +135,23 @@ export function listWarehouses(): WarehouseRow[] {
     { id: "w3", name: "Abu Dhabi Hub", location: "Mussafah, Abu Dhabi", items: 880, capacityPct: 91 },
   ];
 }
+
+export type InventoryRow = {
+  id: string;
+  sku: string;
+  name: string;
+  warehouse: string;
+  onHand: number;
+  reserved: number;
+};
+
+/** List inventory stock levels. Seeded now; a real adapter replaces the body later. */
+export function listInventory(): InventoryRow[] {
+  return [
+    { id: "i1", sku: "KEY-LOCK", name: "Smart lock", warehouse: "Dubai Main DC", onHand: 6, reserved: 2 },
+    { id: "i2", sku: "SIGN-A2", name: "Signboard A2", warehouse: "Sharjah Store", onHand: 0, reserved: 0 },
+    { id: "i3", sku: "BRO-PACK", name: "Brochure pack", warehouse: "Dubai Main DC", onHand: 240, reserved: 30 },
+    { id: "i4", sku: "STL-BEAM", name: "Steel beam 6m", warehouse: "Abu Dhabi Hub", onHand: 14, reserved: 4 },
+    { id: "i5", sku: "CBL-CAT6", name: "Cat6 cable 305m", warehouse: "Dubai Main DC", onHand: 58, reserved: 12 },
+  ];
+}
