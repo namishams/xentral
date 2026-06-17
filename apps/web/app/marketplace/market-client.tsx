@@ -98,7 +98,7 @@ export function MarketplaceClient({ initialRows }: { initialRows: MarketLead[] }
           <div style={{ fontSize: 13, color: color.ink.mid, marginTop: 3 }}>Verified leads · Prices drop automatically</div>
         </div>
         <div style={{ display: "flex", gap: 8 }}>
-          <Button>Purchases</Button>
+          <Button onClick={() => (window.location.href = "/marketplace/purchases")}>Purchases</Button>
           <Button variant="primary">+ Top up</Button>
         </div>
       </div>
