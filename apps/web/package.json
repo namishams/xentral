@@ -25,7 +25,8 @@
     "@xentral/data-pack": "workspace:*",
     "pg": "^8.13.1",
     "bcryptjs": "^2.4.3",
-    "nodemailer": "^6.9.14"
+    "nodemailer": "^6.9.14",
+    "openai": "^4.67.3"
   },
   "devDependencies": {
     "@types/pg": "^8.11.10",
