@@ -5,6 +5,11 @@ import "../lib/session";
 export const metadata: Metadata = {
   title: "Xentral — Modular Build Console",
   description: "Live view of the modular rebuild (next.xentral.ae).",
+  icons: {
+    icon: [{ url: "/favicon.ico", sizes: "any" }, { url: "/icon.svg", type: "image/svg+xml" }, { url: "/icon-32.png", type: "image/png", sizes: "32x32" }, { url: "/icon-192.png", type: "image/png", sizes: "192x192" }],
+    apple: [{ url: "/apple-icon.png", sizes: "180x180" }],
+    shortcut: "/favicon.ico",
+  },
   robots: { index: false, follow: false, nocache: true, googleBot: { index: false, follow: false } },
 };
 

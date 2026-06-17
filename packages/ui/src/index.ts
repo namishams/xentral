@@ -26,3 +26,4 @@ export { StagePill } from "./stage-pill";
 // Panel, Skeleton, Toaster.
 
 export { ThemeToggle } from "./theme-toggle";
+export { XentralMark } from "./xentral-mark";

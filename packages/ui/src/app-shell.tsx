@@ -1,3 +1,4 @@
+import { XentralMark } from "./xentral-mark";
 import * as React from "react";
 import { ThemeToggle } from "./theme-toggle";
 import { color, uiConstants } from "@xentral/config";
@@ -151,7 +152,7 @@ export function Sidebar({ active }: { active?: string }) {
     <nav style={{ width: SIDEBAR_WIDTH, flexShrink: 0, background: color.surface.card, borderRight: `1px solid ${color.line.DEFAULT}`, display: "flex", flexDirection: "column", overflowY: "auto" }}>
       <div style={{ padding: "14px 14px 12px", borderBottom: `1px solid ${color.line.DEFAULT}` }}>
         <a href="/dashboard" style={{ display: "inline-flex", alignItems: "center", gap: 9, textDecoration: "none", color: color.ink.DEFAULT }}>
-          <span style={{ width: 28, height: 28, borderRadius: 8, background: color.brand.primary, color: color.ink.onPrimary, display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 700 }}>✕</span>
+          <span style={{ width: 28, height: 28, borderRadius: 8, background: color.brand.primary, color: color.ink.onPrimary, display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 700 }}><XentralMark size={20} /></span>
           <span style={{ fontSize: 16, fontWeight: 700 }}>Xentral</span>
         </a>
         <div style={{ marginTop: 12, background: color.surface.sunken, borderRadius: 9, padding: "9px 11px" }}>
