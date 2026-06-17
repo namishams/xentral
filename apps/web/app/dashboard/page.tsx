@@ -27,30 +27,43 @@ const RECOMMENDATIONS: { label: string; count: number; tone: string }[] = [
   { label: "Restock items — inventory is running very low.", count: 15, tone: color.status.critical },
 ];
 
-// Launchpad — mirrors the navigation structure. One row per area, each tile a
-// clickable destination. Admin/settings (Users, Audit, API keys, Security) are
-// intentionally excluded — this is the "what you always need" quick access.
+// Launchpad — ordered by the BUSINESS LIFECYCLE, not technical modules.
+// Lead → Customer → Quote → Order → Delivery → Invoice → Payment → Support.
+// Admin/settings are intentionally excluded — this is "what you always need".
 const SECTIONS: { title: string; tiles: { label: string; glyph: string; href: string }[] }[] = [
   {
-    title: "CRM",
+    title: "Revenue",
     tiles: [
+      { label: "Leads", glyph: "✸", href: "/leads" },
       { label: "Contacts", glyph: "◍", href: "/contacts" },
       { label: "Companies", glyph: "▢", href: "/companies" },
-      { label: "Leads", glyph: "✸", href: "/leads" },
       { label: "Deals", glyph: "◇", href: "/deals" },
       { label: "Pipelines", glyph: "≣", href: "/pipelines" },
-      { label: "Customer 360", glyph: "❏", href: "/customer" },
+      { label: "Quotes", glyph: "▥", href: "/quotations" },
+      { label: "Forecasting", glyph: "◴", href: "/forecasting" },
     ],
   },
   {
-    title: "Sales",
+    title: "Operations",
     tiles: [
-      { label: "Quotations", glyph: "▥", href: "/quotations" },
-      { label: "Forecasting", glyph: "◴", href: "/forecasting" },
-      { label: "Sales teams", glyph: "⬡", href: "/sales-teams" },
-      { label: "Performance", glyph: "▲", href: "/sales-performance" },
-      { label: "Cust. journey", glyph: "➔", href: "/customer-journey" },
-      { label: "Relationship", glyph: "✦", href: "/relationship-intelligence" },
+      { label: "Orders", glyph: "▤", href: "/orders" },
+      { label: "Products", glyph: "▦", href: "/products" },
+      { label: "Inventory", glyph: "▥", href: "/inventory" },
+      { label: "Warehouses", glyph: "▢", href: "/warehouses" },
+      { label: "Procurement", glyph: "◰", href: "/procurement" },
+      { label: "Suppliers", glyph: "◰", href: "/suppliers" },
+      { label: "Projects", glyph: "▭", href: "/projects" },
+    ],
+  },
+  {
+    title: "Finance",
+    tiles: [
+      { label: "Invoices", glyph: "▣", href: "/invoices" },
+      { label: "Payments", glyph: "◇", href: "/payments" },
+      { label: "Receivables", glyph: "▤", href: "/receivables" },
+      { label: "Payables", glyph: "▥", href: "/payables" },
+      { label: "VAT", glyph: "％", href: "/vat" },
+      { label: "Reports", glyph: "▦", href: "/reports" },
     ],
   },
   {
@@ -58,37 +71,9 @@ const SECTIONS: { title: string; tiles: { label: string; glyph: string; href: st
     tiles: [
       { label: "WhatsApp", glyph: "✆", href: "/inbox" },
       { label: "Email", glyph: "@", href: "/email" },
-      { label: "Chat", glyph: "◐", href: "/chat" },
       { label: "Calls", glyph: "☎", href: "/calls" },
       { label: "Meetings", glyph: "▭", href: "/meetings" },
       { label: "Campaigns", glyph: "◫", href: "/campaigns" },
-    ],
-  },
-  {
-    title: "Finance",
-    tiles: [
-      { label: "Invoices", glyph: "▣", href: "/invoices" },
-      { label: "Quotes", glyph: "▥", href: "/quotations" },
-      { label: "Payments", glyph: "◇", href: "#" },
-      { label: "VAT return", glyph: "％", href: "#" },
-    ],
-  },
-  {
-    title: "Inventory",
-    tiles: [
-      { label: "Products", glyph: "▦", href: "/products" },
-      { label: "Suppliers", glyph: "◰", href: "/suppliers" },
-      { label: "Warehouse", glyph: "▤", href: "#" },
-      { label: "Stock in / out", glyph: "⇅", href: "#" },
-    ],
-  },
-  {
-    title: "AI & productivity",
-    tiles: [
-      { label: "Ask Xentral AI", glyph: "✦", href: "/ai" },
-      { label: "Timeline", glyph: "≡", href: "/timeline" },
-      { label: "Tasks", glyph: "✓", href: "/tasks" },
-      { label: "Activities", glyph: "•", href: "/activities" },
     ],
   },
 ];

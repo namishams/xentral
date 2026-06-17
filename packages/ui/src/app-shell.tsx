@@ -3,10 +3,12 @@ import { color, uiConstants } from "@xentral/config";
 import { PageContainer } from "./page-container";
 
 /**
- * NAV — the locked navigation map. Grouped by platform layer:
- *  • Core  — Layer 1 (Identity, AI OS, Communication Hub, Timeline, Mission Control)
- *  • CRM   — Layer 2 (the mandatory CRM core)
- *  • Business — Layer 3 preview (Finance / Inventory routes already migrated)
+ * NAV — the locked navigation map, ordered by the BUSINESS LIFECYCLE, not by
+ * technical modules. A founder thinks Lead → Customer → Quote → Order →
+ * Delivery → Invoice → Payment → Support, so the platform is grouped that way:
+ *   Mission Control · Revenue · Operations · Finance · Communication · Admin
+ * Grundregel: every new feature/plugin/module/industry cloud subordinates to
+ * one of these lifecycle categories. See docs/INFORMATION-ARCHITECTURE.md.
  * `id` matches each page's <AppShell active="…">; `href` is the live route.
  */
 type NavItem = { id: string; label: string; href: string; glyph: string };
@@ -14,48 +16,69 @@ type NavGroup = { group: string; items: NavItem[] };
 
 const NAV: NavGroup[] = [
   {
-    group: "Core",
+    group: "Mission Control",
     items: [
-      { id: "dashboard", label: "Mission Control", href: "/dashboard", glyph: "◷" },
+      { id: "dashboard", label: "Dashboard", href: "/dashboard", glyph: "◷" },
       { id: "ai", label: "Ask Xentral AI", href: "/ai", glyph: "✦" },
       { id: "timeline", label: "Timeline", href: "/timeline", glyph: "≡" },
+      { id: "calendar", label: "Calendar", href: "/calendar", glyph: "▦" },
+      { id: "work-queue", label: "Work Queue", href: "/work-queue", glyph: "✓" },
+    ],
+  },
+  {
+    group: "Revenue",
+    items: [
+      { id: "leads", label: "Leads", href: "/leads", glyph: "✸" },
+      { id: "contacts", label: "Contacts", href: "/contacts", glyph: "◍" },
+      { id: "companies", label: "Companies", href: "/companies", glyph: "▢" },
+      { id: "deals", label: "Deals", href: "/deals", glyph: "◇" },
+      { id: "pipelines", label: "Pipelines", href: "/pipelines", glyph: "≣" },
+      { id: "quotations", label: "Quotes", href: "/quotations", glyph: "▥" },
+      { id: "forecasting", label: "Forecasting", href: "/forecasting", glyph: "◴" },
+    ],
+  },
+  {
+    group: "Operations",
+    items: [
+      { id: "orders", label: "Orders", href: "/orders", glyph: "▤" },
+      { id: "products", label: "Products", href: "/products", glyph: "▦" },
+      { id: "inventory", label: "Inventory", href: "/inventory", glyph: "▥" },
+      { id: "warehouses", label: "Warehouses", href: "/warehouses", glyph: "▢" },
+      { id: "procurement", label: "Procurement", href: "/procurement", glyph: "◰" },
+      { id: "suppliers", label: "Suppliers", href: "/suppliers", glyph: "◰" },
+      { id: "projects", label: "Projects", href: "/projects", glyph: "▭" },
+    ],
+  },
+  {
+    group: "Finance",
+    items: [
+      { id: "invoice", label: "Invoices", href: "/invoices", glyph: "▣" },
+      { id: "payments", label: "Payments", href: "/payments", glyph: "◇" },
+      { id: "receivables", label: "Receivables", href: "/receivables", glyph: "▤" },
+      { id: "payables", label: "Payables", href: "/payables", glyph: "▥" },
+      { id: "vat", label: "VAT", href: "/vat", glyph: "％" },
+      { id: "reports", label: "Reports", href: "/reports", glyph: "▦" },
+    ],
+  },
+  {
+    group: "Communication",
+    items: [
       { id: "inbox", label: "WhatsApp", href: "/inbox", glyph: "✆" },
       { id: "email", label: "Email", href: "/email", glyph: "@" },
-      { id: "chat", label: "Chat", href: "/chat", glyph: "◐" },
       { id: "calls", label: "Calls", href: "/calls", glyph: "☎" },
       { id: "meetings", label: "Meetings", href: "/meetings", glyph: "▭" },
       { id: "campaigns", label: "Campaigns", href: "/campaigns", glyph: "◫" },
-      { id: "users", label: "Users & Roles", href: "/users", glyph: "◍" },
+    ],
+  },
+  {
+    group: "Administration",
+    items: [
+      { id: "users", label: "Users", href: "/users", glyph: "◍" },
+      { id: "roles", label: "Roles", href: "/roles", glyph: "⚿" },
       { id: "audit-logs", label: "Audit Logs", href: "/audit-logs", glyph: "▤" },
-      { id: "api-keys", label: "API Keys", href: "/api-keys", glyph: "⚿" },
+      { id: "api-keys", label: "API Keys", href: "/api-keys", glyph: "⚇" },
       { id: "security", label: "Security", href: "/security", glyph: "⛨" },
-    ],
-  },
-  {
-    group: "CRM",
-    items: [
-      { id: "contacts", label: "Contacts", href: "/contacts", glyph: "◍" },
-      { id: "companies", label: "Companies", href: "/companies", glyph: "▢" },
-      { id: "leads", label: "Leads", href: "/leads", glyph: "✸" },
-      { id: "deals", label: "Deals", href: "/deals", glyph: "◇" },
-      { id: "pipelines", label: "Pipelines", href: "/pipelines", glyph: "≣" },
-      { id: "tasks", label: "Tasks", href: "/tasks", glyph: "✓" },
-      { id: "activities", label: "Activities", href: "/activities", glyph: "•" },
-      { id: "sales-teams", label: "Sales Teams", href: "/sales-teams", glyph: "⬡" },
-      { id: "sales-performance", label: "Sales Performance", href: "/sales-performance", glyph: "▲" },
-      { id: "forecasting", label: "Forecasting", href: "/forecasting", glyph: "◴" },
-      { id: "quotations", label: "Quotations", href: "/quotations", glyph: "▥" },
-      { id: "customer-journey", label: "Customer Journey", href: "/customer-journey", glyph: "➔" },
-      { id: "relationship-intelligence", label: "Relationship Intel", href: "/relationship-intelligence", glyph: "✦" },
-    ],
-  },
-  {
-    group: "Business",
-    items: [
-      { id: "invoice", label: "Invoices", href: "/invoices", glyph: "▣" },
-      { id: "products", label: "Products", href: "/products", glyph: "▦" },
-      { id: "suppliers", label: "Suppliers", href: "/suppliers", glyph: "◰" },
-      { id: "customer", label: "Customer 360", href: "/customer", glyph: "❏" },
+      { id: "settings", label: "Settings", href: "/settings", glyph: "⚙" },
     ],
   },
 ];
@@ -75,7 +98,7 @@ export function GlobalHeader({ right }: { right?: React.ReactNode }) {
   );
 }
 
-/** Sidebar — fixed, grouped navigation rail. Scrolls independently of content. */
+/** Sidebar — fixed, lifecycle-grouped navigation rail. Scrolls independently. */
 export function Sidebar({ active }: { active?: string }) {
   return (
     <nav style={{ width: SIDEBAR_WIDTH, flexShrink: 0, background: "#fff", borderRight: `1px solid ${color.line.DEFAULT}`, padding: "10px 10px 16px", display: "flex", flexDirection: "column", gap: 4, overflowY: "auto" }}>
