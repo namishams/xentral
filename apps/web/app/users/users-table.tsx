@@ -28,7 +28,7 @@ export function UsersTable({ rows: all }: { rows: UserRow[] }) {
         <EmptyState title="No members" hint="Try a different search." action={<Button variant="primary" onClick={() => setQ("")}>Clear search</Button>} />
       ) : (
         <>
-          <DataTable columns={COLUMNS} rows={rows} getKey={(r) => r.id} />
+          <DataTable columns={COLUMNS} rows={rows} getKey={(r) => r.id} rowHref={(r) => `/users/${r.id}`} />
           <Pagination page={page} pageCount={Math.max(1, Math.ceil(rows.length / pageSize))} pageSize={pageSize} total={rows.length} onPageChange={setPage} onPageSizeChange={(s) => { setPageSize(s); setPage(1); }} />
         </>
       )}
