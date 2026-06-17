@@ -20,22 +20,34 @@ const invTone = (s: string): BadgeTone => { const u = (s || "").toUpperCase(); r
 const cap = (s: string) => s ? s.charAt(0).toUpperCase() + s.slice(1).toLowerCase().replace(/_/g, " ") : "—";
 
 export default function ContactDetailPage({ params }: { params: { id: string } }) {
+  type Form = { firstName: string; lastName: string; title: string; email: string; phone: string; whatsApp: string; notes: string };
   const [d, setD] = React.useState<Payload | null>(null);
   const [loading, setLoading] = React.useState(true);
-  const [edit, setEdit] = React.useState<{ firstName: string; lastName: string; title: string; email: string; phone: string; whatsApp: string; notes: string } | null>(null);
+  const [form, setForm] = React.useState<Form | null>(null);
+  const [clean, setClean] = React.useState<Form | null>(null);
   const [note, setNote] = React.useState("");
   const [busy, setBusy] = React.useState(false);
+  const [saved, setSaved] = React.useState(false);
   const load = React.useCallback(() => {
-    fetch(`/api/crm/contact/${params.id}`).then((r) => r.json()).then((j) => { setD(j.error ? null : j); setLoading(false); }).catch(() => setLoading(false));
+    fetch(`/api/crm/contact/${params.id}`).then((r) => r.json()).then((j) => {
+      if (j.error) { setD(null); setLoading(false); return; }
+      setD(j);
+      const f: Form = { firstName: j.contact.firstName || "", lastName: j.contact.lastName || "", title: j.contact.title || "", email: j.contact.email || "", phone: j.contact.phone || "", whatsApp: j.contact.whatsApp || "", notes: j.contact.notes || "" };
+      setForm(f); setClean(f); setLoading(false);
+    }).catch(() => setLoading(false));
   }, [params.id]);
   React.useEffect(() => { load(); }, [load]);
+  const dirty = !!form && !!clean && (Object.keys(form) as (keyof Form)[]).some((k) => form[k] !== clean[k]);
   async function patch(body: Record<string, unknown>) {
     setBusy(true);
     try { const r = await fetch(`/api/crm/contact/${params.id}`, { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) }); if (r.ok) load(); return r.ok; }
     finally { setBusy(false); }
   }
-  async function saveEdit() { if (!edit) return; const ok = await patch(edit); if (ok) setEdit(null); }
+  async function saveForm() { if (!form) return; const ok = await patch(form); if (ok) { setSaved(true); setTimeout(() => setSaved(false), 2000); } }
   async function addNote() { const t = note.trim(); if (!t) return; const ok = await patch({ note: t }); if (ok) setNote(""); }
+  const set = (k: keyof Form, v: string) => setForm((f) => (f ? { ...f, [k]: v } : f));
+  const fieldS: React.CSSProperties = { width: "100%", boxSizing: "border-box", height: 34, border: `1px solid ${color.line.strong}`, borderRadius: 8, padding: "0 10px", fontSize: 13, color: color.ink.DEFAULT, background: color.surface.card, outline: "none" };
+  const labelS: React.CSSProperties = { display: "block", fontSize: 10.5, fontWeight: 700, letterSpacing: 0.3, color: color.ink.soft, textTransform: "uppercase", marginBottom: 4 };
 
   if (loading) return <AppShell active="contacts"><div style={{ padding: 40, textAlign: "center", color: color.ink.soft }}>Loading…</div></AppShell>;
   if (!d) return <AppShell active="contacts"><div style={{ padding: 40, textAlign: "center", color: color.ink.soft }}>Contact not found. <a href="/contacts" style={{ color: color.brand.primary }}>Back to contacts</a></div></AppShell>;
@@ -56,7 +68,6 @@ export default function ContactDetailPage({ params }: { params: { id: string } }
   ];
 
   const linkRow: React.CSSProperties = { display: "flex", alignItems: "center", gap: 10, padding: "9px 14px", borderBottom: `1px solid ${color.line.DEFAULT}`, textDecoration: "none", color: color.ink.DEFAULT, fontSize: 13 };
-  const detail = (k: string, v: React.ReactNode) => <div style={{ display: "flex", justifyContent: "space-between", gap: 12, padding: "6px 0", borderBottom: `1px solid ${color.line.DEFAULT}`, fontSize: 13 }}><span style={{ color: color.ink.soft }}>{k}</span><span style={{ color: color.ink.DEFAULT, fontWeight: 500, textAlign: "right", minWidth: 0, overflow: "hidden", textOverflow: "ellipsis" }}>{v}</span></div>;
 
   return (
     <AppShell active="contacts">
@@ -66,7 +77,6 @@ export default function ContactDetailPage({ params }: { params: { id: string } }
           <AskAiButton label="Ask AI" seed={`Draft a follow-up email to ${name}${c.accountName ? " at " + c.accountName : ""}.`} />
           {c.email ? <a href={`mailto:${c.email}`} style={{ textDecoration: "none" }}><Button>Email</Button></a> : null}
           {c.phone ? <a href={`tel:${c.phone}`} style={{ textDecoration: "none" }}><Button>Call</Button></a> : null}
-          <Button onClick={() => setEdit({ firstName: c.firstName || "", lastName: c.lastName || "", title: c.title || "", email: c.email || "", phone: c.phone || "", whatsApp: c.whatsApp || "", notes: c.notes || "" })}>Edit</Button>
         </div>} />
 
       {/* Identity + metrics band */}
@@ -97,15 +107,25 @@ export default function ContactDetailPage({ params }: { params: { id: string } }
         {/* left rail */}
         <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
           <Panel>
-            <PanelHeader title="Details" />
+            <PanelHeader title="Details" actions={dirty ? <Button variant="primary" onClick={saveForm} disabled={busy}>{busy ? "Saving…" : "Save"}</Button> : (saved ? <span style={{ fontSize: 12, fontWeight: 600, color: color.status.positive }}>✓ Saved</span> : <span style={{ fontSize: 11.5, color: color.ink.soft }}>Edit any field</span>)} />
             <PanelBody>
-              {detail("Email", c.email ? <a href={`mailto:${c.email}`} style={{ color: color.brand.primary, textDecoration: "none" }}>{c.email}</a> : "—")}
-              {detail("Phone", c.phone || "—")}
-              {detail("WhatsApp", c.whatsApp || "—")}
-              {detail("Company", c.accountName ? <a href={`/companies/${c.accountId}`} style={{ color: color.brand.primary, textDecoration: "none" }}>{c.accountName}</a> : "—")}
-              {detail("Title", c.title || "—")}
-              {detail("Status", cap(c.status))}
-              {c.notes ? <div style={{ marginTop: 8, fontSize: 12.5, color: color.ink.mid, lineHeight: 1.5 }}>{c.notes}</div> : null}
+              {form ? (
+                <div style={{ display: "flex", flexDirection: "column", gap: 11 }}>
+                  <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
+                    <div><label style={labelS}>First name</label><input value={form.firstName} onChange={(e) => set("firstName", e.target.value)} style={fieldS} /></div>
+                    <div><label style={labelS}>Last name</label><input value={form.lastName} onChange={(e) => set("lastName", e.target.value)} style={fieldS} /></div>
+                  </div>
+                  <div><label style={labelS}>Title</label><input value={form.title} onChange={(e) => set("title", e.target.value)} style={fieldS} /></div>
+                  <div><label style={labelS}>Email</label><input value={form.email} onChange={(e) => set("email", e.target.value)} style={fieldS} /></div>
+                  <div><label style={labelS}>Phone</label><input value={form.phone} onChange={(e) => set("phone", e.target.value)} style={fieldS} /></div>
+                  <div><label style={labelS}>WhatsApp</label><input value={form.whatsApp} onChange={(e) => set("whatsApp", e.target.value)} style={fieldS} /></div>
+                  <div>
+                    <label style={labelS}>Company</label>
+                    {c.accountName ? <a href={`/companies/${c.accountId}`} style={{ display: "inline-block", fontSize: 13, color: color.brand.primary, textDecoration: "none", fontWeight: 600 }}>{c.accountName} →</a> : <span style={{ fontSize: 13, color: color.ink.soft }}>—</span>}
+                  </div>
+                  <div><label style={labelS}>Notes</label><textarea value={form.notes} onChange={(e) => set("notes", e.target.value)} rows={3} style={{ ...fieldS, height: "auto", padding: 10, resize: "vertical" }} /></div>
+                </div>
+              ) : null}
             </PanelBody>
           </Panel>
           <Panel>
@@ -183,29 +203,6 @@ export default function ContactDetailPage({ params }: { params: { id: string } }
           </Panel>
         </div>
       </div>
-
-      {edit ? (
-        <div onClick={() => !busy && setEdit(null)} style={{ position: "fixed", inset: 0, background: "rgba(20,28,38,0.45)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 100, padding: 16 }}>
-          <div onClick={(e) => e.stopPropagation()} style={{ width: "100%", maxWidth: 460, background: color.surface.card, borderRadius: 14, boxShadow: "0 24px 60px -16px rgba(20,28,38,0.4)", padding: 22, maxHeight: "90vh", overflowY: "auto" }}>
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
-              <h2 style={{ margin: 0, fontSize: 17, fontWeight: 700, color: color.ink.DEFAULT }}>Edit contact</h2>
-              <button aria-label="Close" onClick={() => setEdit(null)} style={{ border: 0, background: "transparent", fontSize: 20, color: color.ink.soft, cursor: "pointer" }}>×</button>
-            </div>
-            {([["firstName", "First name"], ["lastName", "Last name"], ["title", "Title"], ["email", "Email"], ["phone", "Phone"], ["whatsApp", "WhatsApp"]] as const).map(([k, lbl]) => (
-              <div key={k} style={{ marginBottom: 12 }}>
-                <label style={{ display: "block", fontSize: 11.5, fontWeight: 700, letterSpacing: 0.3, color: color.ink.soft, textTransform: "uppercase", marginBottom: 5 }}>{lbl}</label>
-                <input value={edit[k]} onChange={(e) => setEdit({ ...edit, [k]: e.target.value })} style={{ width: "100%", boxSizing: "border-box", height: 38, border: `1px solid ${color.line.strong}`, borderRadius: 8, padding: "0 11px", fontSize: 13.5, color: color.ink.DEFAULT, background: color.surface.card }} />
-              </div>
-            ))}
-            <label style={{ display: "block", fontSize: 11.5, fontWeight: 700, letterSpacing: 0.3, color: color.ink.soft, textTransform: "uppercase", marginBottom: 5 }}>Notes</label>
-            <textarea value={edit.notes} onChange={(e) => setEdit({ ...edit, notes: e.target.value })} rows={3} style={{ width: "100%", boxSizing: "border-box", border: `1px solid ${color.line.strong}`, borderRadius: 8, padding: 11, fontSize: 13.5, color: color.ink.DEFAULT, background: color.surface.card, resize: "vertical", marginBottom: 14 }} />
-            <div style={{ display: "flex", justifyContent: "flex-end", gap: 8 }}>
-              <Button onClick={() => setEdit(null)} disabled={busy}>Cancel</Button>
-              <Button variant="primary" onClick={saveEdit} disabled={busy}>{busy ? "Saving…" : "Save changes"}</Button>
-            </div>
-          </div>
-        </div>
-      ) : null}
     </AppShell>
   );
 }
