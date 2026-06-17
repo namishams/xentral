@@ -27,41 +27,68 @@ const RECOMMENDATIONS: { label: string; count: number; tone: string }[] = [
   { label: "Restock items — inventory is running very low.", count: 15, tone: color.status.critical },
 ];
 
+// Launchpad — mirrors the navigation structure. One row per area, each tile a
+// clickable destination. Admin/settings (Users, Audit, API keys, Security) are
+// intentionally excluded — this is the "what you always need" quick access.
 const SECTIONS: { title: string; tiles: { label: string; glyph: string; href: string }[] }[] = [
+  {
+    title: "CRM",
+    tiles: [
+      { label: "Contacts", glyph: "◍", href: "/contacts" },
+      { label: "Companies", glyph: "▢", href: "/companies" },
+      { label: "Leads", glyph: "✸", href: "/leads" },
+      { label: "Deals", glyph: "◇", href: "/deals" },
+      { label: "Pipelines", glyph: "≣", href: "/pipelines" },
+      { label: "Customer 360", glyph: "❏", href: "/customer" },
+    ],
+  },
   {
     title: "Sales",
     tiles: [
-      { label: "Order", glyph: "▤", href: "/deals" },
-      { label: "Items", glyph: "▦", href: "/products" },
-      { label: "Contacts", glyph: "◍", href: "/contacts" },
-      { label: "Quote", glyph: "▥", href: "/quotations" },
+      { label: "Quotations", glyph: "▥", href: "/quotations" },
+      { label: "Forecasting", glyph: "◴", href: "/forecasting" },
+      { label: "Sales teams", glyph: "⬡", href: "/sales-teams" },
+      { label: "Performance", glyph: "▲", href: "/sales-performance" },
+      { label: "Cust. journey", glyph: "➔", href: "/customer-journey" },
+      { label: "Relationship", glyph: "✦", href: "/relationship-intelligence" },
+    ],
+  },
+  {
+    title: "Communication",
+    tiles: [
+      { label: "WhatsApp", glyph: "✆", href: "/inbox" },
+      { label: "Email", glyph: "@", href: "/email" },
+      { label: "Chat", glyph: "◐", href: "/chat" },
+      { label: "Calls", glyph: "☎", href: "/calls" },
+      { label: "Meetings", glyph: "▭", href: "/meetings" },
+      { label: "Campaigns", glyph: "◫", href: "/campaigns" },
+    ],
+  },
+  {
+    title: "Finance",
+    tiles: [
+      { label: "Invoices", glyph: "▣", href: "/invoices" },
+      { label: "Quotes", glyph: "▥", href: "/quotations" },
+      { label: "Payments", glyph: "◇", href: "#" },
+      { label: "VAT return", glyph: "％", href: "#" },
     ],
   },
   {
     title: "Inventory",
     tiles: [
-      { label: "Delivery note", glyph: "▤", href: "#" },
-      { label: "Warehouse", glyph: "▦", href: "#" },
-      { label: "Stock in / out", glyph: "⇅", href: "#" },
-      { label: "Interim store", glyph: "▢", href: "#" },
-      { label: "Shipping center", glyph: "◰", href: "#" },
-      { label: "Parcel intake", glyph: "▣", href: "#" },
-    ],
-  },
-  {
-    title: "Purchasing",
-    tiles: [
-      { label: "Purchase order", glyph: "▤", href: "/suppliers" },
+      { label: "Products", glyph: "▦", href: "/products" },
       { label: "Suppliers", glyph: "◰", href: "/suppliers" },
-      { label: "Goods receipt", glyph: "▦", href: "#" },
+      { label: "Warehouse", glyph: "▤", href: "#" },
+      { label: "Stock in / out", glyph: "⇅", href: "#" },
     ],
   },
   {
-    title: "Accounting",
+    title: "AI & productivity",
     tiles: [
-      { label: "Invoices", glyph: "▣", href: "/invoices" },
-      { label: "Payments", glyph: "◇", href: "#" },
-      { label: "VAT return", glyph: "％", href: "#" },
+      { label: "Ask Xentral AI", glyph: "✦", href: "/ai" },
+      { label: "Timeline", glyph: "≡", href: "/timeline" },
+      { label: "Tasks", glyph: "✓", href: "/tasks" },
+      { label: "Activities", glyph: "•", href: "/activities" },
     ],
   },
 ];
