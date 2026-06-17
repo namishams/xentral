@@ -56,3 +56,22 @@ export function listOrders(): OrderRow[] {
     { id: "SO-2046", number: "SO-2046", customer: "Bright Interiors", status: "fulfilled", items: 5, total: 18600, currency: "AED", date: "10 Jun" },
   ];
 }
+
+export type SupplierRow = {
+  id: string;
+  name: string;
+  category: string;
+  country: string;
+  openOrders: number;
+};
+
+/** List suppliers / vendors for the workspace. Seeded now; a real adapter replaces the body later. */
+export function listSuppliers(): SupplierRow[] {
+  return [
+    { id: "v1", name: "Emirates Steel", category: "Materials", country: "UAE", openOrders: 2 },
+    { id: "v2", name: "Dubai Hardware Co", category: "Hardware", country: "UAE", openOrders: 1 },
+    { id: "v3", name: "Gulf Print House", category: "Marketing", country: "UAE", openOrders: 0 },
+    { id: "v4", name: "Shenzhen Locks Ltd", category: "Hardware", country: "China", openOrders: 3 },
+    { id: "v5", name: "Falcon Logistics", category: "Services", country: "UAE", openOrders: 1 },
+  ];
+}

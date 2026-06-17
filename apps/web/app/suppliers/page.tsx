@@ -1,44 +1,42 @@
 "use client";
 
 import * as React from "react";
-import { color, uiConstants } from "@xentral/config";
-import { AppShell, PageTitleRow, FilterBar, Input, Button, DataTable, StatusBadge, EmptyState, Pagination, type Column } from "@xentral/ui";
+import { color } from "@xentral/config";
+import { AppShell, PageTitleRow, FilterBar, Input, Button, DataTable, StatusBadge, EmptyState, type Column } from "@xentral/ui";
+import { listSuppliers, type SupplierRow } from "@xentral/module-erp";
 
-// TODO(frontend-agent): replace these seed rows with a module contract, e.g.
-//   import { listThings } from "@xentral/module-XXX";  const ROWS = listThings();
-type Row = { id: string; name: string; status: string };
-const ROWS: Row[] = [
-  { id: "1", name: "Example A", status: "active" },
-  { id: "2", name: "Example B", status: "draft" },
-  { id: "3", name: "Example C", status: "active" },
-];
+const ALL = listSuppliers();
+const initials = (name: string) => name.split(" ").map((w) => w[0]).slice(0, 2).join("").toUpperCase();
+function Logo({ name }: { name: string }) {
+  return <span style={{ display: "inline-flex", width: 26, height: 26, borderRadius: 7, background: color.surface.sunken, color: color.ink.mid, fontSize: 11, fontWeight: 600, alignItems: "center", justifyContent: "center", flexShrink: 0 }} aria-hidden="true">{initials(name)}</span>;
+}
 
-const COLUMNS: Column<Row>[] = [
-  { key: "name", header: "Name", render: (r) => <span style={{ fontWeight: 600, color: color.brand.primary }}>{r.name}</span> },
-  { key: "status", header: "Status", width: 120, render: (r) => <StatusBadge tone="info" label={r.status} /> },
+const COLUMNS: Column<SupplierRow>[] = [
+  { key: "name", header: "Supplier", render: (r) => <span style={{ display: "inline-flex", alignItems: "center", gap: 10 }}><Logo name={r.name} /><span style={{ fontWeight: 600, color: color.ink.DEFAULT }}>{r.name}</span></span> },
+  { key: "category", header: "Category", width: 140, render: (r) => <span style={{ color: color.ink.mid }}>{r.category}</span> },
+  { key: "country", header: "Country", width: 120, render: (r) => r.country },
+  { key: "openOrders", header: "Open POs", width: 110, render: (r) => <StatusBadge tone={r.openOrders > 0 ? "info" : "neutral"} label={String(r.openOrders)} /> },
 ];
 
 export default function SuppliersPage() {
   const [q, setQ] = React.useState("");
-  const [page, setPage] = React.useState(1);
-  const [pageSize, setPageSize] = React.useState<number>(uiConstants.table.pageSizeDefault);
-  const rows = ROWS.filter((r) => r.name.toLowerCase().includes(q.toLowerCase()));
+  const rows = ALL.filter((r) => (r.name + r.category + r.country).toLowerCase().includes(q.toLowerCase()));
 
   return (
-    <AppShell active="dashboard">
-      <PageTitleRow title="Suppliers" subtitle={`${ROWS.length} items`} actions={<Button variant="primary">+ New</Button>} />
+    <AppShell active="suppliers">
+      <PageTitleRow title="Suppliers" subtitle={`${ALL.length} vendors`} actions={<Button variant="primary">+ New supplier</Button>} />
       <FilterBar>
-        <Input placeholder="Search…" value={q} onChange={(e) => { setQ(e.target.value); setPage(1); }} style={{ width: 240 }} />
+        <Input placeholder="Search supplier, category, country…" value={q} onChange={(e) => setQ(e.target.value)} style={{ width: 300 }} />
+        <Button>Category</Button>
       </FilterBar>
       {rows.length === 0 ? (
-        <EmptyState title="No results" hint="Try a different search." action={<Button variant="primary" onClick={() => setQ("")}>Clear search</Button>} />
+        <EmptyState title="No suppliers" hint="Try a different search." action={<Button variant="primary" onClick={() => setQ("")}>Clear search</Button>} />
       ) : (
-        <>
+        <div style={{ marginTop: 8 }}>
           <DataTable columns={COLUMNS} rows={rows} getKey={(r) => r.id} />
-          <Pagination page={page} pageCount={Math.max(1, Math.ceil(rows.length / pageSize))} pageSize={pageSize} total={rows.length} onPageChange={setPage} onPageSizeChange={(s) => { setPageSize(s); setPage(1); }} />
-        </>
+        </div>
       )}
-      <p style={{ fontSize: 11, color: color.ink.soft, textAlign: "center", marginTop: 14 }}>Scaffolded with `pnpm gen:page` · locked components only</p>
+      <p style={{ fontSize: 11, color: color.ink.soft, textAlign: "center", marginTop: 18 }}>Vendor directory · @xentral/module-erp · locked DataTable + StatusBadge</p>
     </AppShell>
   );
 }
