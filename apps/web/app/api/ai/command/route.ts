@@ -43,7 +43,40 @@ const TOOLS: OpenAI.Chat.Completions.ChatCompletionTool[] = [
   { type: "function", function: { name: "find_contact", description: "Search existing contacts by name or email. Call this first to get a contactId before add_note or update_contact.", parameters: { type: "object", properties: { query: { type: "string" } }, required: ["query"] } } },
   { type: "function", function: { name: "add_note", description: "Append a note to an existing contact (needs contactId from find_contact).", parameters: { type: "object", properties: { contactId: { type: "string" }, note: { type: "string" } }, required: ["contactId", "note"] } } },
   { type: "function", function: { name: "update_contact", description: "Update fields on an existing contact (needs contactId from find_contact).", parameters: { type: "object", properties: { contactId: { type: "string" }, title: { type: "string" }, email: { type: "string" }, phone: { type: "string" }, notes: { type: "string" } }, required: ["contactId"] } } },
+  { type: "function", function: { name: "create_invoice", description: "Create a draft invoice for a customer with line items. Number, VAT and totals are computed automatically.", parameters: { type: "object", properties: {
+    customer: { type: "string", description: "Customer / company name" }, dueInDays: { type: "number", description: "Days until due (default 14)" }, notes: { type: "string" },
+    lines: { type: "array", items: { type: "object", properties: { name: { type: "string" }, qty: { type: "number" }, unitPrice: { type: "number" }, vatRate: { type: "number", description: "default 5" }, discountPct: { type: "number" } }, required: ["name", "unitPrice"] } } }, required: ["customer", "lines"] } } },
+  { type: "function", function: { name: "create_quote", description: "Create a draft quote/offer for a customer with line items. Number, VAT and totals are computed automatically.", parameters: { type: "object", properties: {
+    customer: { type: "string" }, validInDays: { type: "number", description: "Days the quote stays valid (default 30)" }, notes: { type: "string" },
+    lines: { type: "array", items: { type: "object", properties: { name: { type: "string" }, qty: { type: "number" }, unitPrice: { type: "number" }, vatRate: { type: "number", description: "default 5" }, discountPct: { type: "number" } }, required: ["name", "unitPrice"] } } }, required: ["customer", "lines"] } } },
 ];
+
+async function nextNumber(p: Pool, companyId: string, prefix: string): Promise<string> {
+  const year = new Date().getFullYear();
+  const like = `${prefix}-${year}-%`;
+  const { rows } = await p.query(`select number from "${prefix === "INV" ? "invoices" : "quotes"}" where "companyId"=$1 and number like $2 order by number desc limit 1`, [companyId, like]);
+  let n = 1;
+  if (rows[0]?.number) { const m = String(rows[0].number).match(/(\d+)$/); if (m) n = Number(m[1]) + 1; }
+  return `${prefix}-${year}-${String(n).padStart(5, "0")}`;
+}
+async function findOrCreateCustomer(p: Pool, companyId: string, name: string): Promise<string> {
+  const found = await p.query(`select id from "billing_customers" where "companyId"=$1 and lower(name)=lower($2) limit 1`, [companyId, name]);
+  if (found.rows[0]) return found.rows[0].id;
+  const id = "bc" + Date.now().toString(36) + Math.random().toString(36).slice(2, 10);
+  await p.query(`insert into "billing_customers" (id,"companyId",name,"createdAt","updatedAt") values ($1,$2,$3,now(),now())`, [id, companyId, name || "Customer"]);
+  return id;
+}
+type LineIn = { name?: unknown; qty?: unknown; unitPrice?: unknown; vatRate?: unknown; discountPct?: unknown };
+function computeLines(raw: LineIn[]) {
+  let subtotal = 0, vatTotal = 0;
+  const norm = (raw || []).filter((l) => String(l.name ?? "").trim() || Number(l.unitPrice) > 0).map((l, idx) => {
+    const qty = Number(l.qty) || 1, up = Number(l.unitPrice) || 0, disc = Number(l.discountPct) || 0;
+    const vat = l.vatRate == null ? 5 : Number(l.vatRate);
+    const net = qty * up * (1 - disc / 100); subtotal += net; vatTotal += net * vat / 100;
+    return { pos: idx, name: String(l.name ?? "Item") || "Item", qty, up, vat, disc, net };
+  });
+  return { norm, subtotal, vatTotal, total: subtotal + vatTotal };
+}
 
 type Action = { type: string; label: string; href?: string };
 type ExecResult = { ok: boolean; summary: string; data?: unknown; action?: Action };
@@ -103,6 +136,27 @@ async function exec(url: string, companyId: string, userId: string, name: string
       const r = await p.query(`update "contacts" set ${sets.join(", ")} where id=$${i} and "companyId"=$${i + 1}`, vals);
       if (!r.rowCount) return { ok: false, summary: "Contact not found" };
       return { ok: true, summary: "Contact updated", action: { type: "update_contact", label: "Contact updated", href: `/contacts/${s(a.contactId)}` } };
+    }
+    if (name === "create_invoice" || name === "create_quote") {
+      const isInv = name === "create_invoice";
+      const custId = await findOrCreateCustomer(p, companyId, String(a.customer || "Customer"));
+      const { norm, subtotal, vatTotal, total } = computeLines((a.lines as LineIn[]) || []);
+      if (norm.length === 0) return { ok: false, summary: "No valid line items" };
+      const number = await nextNumber(p, companyId, isInv ? "INV" : "QUO");
+      const id = newId(isInv ? "iv" : "qt");
+      if (isInv) {
+        const due = Number(a.dueInDays) > 0 ? Number(a.dueInDays) : 14;
+        await p.query(`insert into "invoices" (id,"companyId","customerId","createdById",number,status,"issueDate","dueDate",currency,subtotal,"discountTotal","vatTotal",total,"amountPaid",notes,"publicToken","createdAt","updatedAt") values ($1,$2,$3,$4,$5,'DRAFT'::"InvoiceStatus",now(),(now()+($6||' days')::interval),'AED',$7,0,$8,$9,0,$10,$11,now(),now())`,
+          [id, companyId, custId, userId, number, String(due), subtotal.toFixed(2), vatTotal.toFixed(2), total.toFixed(2), s(a.notes), newId("tok")]);
+        for (const l of norm) await p.query(`insert into "invoice_lines" (id,"invoiceId",position,name,qty,"unitPrice","vatRate","discountPct","lineTotal") values ($1,$2,$3,$4,$5,$6,$7,$8,$9)`, [newId("il"), id, l.pos, l.name, l.qty, l.up, l.vat, l.disc, l.net.toFixed(2)]);
+        return { ok: true, summary: `Created invoice ${number} (AED ${total.toFixed(2)})`, action: { type: "create_invoice", label: `Invoice ${number} drafted — AED ${total.toFixed(2)}`, href: `/invoices/${id}` } };
+      } else {
+        const valid = Number(a.validInDays) > 0 ? Number(a.validInDays) : 30;
+        await p.query(`insert into "quotes" (id,"companyId","customerId","createdById",number,status,"issueDate","validUntil",currency,subtotal,"discountTotal","vatTotal",total,notes,"publicToken","createdAt","updatedAt") values ($1,$2,$3,$4,$5,'DRAFT'::"QuoteStatus",now(),(now()+($6||' days')::interval),'AED',$7,0,$8,$9,$10,$11,now(),now())`,
+          [id, companyId, custId, userId, number, String(valid), subtotal.toFixed(2), vatTotal.toFixed(2), total.toFixed(2), s(a.notes), newId("tok")]);
+        for (const l of norm) await p.query(`insert into "quote_lines" (id,"quoteId",position,name,qty,"unitPrice","vatRate","discountPct","lineTotal") values ($1,$2,$3,$4,$5,$6,$7,$8,$9)`, [newId("ql"), id, l.pos, l.name, l.qty, l.up, l.vat, l.disc, l.net.toFixed(2)]);
+        return { ok: true, summary: `Created quote ${number} (AED ${total.toFixed(2)})`, action: { type: "create_quote", label: `Quote ${number} drafted — AED ${total.toFixed(2)}`, href: `/quotations/${id}` } };
+      }
     }
     return { ok: false, summary: `Unknown tool ${name}` };
   } catch (e) {
