@@ -49,7 +49,19 @@ const TOOLS: OpenAI.Chat.Completions.ChatCompletionTool[] = [
   { type: "function", function: { name: "create_quote", description: "Create a draft quote/offer for a customer with line items. Number, VAT and totals are computed automatically.", parameters: { type: "object", properties: {
     customer: { type: "string" }, validInDays: { type: "number", description: "Days the quote stays valid (default 30)" }, notes: { type: "string" },
     lines: { type: "array", items: { type: "object", properties: { name: { type: "string" }, qty: { type: "number" }, unitPrice: { type: "number" }, vatRate: { type: "number", description: "default 5" }, discountPct: { type: "number" } }, required: ["name", "unitPrice"] } } }, required: ["customer", "lines"] } } },
+  { type: "function", function: { name: "update_account", description: "Update a company/account's details by its name.", parameters: { type: "object", properties: {
+    name: { type: "string", description: "Existing company/account name to find" }, industry: { type: "string" }, website: { type: "string" }, phone: { type: "string" }, email: { type: "string" }, city: { type: "string" }, country: { type: "string" } }, required: ["name"] } } },
+  { type: "function", function: { name: "complete_task", description: "Mark an open task as done by matching its title.", parameters: { type: "object", properties: { title: { type: "string" } }, required: ["title"] } } },
+  { type: "function", function: { name: "reassign_lead", description: "Reassign a lead/deal to a teammate by name.", parameters: { type: "object", properties: { lead: { type: "string", description: "Lead name or company to find" }, assignee: { type: "string", description: "Teammate's name to assign to" } }, required: ["lead", "assignee"] } } },
+  { type: "function", function: { name: "set_deal_value", description: "Set or change a lead/deal's value in AED.", parameters: { type: "object", properties: { lead: { type: "string" }, value: { type: "number" } }, required: ["lead", "value"] } } },
+  { type: "function", function: { name: "create_ticket", description: "Open a support ticket / case.", parameters: { type: "object", properties: { subject: { type: "string" }, message: { type: "string" }, priority: { type: "string", enum: ["LOW", "NORMAL", "HIGH", "URGENT"] } }, required: ["subject"] } } },
 ];
+
+async function findLead(p: Pool, companyId: string, q: string): Promise<{ id: string; name: string } | null> {
+  const like = `%${q.toLowerCase()}%`;
+  const { rows } = await p.query(`select id, coalesce("firstName",'')||' '||coalesce("lastName",'') as name, company from "leads" where "companyId"=$1 and (lower(coalesce("firstName",'')||' '||coalesce("lastName",'')) like $2 or lower(coalesce(company,'')) like $2) order by "updatedAt" desc limit 1`, [companyId, like]);
+  return rows[0] ? { id: rows[0].id, name: (rows[0].name || rows[0].company || "lead").trim() } : null;
+}
 
 async function nextNumber(p: Pool, companyId: string, prefix: string): Promise<string> {
   const year = new Date().getFullYear();
@@ -157,6 +169,41 @@ async function exec(url: string, companyId: string, userId: string, name: string
         for (const l of norm) await p.query(`insert into "quote_lines" (id,"quoteId",position,name,qty,"unitPrice","vatRate","discountPct","lineTotal") values ($1,$2,$3,$4,$5,$6,$7,$8,$9)`, [newId("ql"), id, l.pos, l.name, l.qty, l.up, l.vat, l.disc, l.net.toFixed(2)]);
         return { ok: true, summary: `Created quote ${number} (AED ${total.toFixed(2)})`, action: { type: "create_quote", label: `Quote ${number} drafted — AED ${total.toFixed(2)}`, href: `/quotations/${id}` } };
       }
+    }
+    if (name === "update_account") {
+      const sets: string[] = []; const vals: unknown[] = []; let i = 1;
+      for (const f of ["industry", "website", "phone", "email", "city", "country"]) if (f in a) { sets.push(`"${f}"=$${i}`); vals.push(s(a[f])); i++; }
+      if (!sets.length) return { ok: false, summary: "No fields to update" };
+      sets.push(`"updatedAt"=now()`); vals.push(`%${String(a.name || "").toLowerCase()}%`, companyId);
+      const r = await p.query(`update "accounts" set ${sets.join(", ")} where lower(name) like $${i} and "companyId"=$${i + 1}`, vals);
+      if (!r.rowCount) return { ok: false, summary: `No company matching "${a.name}"` };
+      return { ok: true, summary: `Updated ${a.name}`, action: { type: "update_account", label: `Company updated: ${a.name}` } };
+    }
+    if (name === "complete_task") {
+      const { rows } = await p.query(`select id, title from "tasks" where "companyId"=$1 and "isCompleted"=false and lower(title) like $2 order by "createdAt" desc limit 1`, [companyId, `%${String(a.title || "").toLowerCase()}%`]);
+      if (!rows[0]) return { ok: false, summary: `No open task matching "${a.title}"` };
+      await p.query(`update "tasks" set "isCompleted"=true, "updatedAt"=now() where id=$1`, [rows[0].id]);
+      return { ok: true, summary: `Completed task "${rows[0].title}"`, action: { type: "complete_task", label: `Task done: ${rows[0].title}`, href: "/work-queue" } };
+    }
+    if (name === "reassign_lead") {
+      const lead = await findLead(p, companyId, String(a.lead || ""));
+      if (!lead) return { ok: false, summary: `No lead matching "${a.lead}"` };
+      const u = await p.query(`select id, name from "users" where "companyId"=$1 and lower(name) like $2 and "isActive"=true limit 1`, [companyId, `%${String(a.assignee || "").toLowerCase()}%`]);
+      if (!u.rows[0]) return { ok: false, summary: `No teammate matching "${a.assignee}"` };
+      await p.query(`update "leads" set "assignedToId"=$1, "updatedAt"=now() where id=$2 and "companyId"=$3`, [u.rows[0].id, lead.id, companyId]);
+      return { ok: true, summary: `Reassigned ${lead.name} to ${u.rows[0].name}`, action: { type: "reassign_lead", label: `${lead.name} → ${u.rows[0].name}`, href: `/leads/${lead.id}` } };
+    }
+    if (name === "set_deal_value") {
+      const lead = await findLead(p, companyId, String(a.lead || ""));
+      if (!lead) return { ok: false, summary: `No lead matching "${a.lead}"` };
+      await p.query(`update "leads" set value=$1, "updatedAt"=now() where id=$2 and "companyId"=$3`, [Number(a.value) || 0, lead.id, companyId]);
+      return { ok: true, summary: `Set ${lead.name} value to AED ${Number(a.value) || 0}`, action: { type: "set_deal_value", label: `${lead.name}: AED ${(Number(a.value) || 0).toLocaleString()}`, href: `/leads/${lead.id}` } };
+    }
+    if (name === "create_ticket") {
+      const id = newId("tc");
+      await p.query(`insert into "support_tickets" (id,"companyId",subject,message,status,priority,"createdById","createdAt","updatedAt") values ($1,$2,$3,$4,'OPEN',$5,$6,now(),now())`,
+        [id, companyId, s(a.subject) || "Support request", s(a.message), s(a.priority) || "NORMAL", userId]);
+      return { ok: true, summary: `Opened ticket "${a.subject}"`, action: { type: "create_ticket", label: `Ticket opened: ${a.subject}`, href: "/service-desk" } };
     }
     return { ok: false, summary: `Unknown tool ${name}` };
   } catch (e) {
