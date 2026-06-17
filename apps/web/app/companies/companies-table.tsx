@@ -35,7 +35,7 @@ export function CompaniesTable({ rows: all }: { rows: CompanyRow[] }) {
         <EmptyState title="No companies" hint="Try a different search." action={<Button variant="primary" onClick={() => setQ("")}>Clear search</Button>} />
       ) : (
         <>
-          <DataTable columns={COLUMNS} rows={rows} getKey={(r) => r.id} />
+          <DataTable columns={COLUMNS} rows={rows} getKey={(r) => r.id} rowHref={(r) => `/companies/${r.id}`} />
           <Pagination page={page} pageCount={Math.max(1, Math.ceil(rows.length / pageSize))} pageSize={pageSize} total={rows.length} onPageChange={setPage} onPageSizeChange={(s) => { setPageSize(s); setPage(1); }} />
         </>
       )}
