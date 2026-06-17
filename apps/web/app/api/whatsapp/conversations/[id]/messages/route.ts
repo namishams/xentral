@@ -23,7 +23,7 @@ export async function GET(_req: Request, { params }: { params: { id: string } })
   if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   try {
     const { rows } = await pool(url).query(
-      `select m.direction, m.body, m.type, m."isAi", m.timestamp, m."sentByName" as "sentBy"
+      `select m.direction, m.body, m.type, m."isAi", m.timestamp, m."sent_by_name" as "sentBy"
          from "whatsapp_messages" m join "whatsapp_conversations" c on c.id = m."conversation_id"
         where m."conversation_id" = $1 and c."company_id" = $2
         order by m.timestamp asc limit 300`, [params.id, session.companyId]);
