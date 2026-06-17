@@ -44,9 +44,15 @@ export function AiLauncher() {
 
   React.useEffect(() => {
     const onAsk = (e: Event) => {
-      const q = (e as CustomEvent).detail?.q as string | undefined;
+      const det = (e as CustomEvent).detail || {};
+      const q = det.q as string | undefined;
+      const prefill = det.prefill as string | undefined;
       setOpen(true);
-      setTimeout(() => { if (q && q.trim()) send(q); else inputRef.current?.focus(); }, 60);
+      setTimeout(() => {
+        if (q && q.trim()) send(q);
+        else if (prefill) { setInput(prefill); inputRef.current?.focus(); }
+        else inputRef.current?.focus();
+      }, 60);
     };
     window.addEventListener("xentral-ai-ask", onAsk as EventListener);
     return () => window.removeEventListener("xentral-ai-ask", onAsk as EventListener);
@@ -163,6 +169,51 @@ export function HeaderAiField() {
       ) : (
         <kbd style={{ flexShrink: 0, marginRight: 4, fontSize: 10.5, fontWeight: 600, color: "var(--ink-soft)", border: "1px solid var(--line)", borderRadius: 5, padding: "1px 5px", fontFamily: "inherit" }}>⏎</kbd>
       )}
+    </div>
+  );
+}
+
+/**
+ * AiCommandBand — the full AI strip between the top bar and the page content,
+ * on every page. A big command field plus capability chips that show what
+ * Xentral AI can actually do (create records, draft documents, answer).
+ */
+const CAPS: { label: string; prefill?: string; q?: string }[] = [
+  { label: "New contact", prefill: "Create a contact: " },
+  { label: "New company", prefill: "Add a company: " },
+  { label: "Draft invoice", prefill: "Create an invoice for " },
+  { label: "Draft offer", prefill: "Create a quote for " },
+  { label: "New lead", prefill: "Add a lead: " },
+  { label: "Schedule meeting", prefill: "Schedule a call tomorrow 15:00 with " },
+  { label: "Add task", prefill: "Create a task: " },
+  { label: "Open ticket", prefill: "Open a support ticket: " },
+  { label: "Summarise pipeline", q: "Summarise my open pipeline and what I should focus on today." },
+  { label: "Overdue invoices", q: "Which of my invoices are overdue and what's the total outstanding?" },
+];
+
+export function AiCommandBand() {
+  const [v, setV] = React.useState("");
+  const ask = (q: string) => { window.dispatchEvent(new CustomEvent("xentral-ai-ask", { detail: { q } })); setV(""); };
+  const cap = (c: { prefill?: string; q?: string }) => window.dispatchEvent(new CustomEvent("xentral-ai-ask", { detail: c.q ? { q: c.q } : { prefill: c.prefill } }));
+  return (
+    <div style={{ background: "linear-gradient(180deg, #f6f4fe, var(--surface-page))", borderBottom: "1px solid var(--line)", padding: "12px 24px" }}>
+      <div style={{ maxWidth: 1280, margin: "0 auto" }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+          <span aria-hidden="true" style={{ flexShrink: 0, width: 30, height: 30, borderRadius: 9, background: "linear-gradient(135deg, #6b4ed9, #8b5cf6)", color: "#fff", display: "inline-flex", alignItems: "center", justifyContent: "center", fontSize: 15 }}>✦</span>
+          <div style={{ flex: 1, minWidth: 0, display: "flex", alignItems: "center", gap: 8, height: 40, padding: "0 6px 0 12px", borderRadius: 10, background: "var(--surface-card)", border: "1px solid #ddd6fb", boxShadow: "0 1px 2px rgba(16,24,40,0.04)" }}>
+            <input value={v} onChange={(e) => setV(e.target.value)} onKeyDown={(e) => { if (e.key === "Enter" && v.trim()) { e.preventDefault(); ask(v.trim()); } }}
+              placeholder="Tell Xentral AI what to do — “create an invoice for Acme”, “add a contact”, “what’s overdue?”…"
+              aria-label="Xentral AI command" style={{ flex: 1, minWidth: 0, border: 0, outline: "none", background: "transparent", fontSize: 13.5, color: "var(--ink)", fontFamily: "inherit" }} />
+            <button onClick={() => v.trim() && ask(v.trim())} aria-label="Send" style={{ flexShrink: 0, width: 30, height: 30, borderRadius: 8, border: 0, cursor: "pointer", background: "linear-gradient(135deg, #6b4ed9, #8b5cf6)", color: "#fff", fontSize: 15, display: "inline-flex", alignItems: "center", justifyContent: "center" }}>↑</button>
+          </div>
+        </div>
+        <div style={{ display: "flex", gap: 7, marginTop: 9, overflowX: "auto", paddingBottom: 2 }}>
+          <span style={{ flexShrink: 0, fontSize: 11, fontWeight: 700, color: "#6b4ed9", alignSelf: "center", textTransform: "uppercase", letterSpacing: 0.4 }}>AI can:</span>
+          {CAPS.map((c) => (
+            <button key={c.label} onClick={() => cap(c)} style={{ flexShrink: 0, fontSize: 12, fontWeight: 600, color: "var(--ink-mid)", background: "var(--surface-card)", border: "1px solid var(--line-strong)", borderRadius: 999, padding: "5px 12px", cursor: "pointer", whiteSpace: "nowrap" }}>{c.label}</button>
+          ))}
+        </div>
+      </div>
     </div>
   );
 }
