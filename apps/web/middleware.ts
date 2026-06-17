@@ -1,26 +1,44 @@
 import { NextResponse, type NextRequest } from "next/server";
 
 /**
- * Auth gate — DORMANT by default.
- *
- * Runs only when XENTRAL_LIVE_DATA=1 (the same gate that arms live data + the
- * session resolver). Until armed it is a no-op, so the public preview is
- * untouched: every app route renders seed data with no redirect.
- *
- * When armed, any request to a protected app section without a session cookie is
- * redirected to /auth/login?next=<path>. This is a lightweight presence check;
- * the cryptographic verification still happens server-side in the SessionPort
- * resolver (so a forged cookie reaches a page but resolves to no tenant → seed,
- * never another tenant's data). Marketing pages, /auth, /api and static assets
- * stay public via the matcher below.
+ * Two jobs:
+ *  1. Legacy redirects — the old app used /dashboard/* paths; the new build uses
+ *     top-level routes. Old bookmarks/links are 308-redirected to the new path so
+ *     nothing dead-ends (accounts→companies, whatsapp→inbox, settings collapse).
+ *  2. Auth gate — DORMANT unless XENTRAL_LIVE_DATA=1. When armed, protected app
+ *     routes without a session cookie go to /auth/login. Cryptographic check still
+ *     happens server-side in the SessionPort (forged cookie → no tenant → seed).
  */
+
+const RENAMES: Record<string, string> = { accounts: "companies", whatsapp: "inbox", overview: "dashboard" };
+
+function legacyTarget(pathname: string): string | null {
+  if (!pathname.startsWith("/dashboard/")) return null;
+  const rest = pathname.slice("/dashboard".length); // e.g. "/contacts/123"
+  const seg = rest.split("/")[1] || "";
+  if (seg === "settings") return "/settings";
+  if (RENAMES[seg]) return rest.replace("/" + seg, "/" + RENAMES[seg]);
+  return rest; // strip the /dashboard prefix → top-level route
+}
+
 export function middleware(req: NextRequest) {
+  const { pathname, search } = req.nextUrl;
+
+  // 1) Legacy /dashboard/* → new top-level paths
+  const target = legacyTarget(pathname);
+  if (target && target !== pathname) {
+    const u = req.nextUrl.clone();
+    u.pathname = target;
+    return NextResponse.redirect(u, 308);
+  }
+
+  // 2) Auth gate (dormant until armed)
   if (process.env.XENTRAL_LIVE_DATA !== "1") return NextResponse.next();
   if (req.cookies.get("xentral_session")?.value) return NextResponse.next();
-  const url = req.nextUrl.clone();
-  url.pathname = "/auth/login";
-  url.searchParams.set("next", req.nextUrl.pathname);
-  return NextResponse.redirect(url);
+  const u = req.nextUrl.clone();
+  u.pathname = "/auth/login";
+  u.searchParams.set("next", pathname + (search || ""));
+  return NextResponse.redirect(u);
 }
 
 export const config = {
@@ -39,6 +57,6 @@ export const config = {
     "/inbox/:path*", "/chat/:path*", "/calls/:path*", "/campaigns/:path*",
     "/documents/:path*", "/developer/:path*", "/payroll/:path*", "/o2c/:path*",
     "/p2p/:path*", "/parties/:path*", "/relationship-intelligence/:path*",
-    "/customer-journey/:path*", "/projects/:path*",
+    "/customer-journey/:path*", "/projects/:path*", "/settings/:path*",
   ],
 };
