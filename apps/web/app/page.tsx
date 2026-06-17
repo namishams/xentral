@@ -33,17 +33,17 @@ export default function BuildConsole() {
           <p style={{ fontSize: 14, color: c.ink.mid }}>Follow the modular build live. Updated as packages, components and modules land. The production app stays on app.xentral.ae.</p>
           <div style={{ display: "flex", gap: 10, marginTop: 10, flexWrap: "wrap" }}>
             <a href="/dashboard" style={{ display: "inline-flex", height: 34, padding: "0 16px", alignItems: "center", borderRadius: 8, background: c.brand.primary, color: "#fff", fontSize: 13, fontWeight: 600, textDecoration: "none" }}>Mission Control page →</a>
-            <a href="/invoice" style={{ display: "inline-flex", height: 34, padding: "0 16px", alignItems: "center", borderRadius: 8, background: "#fff", border: `1px solid ${c.line.DEFAULT}`, color: c.ink.DEFAULT, fontSize: 13, fontWeight: 600, textDecoration: "none" }}>Invoice record page →</a>
-            <a href="/inbox" style={{ display: "inline-flex", height: 34, padding: "0 16px", alignItems: "center", borderRadius: 8, background: "#fff", border: `1px solid ${c.line.DEFAULT}`, color: c.ink.DEFAULT, fontSize: 13, fontWeight: 600, textDecoration: "none" }}>Inbox (Tool page) →</a>
-            <a href="/invoices" style={{ display: "inline-flex", height: 34, padding: "0 16px", alignItems: "center", borderRadius: 8, background: "#fff", border: `1px solid ${c.line.DEFAULT}`, color: c.ink.DEFAULT, fontSize: 13, fontWeight: 600, textDecoration: "none" }}>Invoices list (real data) →</a>
-            <a href="/deals" style={{ display: "inline-flex", height: 34, padding: "0 16px", alignItems: "center", borderRadius: 8, background: "#fff", border: `1px solid ${c.line.DEFAULT}`, color: c.ink.DEFAULT, fontSize: 13, fontWeight: 600, textDecoration: "none" }}>Deals list (CRM contract) →</a>
-            <a href="/customer" style={{ display: "inline-flex", height: 34, padding: "0 16px", alignItems: "center", borderRadius: 8, background: "#fff", border: `1px solid ${c.line.DEFAULT}`, color: c.ink.DEFAULT, fontSize: 13, fontWeight: 600, textDecoration: "none" }}>Customer 360 (books + crm) →</a>
-            <a href="/products" style={{ display: "inline-flex", height: 34, padding: "0 16px", alignItems: "center", borderRadius: 8, background: "#fff", border: `1px solid ${c.line.DEFAULT}`, color: c.ink.DEFAULT, fontSize: 13, fontWeight: 600, textDecoration: "none" }}>Products (ERP contract) →</a>
+            <a href="/invoice" style={{ display: "inline-flex", height: 34, padding: "0 16px", alignItems: "center", borderRadius: 8, background: "var(--surface-card)", border: `1px solid ${c.line.DEFAULT}`, color: c.ink.DEFAULT, fontSize: 13, fontWeight: 600, textDecoration: "none" }}>Invoice record page →</a>
+            <a href="/inbox" style={{ display: "inline-flex", height: 34, padding: "0 16px", alignItems: "center", borderRadius: 8, background: "var(--surface-card)", border: `1px solid ${c.line.DEFAULT}`, color: c.ink.DEFAULT, fontSize: 13, fontWeight: 600, textDecoration: "none" }}>Inbox (Tool page) →</a>
+            <a href="/invoices" style={{ display: "inline-flex", height: 34, padding: "0 16px", alignItems: "center", borderRadius: 8, background: "var(--surface-card)", border: `1px solid ${c.line.DEFAULT}`, color: c.ink.DEFAULT, fontSize: 13, fontWeight: 600, textDecoration: "none" }}>Invoices list (real data) →</a>
+            <a href="/deals" style={{ display: "inline-flex", height: 34, padding: "0 16px", alignItems: "center", borderRadius: 8, background: "var(--surface-card)", border: `1px solid ${c.line.DEFAULT}`, color: c.ink.DEFAULT, fontSize: 13, fontWeight: 600, textDecoration: "none" }}>Deals list (CRM contract) →</a>
+            <a href="/customer" style={{ display: "inline-flex", height: 34, padding: "0 16px", alignItems: "center", borderRadius: 8, background: "var(--surface-card)", border: `1px solid ${c.line.DEFAULT}`, color: c.ink.DEFAULT, fontSize: 13, fontWeight: 600, textDecoration: "none" }}>Customer 360 (books + crm) →</a>
+            <a href="/products" style={{ display: "inline-flex", height: 34, padding: "0 16px", alignItems: "center", borderRadius: 8, background: "var(--surface-card)", border: `1px solid ${c.line.DEFAULT}`, color: c.ink.DEFAULT, fontSize: 13, fontWeight: 600, textDecoration: "none" }}>Products (ERP contract) →</a>
           </div>
         </header>
 
         {/* Roadmap */}
-        <section style={{ background: "#fff", border: `1px solid ${c.line.DEFAULT}`, borderRadius: 10, padding: 20 }}>
+        <section style={{ background: "var(--surface-card)", border: `1px solid ${c.line.DEFAULT}`, borderRadius: 10, padding: 20 }}>
           <h2 style={{ fontSize: 13, fontWeight: 700, color: c.ink.DEFAULT, margin: "0 0 12px" }}>Roadmap</h2>
           <div style={{ display: "grid", gap: 8 }}>
             {ROADMAP.map(([p, label, st]) => (
@@ -88,7 +88,7 @@ export default function BuildConsole() {
         <p style={{ fontSize: 12, color: c.ink.soft, margin: "0 0 12px" }}>Each is a contract-bounded package (typecheck + boundaries + tests green). 49/49 CI tasks. Kernel contracts carved: tenancy · permissions · party · document · email · money.</p>
         <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
           {["marketing","portal","payments","crm","books","erp","comms","ai","marketplace","payroll","developer","platform"].map((m) => (
-            <span key={m} style={{ display: "inline-flex", alignItems: "center", gap: 6, padding: "6px 12px", borderRadius: 999, background: "#fff", border: `1px solid ${c.line.DEFAULT}`, fontSize: 12.5, color: c.ink.DEFAULT }}>
+            <span key={m} style={{ display: "inline-flex", alignItems: "center", gap: 6, padding: "6px 12px", borderRadius: 999, background: "var(--surface-card)", border: `1px solid ${c.line.DEFAULT}`, fontSize: 12.5, color: c.ink.DEFAULT }}>
               <span style={{ width: 7, height: 7, borderRadius: 99, background: c.status.positive }} /> @xentral/module-{m}
             </span>
           ))}
@@ -98,7 +98,7 @@ export default function BuildConsole() {
         <h2 style={{ fontSize: 16, fontWeight: 700, color: c.ink.DEFAULT, margin: "28px 0 12px" }}>Design tokens</h2>
         <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
           {Object.entries({ primary: c.brand.primary, ink: c.ink.DEFAULT, "ink-mid": c.ink.mid, positive: c.status.positive, critical: c.status.critical, negative: c.status.negative }).map(([n, hex]) => (
-            <div key={n} style={{ width: 110, border: `1px solid ${c.line.DEFAULT}`, borderRadius: 8, overflow: "hidden", background: "#fff" }}>
+            <div key={n} style={{ width: 110, border: `1px solid ${c.line.DEFAULT}`, borderRadius: 8, overflow: "hidden", background: "var(--surface-card)" }}>
               <div style={{ height: 40, background: hex }} />
               <div style={{ padding: "6px 8px", fontSize: 11 }}><b>{n}</b><br />{hex}</div>
             </div>

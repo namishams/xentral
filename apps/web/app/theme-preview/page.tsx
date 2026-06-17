@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { color, colorDark, pipeline } from "@xentral/config";
+import { colorLight, colorDark, pipeline } from "@xentral/config";
 
 const aed = (n: number) => `AED ${n.toLocaleString()}`;
 
@@ -19,7 +19,7 @@ const ROWS = [
 
 export default function ThemePreviewPage() {
   const [dark, setDark] = React.useState(true);
-  const c = dark ? colorDark : color;
+  const c = dark ? colorDark : colorLight;
 
   const KPI = ({ label, value, note, tone }: { label: string; value: string; note: string; tone?: string }) => (
     <div style={{ flex: 1, minWidth: 180, height: 96, background: c.surface.card, border: `1px solid ${c.line.DEFAULT}`, borderRadius: 10, padding: 14, display: "flex", flexDirection: "column", justifyContent: "center" }}>

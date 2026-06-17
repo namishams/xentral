@@ -3,12 +3,13 @@ import { color } from "@xentral/config";
 
 export type BadgeTone = "neutral" | "info" | "positive" | "warning" | "critical";
 
+const mix = (v: string) => `color-mix(in srgb, ${v} 15%, ${color.surface.card})`;
 const TONE: Record<BadgeTone, { bg: string; fg: string }> = {
   neutral: { bg: color.surface.sunken, fg: color.ink.mid },
-  info: { bg: "#e6f1fb", fg: color.brand.primary },
-  positive: { bg: "#e6f4ea", fg: color.status.positive },
-  warning: { bg: "#fbe8d4", fg: color.status.critical },
-  critical: { bg: "#fdecea", fg: color.status.negative },
+  info: { bg: mix(color.brand.primary), fg: color.brand.primary },
+  positive: { bg: mix(color.status.positive), fg: color.status.positive },
+  warning: { bg: mix(color.status.critical), fg: color.status.critical },
+  critical: { bg: mix(color.status.negative), fg: color.status.negative },
 };
 
 /** StatusBadge — locked pill for statuses. Text always uses the tone's dark shade. */

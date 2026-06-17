@@ -7,7 +7,7 @@ export function Input(props: React.InputHTMLAttributes<HTMLInputElement>) {
   return (
     <input
       {...rest}
-      style={{ height: uiConstants.form.inputHeight, padding: "0 12px", borderRadius: 8, border: `1px solid ${color.line.strong}`, fontSize: 13, color: color.ink.DEFAULT, outline: "none", background: "#fff", ...style }}
+      style={{ height: uiConstants.form.inputHeight, padding: "0 12px", borderRadius: 8, border: `1px solid ${color.line.strong}`, fontSize: 13, color: color.ink.DEFAULT, outline: "none", background: color.surface.card, ...style }}
     />
   );
 }

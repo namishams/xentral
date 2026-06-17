@@ -32,7 +32,7 @@ const STAGES: Stage[] = [
 
 function CardTile({ c }: { c: Card }) {
   return (
-    <div style={{ background: "#fff", border: `1px solid ${color.line.DEFAULT}`, borderRadius: 9, padding: "11px 12px", display: "flex", flexDirection: "column", gap: 6 }}>
+    <div style={{ background: color.surface.card, border: `1px solid ${color.line.DEFAULT}`, borderRadius: 9, padding: "11px 12px", display: "flex", flexDirection: "column", gap: 6 }}>
       <span style={{ fontSize: 13, fontWeight: 600, color: color.ink.DEFAULT }}>{c.name}</span>
       <span style={{ fontSize: 12, color: color.ink.soft }}>{c.account}</span>
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginTop: 2 }}>

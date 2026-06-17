@@ -24,3 +24,5 @@ export { StagePill } from "./stage-pill";
 
 // Migrated next: AISearchBar, QuickActionsBar, FormSection, DetailDrawer,
 // Panel, Skeleton, Toaster.
+
+export { ThemeToggle } from "./theme-toggle";

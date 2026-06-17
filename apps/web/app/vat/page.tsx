@@ -38,7 +38,7 @@ export default function VatPage() {
       <div style={{ display: "flex", gap: 12, marginBottom: 22, flexWrap: "wrap" }}>
         {KPIS.map((k) => <KPICard key={k.label} {...k} />)}
       </div>
-      <div style={{ display: "flex", alignItems: "center", gap: 10, background: color.brand.primaryTint, border: `1px solid ${color.brand.primary}22`, borderRadius: 10, padding: "12px 16px", marginBottom: 18 }}>
+      <div style={{ display: "flex", alignItems: "center", gap: 10, background: color.brand.primaryTint, border: `1px solid ${color.brand.primaryTint}`, borderRadius: 10, padding: "12px 16px", marginBottom: 18 }}>
         <span style={{ fontSize: 16, color: color.brand.primary }}>✦</span>
         <span style={{ fontSize: 13, color: color.brand.primary }}>Your Q2 return is on track. Net payable {aed(13180)} — file by 28 Jul to avoid an FTA late penalty.</span>
       </div>

@@ -32,7 +32,7 @@ export default function ChatPage() {
   return (
     <AppShell active="chat" fullBleed>
       <div style={{ display: "flex", height: "100%", minHeight: 0 }}>
-        <div style={{ width: 280, flexShrink: 0, borderRight: `1px solid ${color.line.DEFAULT}`, background: "#fff", display: "flex", flexDirection: "column", minHeight: 0 }}>
+        <div style={{ width: 280, flexShrink: 0, borderRight: `1px solid ${color.line.DEFAULT}`, background: color.surface.card, display: "flex", flexDirection: "column", minHeight: 0 }}>
           <div style={{ height: 52, flexShrink: 0, display: "flex", alignItems: "center", padding: "0 16px", borderBottom: `1px solid ${color.line.DEFAULT}`, fontSize: 14, fontWeight: 600, color: color.ink.DEFAULT }}>Team chat</div>
           <div style={{ flex: 1, overflowY: "auto", minHeight: 0, padding: "8px 0" }}>
             {CHANNELS.map((c) => {
@@ -52,7 +52,7 @@ export default function ChatPage() {
         </div>
 
         <div style={{ flex: 1, minWidth: 0, display: "flex", flexDirection: "column", minHeight: 0, background: color.surface.page }}>
-          <div style={{ height: 52, flexShrink: 0, display: "flex", alignItems: "center", padding: "0 24px", borderBottom: `1px solid ${color.line.DEFAULT}`, background: "#fff", fontSize: 14, fontWeight: 600, color: color.ink.DEFAULT }}>{active.kind === "channel" ? "#" + active.name : active.name}</div>
+          <div style={{ height: 52, flexShrink: 0, display: "flex", alignItems: "center", padding: "0 24px", borderBottom: `1px solid ${color.line.DEFAULT}`, background: color.surface.card, fontSize: 14, fontWeight: 600, color: color.ink.DEFAULT }}>{active.kind === "channel" ? "#" + active.name : active.name}</div>
           <div style={{ flex: 1, overflowY: "auto", minHeight: 0, padding: "20px 24px", display: "flex", flexDirection: "column", gap: 14 }}>
             {active.thread.map((m, i) => (
               <div key={i} style={{ display: "flex", gap: 10 }}>
@@ -67,7 +67,7 @@ export default function ChatPage() {
               </div>
             ))}
           </div>
-          <div style={{ flexShrink: 0, background: "#fff", borderTop: `1px solid ${color.line.DEFAULT}`, padding: "12px 24px", display: "flex", gap: 10 }}>
+          <div style={{ flexShrink: 0, background: color.surface.card, borderTop: `1px solid ${color.line.DEFAULT}`, padding: "12px 24px", display: "flex", gap: 10 }}>
             <div style={{ flex: 1, height: 40, border: `1px solid ${color.line.strong}`, borderRadius: 10, display: "flex", alignItems: "center", padding: "0 14px", color: color.ink.soft, fontSize: 13 }}>Message {active.kind === "channel" ? "#" + active.name : active.name}…</div>
             <button style={{ height: 40, padding: "0 18px", borderRadius: 10, background: color.brand.primary, color: "#fff", border: 0, fontSize: 13, fontWeight: 600, cursor: "pointer" }}>Send</button>
           </div>

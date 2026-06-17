@@ -22,7 +22,7 @@ export function Pagination({ page, pageCount, pageSize, total, onPageChange, onP
   const canNext = page < pageCount;
   const btn = (disabled: boolean): React.CSSProperties => ({
     height: 32, minWidth: 32, padding: "0 10px", borderRadius: radius.md,
-    border: `1px solid ${color.line.strong}`, background: "#fff",
+    border: `1px solid ${color.line.strong}`, background: color.surface.card,
     color: disabled ? color.ink.soft : color.ink.DEFAULT,
     fontSize: 13, fontWeight: 600, cursor: disabled ? "default" : "pointer", opacity: disabled ? 0.5 : 1,
   });

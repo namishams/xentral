@@ -21,7 +21,7 @@ export function TimelineFeed({ events }: { events: TimelineEvent[] }) {
       {rows.length === 0 ? (
         <EmptyState title="Nothing on the timeline" hint="Activities and tasks will appear here." />
       ) : (
-        <div style={{ display: "flex", flexDirection: "column", gap: 0, background: "#fff", border: `1px solid ${color.line.DEFAULT}`, borderRadius: 10, overflow: "hidden" }}>
+        <div style={{ display: "flex", flexDirection: "column", gap: 0, background: color.surface.card, border: `1px solid ${color.line.DEFAULT}`, borderRadius: 10, overflow: "hidden" }}>
           {rows.map((e, i) => (
             <div key={e.id} style={{ display: "flex", alignItems: "center", gap: 14, padding: "12px 16px", borderTop: i === 0 ? "none" : `1px solid ${color.line.DEFAULT}` }}>
               <span style={{ width: 86, flexShrink: 0, fontSize: 12, color: color.ink.soft }}>{e.when}</span>

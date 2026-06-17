@@ -6,7 +6,7 @@ import { AppShell, PageTitleRow, Button, Input, StatusBadge } from "@xentral/ui"
 
 function Panel({ title, children }: { title: string; children: React.ReactNode }) {
   return (
-    <section style={{ background: "#fff", border: `1px solid ${color.line.DEFAULT}`, borderRadius: 10, padding: "16px 20px" }}>
+    <section style={{ background: color.surface.card, border: `1px solid ${color.line.DEFAULT}`, borderRadius: 10, padding: "16px 20px" }}>
       <h2 style={{ fontSize: 14, fontWeight: 600, color: color.ink.DEFAULT, margin: "0 0 4px" }}>{title}</h2>
       {children}
     </section>

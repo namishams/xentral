@@ -30,7 +30,7 @@ export default function ReportsPage() {
       <div style={{ fontSize: 13, fontWeight: 600, color: color.ink.mid, marginBottom: 10 }}>Report library</div>
       <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(260px, 1fr))", gap: 14 }}>
         {REPORTS.map((r) => (
-          <button key={r.id} style={{ textAlign: "left", background: "#fff", border: `1px solid ${color.line.DEFAULT}`, borderRadius: 10, padding: "16px 18px", cursor: "pointer", display: "flex", gap: 14, alignItems: "flex-start" }}>
+          <button key={r.id} style={{ textAlign: "left", background: color.surface.card, border: `1px solid ${color.line.DEFAULT}`, borderRadius: 10, padding: "16px 18px", cursor: "pointer", display: "flex", gap: 14, alignItems: "flex-start" }}>
             <span style={{ width: 38, height: 38, flexShrink: 0, borderRadius: 9, background: r.accent + "1a", color: r.accent, fontSize: 18, display: "flex", alignItems: "center", justifyContent: "center" }}>{r.glyph}</span>
             <span>
               <span style={{ display: "block", fontSize: 14, fontWeight: 600, color: color.ink.DEFAULT, marginBottom: 3 }}>{r.title}</span>

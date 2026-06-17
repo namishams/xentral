@@ -56,7 +56,7 @@ export default function CustomerPage() {
             <div style={{ fontSize: 22, fontWeight: 700, color: totalDue > 0 ? color.status.critical : color.status.positive }}>{aed(totalDue)}</div>
             <div style={{ fontSize: 11.5, color: color.ink.mid }}>{invoices.length} invoices · {deals.length} deals</div>
           </DashboardCard>
-          <div style={{ background: "#fff", border: `1px solid ${color.line.DEFAULT}`, borderRadius: 12, padding: 14 }}>
+          <div style={{ background: color.surface.card, border: `1px solid ${color.line.DEFAULT}`, borderRadius: 12, padding: 14 }}>
             <div style={{ fontSize: 13, fontWeight: 600, color: color.ink.DEFAULT, marginBottom: 8 }}>Details</div>
             <div style={{ fontSize: 12, color: color.ink.mid, lineHeight: 1.8 }}>Business Bay, Dubai<br />finance@alnoor.ae<br />+971 4 555 0142<br />TRN 100xxxxxxxxxxxx</div>
           </div>

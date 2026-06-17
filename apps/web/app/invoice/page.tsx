@@ -30,14 +30,14 @@ export default function InvoicePage() {
       />
 
       {/* QuickActionsBar */}
-      <div style={{ display: "flex", gap: 8, background: "#fff", border: `1px solid ${color.line.DEFAULT}`, borderRadius: 8, padding: "0 12px", height: uiConstants.quickActions.barHeight, alignItems: "center", marginBottom: 16 }}>
+      <div style={{ display: "flex", gap: 8, background: color.surface.card, border: `1px solid ${color.line.DEFAULT}`, borderRadius: 8, padding: "0 12px", height: uiConstants.quickActions.barHeight, alignItems: "center", marginBottom: 16 }}>
         {ACTIONS.map((a, i) => (
           <span key={a} style={{ fontSize: 12.5, color: i === 0 ? color.ink.DEFAULT : color.ink.mid, fontWeight: i === 0 ? 600 : 400, padding: "0 6px" }}>{a}</span>
         ))}
       </div>
 
       <div style={{ display: "grid", gridTemplateColumns: "2fr 1fr", gap: 16, alignItems: "start" }}>
-        <div style={{ background: "#fff", border: `1px solid ${color.line.DEFAULT}`, borderRadius: 12, padding: 18 }}>
+        <div style={{ background: color.surface.card, border: `1px solid ${color.line.DEFAULT}`, borderRadius: 12, padding: 18 }}>
           <div style={{ display: "flex", justifyContent: "space-between", fontSize: 12.5, marginBottom: 14 }}>
             <div><div style={{ color: color.ink.soft, fontSize: 11 }}>Bill to</div><div style={{ fontWeight: 600, color: color.ink.DEFAULT }}>Al Noor Real Estate</div><div style={{ color: color.ink.mid }}>Business Bay, Dubai</div></div>
             <div style={{ textAlign: "right" }}><div style={{ color: color.ink.soft, fontSize: 11 }}>Issued · Due</div><div style={{ color: color.ink.DEFAULT }}>10 Jun · 24 Jun 2026</div></div>
@@ -66,7 +66,7 @@ export default function InvoicePage() {
             <div style={{ fontSize: 11.5, color: color.ink.mid, marginBottom: 10 }}>Due 24 Jun 2026</div>
             <div style={{ background: color.brand.primaryTint, color: color.brand.primary, borderRadius: 8, textAlign: "center", fontSize: 12.5, fontWeight: 600, padding: 9 }}>Copy pay link</div>
           </DashboardCard>
-          <div style={{ background: "#fff", border: `1px solid ${color.line.DEFAULT}`, borderRadius: 12, padding: 14 }}>
+          <div style={{ background: color.surface.card, border: `1px solid ${color.line.DEFAULT}`, borderRadius: 12, padding: 14 }}>
             <div style={{ fontSize: 13, fontWeight: 600, color: color.ink.DEFAULT, marginBottom: 8 }}>Activity</div>
             {TIMELINE.map(([a, b, t2], i) => (
               <div key={i} style={{ display: "flex", justifyContent: "space-between", fontSize: 11.5, padding: "6px 0", borderTop: `1px solid ${color.line.DEFAULT}` }}>

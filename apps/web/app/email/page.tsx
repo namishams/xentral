@@ -35,7 +35,7 @@ export default function EmailPage() {
     <AppShell active="email" fullBleed>
       <div style={{ display: "flex", height: "100%", minHeight: 0 }}>
         {/* List pane */}
-        <div style={{ width: 340, flexShrink: 0, borderRight: `1px solid ${color.line.DEFAULT}`, display: "flex", flexDirection: "column", minHeight: 0, background: "#fff" }}>
+        <div style={{ width: 340, flexShrink: 0, borderRight: `1px solid ${color.line.DEFAULT}`, display: "flex", flexDirection: "column", minHeight: 0, background: color.surface.card }}>
           <div style={{ height: 52, flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "space-between", padding: "0 16px", borderBottom: `1px solid ${color.line.DEFAULT}` }}>
             <span style={{ fontSize: 14, fontWeight: 600, color: color.ink.DEFAULT }}>Inbox</span>
             <span style={{ fontSize: 12, color: color.ink.soft }}>{MAILS.filter((m) => m.unread).length} unread</span>
@@ -62,7 +62,7 @@ export default function EmailPage() {
 
         {/* Reading pane */}
         <div style={{ flex: 1, minWidth: 0, display: "flex", flexDirection: "column", minHeight: 0, background: color.surface.page }}>
-          <div style={{ flexShrink: 0, background: "#fff", borderBottom: `1px solid ${color.line.DEFAULT}`, padding: "16px 24px" }}>
+          <div style={{ flexShrink: 0, background: color.surface.card, borderBottom: `1px solid ${color.line.DEFAULT}`, padding: "16px 24px" }}>
             <div style={{ fontSize: 17, fontWeight: 600, color: color.ink.DEFAULT }}>{active.subject}</div>
             <div style={{ display: "flex", alignItems: "center", gap: 8, marginTop: 6 }}>
               <span style={{ fontSize: 13, color: color.ink.mid }}>{active.from}</span>
@@ -70,14 +70,14 @@ export default function EmailPage() {
             </div>
           </div>
           <div style={{ flex: 1, overflowY: "auto", minHeight: 0, padding: "20px 24px" }}>
-            <div style={{ background: "#fff", border: `1px solid ${color.line.DEFAULT}`, borderRadius: 10, padding: "18px 20px", maxWidth: 720 }}>
+            <div style={{ background: color.surface.card, border: `1px solid ${color.line.DEFAULT}`, borderRadius: 10, padding: "18px 20px", maxWidth: 720 }}>
               {active.body.map((p, i) => <p key={i} style={{ fontSize: 14, lineHeight: "22px", color: color.ink.DEFAULT, margin: i === 0 ? 0 : "12px 0 0" }}>{p}</p>)}
             </div>
           </div>
-          <div style={{ flexShrink: 0, background: "#fff", borderTop: `1px solid ${color.line.DEFAULT}`, padding: "12px 24px", display: "flex", alignItems: "center", gap: 10 }}>
+          <div style={{ flexShrink: 0, background: color.surface.card, borderTop: `1px solid ${color.line.DEFAULT}`, padding: "12px 24px", display: "flex", alignItems: "center", gap: 10 }}>
             <div style={{ flex: 1, height: 40, border: `1px solid ${color.line.strong}`, borderRadius: 10, display: "flex", alignItems: "center", padding: "0 14px", color: color.ink.soft, fontSize: 13 }}>Reply to {active.initials}…</div>
             <button style={{ height: 40, padding: "0 18px", borderRadius: 10, background: color.brand.primary, color: "#fff", border: 0, fontSize: 13, fontWeight: 600, cursor: "pointer" }}>Send</button>
-            <button style={{ height: 40, padding: "0 14px", borderRadius: 10, background: "#fff", border: `1px solid ${color.line.strong}`, color: color.ink.DEFAULT, fontSize: 13, fontWeight: 600, cursor: "pointer" }}>✦ AI reply</button>
+            <button style={{ height: 40, padding: "0 14px", borderRadius: 10, background: color.surface.card, border: `1px solid ${color.line.strong}`, color: color.ink.DEFAULT, fontSize: 13, fontWeight: 600, cursor: "pointer" }}>✦ AI reply</button>
           </div>
         </div>
       </div>

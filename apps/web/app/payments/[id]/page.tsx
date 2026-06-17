@@ -14,7 +14,7 @@ const STATUS: Record<PaymentStatus, { label: string; tone: BadgeTone }> = {
 
 function Panel({ title, sub, action, children }: { title: string; sub?: string; action?: React.ReactNode; children: React.ReactNode }) {
   return (
-    <section style={{ background: "#fff", border: `1px solid ${color.line.DEFAULT}`, borderRadius: 10, padding: "16px 18px" }}>
+    <section style={{ background: color.surface.card, border: `1px solid ${color.line.DEFAULT}`, borderRadius: 10, padding: "16px 18px" }}>
       <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 12, marginBottom: 12 }}>
         <div><h2 style={{ fontSize: 14, fontWeight: 600, color: color.ink.DEFAULT, margin: 0 }}>{title}</h2>{sub ? <div style={{ fontSize: 12.5, color: color.ink.soft, marginTop: 2 }}>{sub}</div> : null}</div>
         {action}

@@ -9,13 +9,24 @@
  */
 
 /** SAP Fiori Horizon Light — Xentral semantic palette. Brand identity, do not alter. */
-export const color = {
+export const colorLight = {
   brand: { primary: "#0064d9", primaryHover: "#0057be", primaryTint: "#e8f1ff" },
   shell: { bar: "#283d50", alt: "#354a5e" },
   surface: { page: "#f5f6f7", card: "#ffffff", sunken: "#eef1f4" },
   line: { DEFAULT: "#e5e5e5", strong: "#d5dadf" },
   ink: { DEFAULT: "#1d2d3e", mid: "#556b82", soft: "#8396a8", onPrimary: "#ffffff" },
   status: { positive: "#188918", critical: "#df6e0c", negative: "#cc1919", info: "#0064d9" },
+} as const;
+
+/** Themeable token surface — values resolve to CSS variables (defined in app globals).
+ *  Light is the default; document[data-theme="dark"] flips every variable app-wide. */
+export const color = {
+  brand: { primary: "var(--brand-primary)", primaryHover: "var(--brand-primary-hover)", primaryTint: "var(--brand-tint)" },
+  shell: { bar: "var(--shell-bar)", alt: "var(--shell-alt)" },
+  surface: { page: "var(--surface-page)", card: "var(--surface-card)", sunken: "var(--surface-sunken)" },
+  line: { DEFAULT: "var(--line)", strong: "var(--line-strong)" },
+  ink: { DEFAULT: "var(--ink)", mid: "var(--ink-mid)", soft: "var(--ink-soft)", onPrimary: "var(--ink-on-primary)" },
+  status: { positive: "var(--status-positive)", critical: "var(--status-critical)", negative: "var(--status-negative)", info: "var(--status-info)" },
 } as const;
 
 /** The ONLY spacing values allowed anywhere. Index by step. */

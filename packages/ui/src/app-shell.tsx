@@ -1,4 +1,5 @@
 import * as React from "react";
+import { ThemeToggle } from "./theme-toggle";
 import { color, uiConstants } from "@xentral/config";
 import { PageContainer } from "./page-container";
 
@@ -88,9 +89,10 @@ const SIDEBAR_WIDTH = 240;
 /** GlobalHeader — 64px shell bar. The only shared chrome, identical on every page. */
 export function GlobalHeader({ right }: { right?: React.ReactNode }) {
   return (
-    <header style={{ height: uiConstants.header.heightDesktop, flexShrink: 0, background: "#fff", borderBottom: `1px solid ${color.line.DEFAULT}`, display: "flex", alignItems: "center", gap: 12, padding: "0 24px", position: "sticky", top: 0, zIndex: 40 }}>
+    <header style={{ height: uiConstants.header.heightDesktop, flexShrink: 0, background: color.surface.card, borderBottom: `1px solid ${color.line.DEFAULT}`, display: "flex", alignItems: "center", gap: 12, padding: "0 24px", position: "sticky", top: 0, zIndex: 40 }}>
       <span style={{ fontSize: 15, fontWeight: 700, color: color.ink.DEFAULT }}>Xen<span style={{ color: color.brand.primary }}>tral</span></span>
       <div style={{ flex: 1, maxWidth: uiConstants.aiSearch.maxWidth, minWidth: uiConstants.aiSearch.minWidth, margin: "0 auto", height: uiConstants.aiSearch.height, border: `1px solid ${color.line.strong}`, borderRadius: uiConstants.aiSearch.radius, display: "flex", alignItems: "center", padding: `0 ${uiConstants.aiSearch.paddingX}px`, color: color.ink.soft, fontSize: uiConstants.aiSearch.fontSize }}>✦ Ask Xentral AI…</div>
+      <ThemeToggle />
       {right ?? (
         <span style={{ width: 26, height: 26, borderRadius: "50%", background: color.brand.primaryTint, color: color.brand.primary, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 12, fontWeight: 600 }}>N</span>
       )}
@@ -101,7 +103,7 @@ export function GlobalHeader({ right }: { right?: React.ReactNode }) {
 /** Sidebar — fixed, lifecycle-grouped navigation rail. Scrolls independently. */
 export function Sidebar({ active }: { active?: string }) {
   return (
-    <nav style={{ width: SIDEBAR_WIDTH, flexShrink: 0, background: "#fff", borderRight: `1px solid ${color.line.DEFAULT}`, padding: "10px 10px 16px", display: "flex", flexDirection: "column", gap: 4, overflowY: "auto" }}>
+    <nav style={{ width: SIDEBAR_WIDTH, flexShrink: 0, background: color.surface.card, borderRight: `1px solid ${color.line.DEFAULT}`, padding: "10px 10px 16px", display: "flex", flexDirection: "column", gap: 4, overflowY: "auto" }}>
       {NAV.map((section) => (
         <div key={section.group} style={{ display: "flex", flexDirection: "column", gap: 2, marginTop: 6 }}>
           <div style={{ fontSize: 10.5, fontWeight: 700, letterSpacing: 0.8, textTransform: "uppercase", color: color.ink.soft, padding: "6px 12px 4px" }}>{section.group}</div>

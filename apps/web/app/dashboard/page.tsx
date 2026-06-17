@@ -80,7 +80,7 @@ const SECTIONS: { title: string; tiles: { label: string; glyph: string; href: st
 
 function Panel({ title, action, children }: { title: string; action?: React.ReactNode; children: React.ReactNode }) {
   return (
-    <section style={{ background: "#fff", border: `1px solid ${color.line.DEFAULT}`, borderRadius: d.panel.radius, padding: d.panel.padding, minHeight: d.panel.minHeight }}>
+    <section style={{ background: color.surface.card, border: `1px solid ${color.line.DEFAULT}`, borderRadius: d.panel.radius, padding: d.panel.padding, minHeight: d.panel.minHeight }}>
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 14 }}>
         <h2 style={{ fontSize: d.panel.titleFontSize, fontWeight: 600, color: color.ink.DEFAULT, margin: 0 }}>{title}</h2>
         {action}

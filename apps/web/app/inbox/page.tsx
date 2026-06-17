@@ -30,7 +30,7 @@ export default function InboxPage() {
 
   return (
     <AppShell active="inbox" fullBleed>
-      <div style={{ height: "100%", display: "grid", gridTemplateColumns: ctxOpen ? "320px 1fr 280px" : "320px 1fr", background: "#fff" }}>
+      <div style={{ height: "100%", display: "grid", gridTemplateColumns: ctxOpen ? "320px 1fr 280px" : "320px 1fr", background: color.surface.card }}>
         {/* Conversation list */}
         <aside style={{ borderRight: `1px solid ${color.line.DEFAULT}`, display: "flex", flexDirection: "column", minHeight: 0 }}>
           <div style={{ padding: 10, borderBottom: `1px solid ${color.line.DEFAULT}` }}>
@@ -55,7 +55,7 @@ export default function InboxPage() {
           <div style={{ display: "flex", alignItems: "center", gap: 10, padding: "10px 14px", borderBottom: `1px solid ${color.line.DEFAULT}` }}>
             <span style={{ width: 28, height: 28, borderRadius: "50%", background: color.brand.primaryTint, color: color.brand.primary, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 11, fontWeight: 600 }}>{active.initials}</span>
             <div style={{ flex: 1 }}><div style={{ fontSize: 13, fontWeight: 600, color: color.ink.DEFAULT }}>{active.name}</div><div style={{ fontSize: 10.5, color: active.online ? color.status.positive : color.ink.soft }}>{active.online ? "online" : "last seen recently"}</div></div>
-            <button onClick={() => setCtxOpen(!ctxOpen)} style={{ border: `1px solid ${color.line.strong}`, background: "#fff", borderRadius: 8, height: 28, padding: "0 10px", fontSize: 11.5, cursor: "pointer", color: color.ink.mid }}>{ctxOpen ? "Hide details" : "Details"}</button>
+            <button onClick={() => setCtxOpen(!ctxOpen)} style={{ border: `1px solid ${color.line.strong}`, background: color.surface.card, borderRadius: 8, height: 28, padding: "0 10px", fontSize: 11.5, cursor: "pointer", color: color.ink.mid }}>{ctxOpen ? "Hide details" : "Details"}</button>
           </div>
           <div style={{ flex: 1, overflowY: "auto", padding: "14px", display: "flex", flexDirection: "column", gap: 10, background: color.surface.page }}>
             {active.thread.map((m, i) => (

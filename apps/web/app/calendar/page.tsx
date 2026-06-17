@@ -37,7 +37,7 @@ export default function CalendarPage() {
               <span style={{ fontSize: 12, color: color.ink.soft }}>{d.date}</span>
               {d.today ? <span style={{ fontSize: 11, fontWeight: 600, background: color.brand.primaryTint, color: color.brand.primary, borderRadius: 999, padding: "1px 8px" }}>now</span> : null}
             </div>
-            <div style={{ background: "#fff", border: `1px solid ${color.line.DEFAULT}`, borderRadius: 10, overflow: "hidden" }}>
+            <div style={{ background: color.surface.card, border: `1px solid ${color.line.DEFAULT}`, borderRadius: 10, overflow: "hidden" }}>
               {d.events.map((e, i) => (
                 <div key={e.id} style={{ display: "flex", alignItems: "center", gap: 14, padding: "12px 16px", borderTop: i === 0 ? "none" : `1px solid ${color.line.DEFAULT}` }}>
                   <span style={{ width: 52, flexShrink: 0, fontSize: 13, fontWeight: 600, color: color.ink.mid }}>{e.time}</span>

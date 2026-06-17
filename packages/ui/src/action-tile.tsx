@@ -15,7 +15,7 @@ export function ActionTile({ label, glyph, href = "#" }: { label: string; glyph:
         width: t.width,
         height: t.height,
         flexShrink: 0,
-        background: "#fff",
+        background: color.surface.card,
         border: `1px solid ${color.line.DEFAULT}`,
         borderRadius: t.radius,
         display: "flex",
