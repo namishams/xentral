@@ -5,8 +5,15 @@ import { color, uiConstants } from "@xentral/config";
 import { FilterBar, Input, Button, DataTable, StatusBadge, EmptyState, Pagination, type Column } from "@xentral/ui";
 import type { ContactRow } from "@xentral/module-crm";
 
+const initials = (name: string) => name.split(" ").map((w) => w[0]).slice(0, 2).join("").toUpperCase();
+function Avatar({ name }: { name: string }) {
+  return (
+    <span style={{ display: "inline-flex", width: 26, height: 26, borderRadius: "50%", background: color.brand.primaryTint, color: color.brand.primary, fontSize: 11, fontWeight: 600, alignItems: "center", justifyContent: "center", flexShrink: 0 }} aria-hidden="true">{initials(name)}</span>
+  );
+}
+
 const COLUMNS: Column<ContactRow>[] = [
-  { key: "name", header: "Name", render: (r) => <span style={{ fontWeight: 600, color: color.brand.primary }}>{r.name}</span> },
+  { key: "name", header: "Name", render: (r) => <span style={{ display: "inline-flex", alignItems: "center", gap: 10 }}><Avatar name={r.name} /><span style={{ fontWeight: 600, color: color.ink.DEFAULT }}>{r.name}</span></span> },
   { key: "title", header: "Title", render: (r) => <span style={{ color: color.ink.mid }}>{r.title}</span> },
   { key: "company", header: "Company", render: (r) => r.company },
   { key: "email", header: "Email", render: (r) => <span style={{ color: color.ink.mid }}>{r.email}</span> },
