@@ -58,17 +58,7 @@ export function AiLauncher() {
 
   return (
     <>
-      {/* Floating launch pill */}
-      {!open && (
-        <button onClick={() => setOpen(true)} aria-label="Ask Xentral AI" style={{
-          position: "fixed", right: 22, bottom: 22, zIndex: zIndex.drawer,
-          display: "inline-flex", alignItems: "center", gap: 8, height: 44, padding: "0 18px 0 16px",
-          borderRadius: 999, border: 0, cursor: "pointer", color: "#fff", fontSize: 13.5, fontWeight: 700,
-          background: `linear-gradient(135deg, ${ACCENT}, #8b5cf6)`, boxShadow: "0 8px 24px -6px rgba(107,78,217,0.5)",
-        }}>
-          <span style={{ fontSize: 16 }}>✦</span> Ask Xentral AI
-        </button>
-      )}
+      {/* No floating button — AI is opened from the header command field (xentral-ai-ask event). */}
 
       {/* Slide-over panel */}
       {open && (
@@ -142,23 +132,37 @@ export function AiLauncher() {
  */
 export function HeaderAiField() {
   const [v, setV] = React.useState("");
+  const [focused, setFocused] = React.useState(false);
   const submit = () => {
     const q = v.trim();
     window.dispatchEvent(new CustomEvent("xentral-ai-ask", { detail: { q } }));
     setV("");
   };
+  const has = v.trim().length > 0;
   return (
-    <div style={{ flex: 1, maxWidth: 520, minWidth: 0, display: "flex", alignItems: "center", gap: 8, height: 34, padding: "0 6px 0 12px", borderRadius: 999, background: "var(--surface-card)", border: "1px solid #ddd6fb", boxShadow: "0 0 0 3px rgba(107,78,217,0.06)" }}>
-      <span style={{ color: "#6b4ed9", fontSize: 14, flexShrink: 0 }}>✦</span>
+    <div style={{
+      flex: 1, maxWidth: 540, minWidth: 0, display: "flex", alignItems: "center", gap: 9, height: 36, padding: "0 6px 0 8px",
+      borderRadius: 10, background: "var(--surface-card)",
+      border: `1px solid ${focused ? "#8b5cf6" : "var(--line-strong)"}`,
+      boxShadow: focused ? "0 0 0 3px rgba(139,92,246,0.14)" : "none",
+      transition: "border-color 120ms ease, box-shadow 120ms ease",
+    }}>
+      <span aria-hidden="true" style={{ flexShrink: 0, width: 24, height: 24, borderRadius: 7, background: "linear-gradient(135deg, #6b4ed9, #8b5cf6)", color: "#fff", display: "inline-flex", alignItems: "center", justifyContent: "center", fontSize: 13 }}>✦</span>
       <input
         value={v}
         onChange={(e) => setV(e.target.value)}
+        onFocus={() => setFocused(true)}
+        onBlur={() => setFocused(false)}
         onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); submit(); } }}
-        placeholder="Ask Xentral AI or type a command…"
+        placeholder="Ask Xentral AI — or type a command…"
         aria-label="Ask Xentral AI"
         style={{ flex: 1, minWidth: 0, border: 0, outline: "none", background: "transparent", fontSize: 13, color: "var(--ink)", fontFamily: "inherit" }}
       />
-      <button onClick={submit} aria-label="Send to Xentral AI" style={{ flexShrink: 0, width: 26, height: 26, borderRadius: 999, border: 0, cursor: "pointer", background: "linear-gradient(135deg, #6b4ed9, #8b5cf6)", color: "#fff", fontSize: 13, display: "inline-flex", alignItems: "center", justifyContent: "center" }}>↑</button>
+      {has ? (
+        <button onClick={submit} aria-label="Send to Xentral AI" style={{ flexShrink: 0, width: 28, height: 28, borderRadius: 8, border: 0, cursor: "pointer", background: "linear-gradient(135deg, #6b4ed9, #8b5cf6)", color: "#fff", fontSize: 14, display: "inline-flex", alignItems: "center", justifyContent: "center" }}>↑</button>
+      ) : (
+        <kbd style={{ flexShrink: 0, marginRight: 4, fontSize: 10.5, fontWeight: 600, color: "var(--ink-soft)", border: "1px solid var(--line)", borderRadius: 5, padding: "1px 5px", fontFamily: "inherit" }}>⏎</kbd>
+      )}
     </div>
   );
 }
