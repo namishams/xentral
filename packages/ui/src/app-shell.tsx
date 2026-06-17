@@ -5,7 +5,7 @@ import { NavIcon } from "./nav-icons";
 import { ThemeToggle } from "./theme-toggle";
 import { color, uiConstants } from "@xentral/config";
 import { PageContainer } from "./page-container";
-import { AiLauncher } from "./ai-launcher";
+import { AiLauncher, HeaderAiField } from "./ai-launcher";
 
 /**
  * NAV — the locked navigation map, ordered by the BUSINESS LIFECYCLE, not by
@@ -133,6 +133,7 @@ export function GlobalHeader({ right }: { right?: React.ReactNode }) {
   const iconBtn: React.CSSProperties = { width: 30, height: 30, borderRadius: 8, border: `1px solid ${color.line.DEFAULT}`, background: color.surface.card, color: color.ink.soft, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 14, cursor: "pointer", position: "relative", flexShrink: 0 };
   return (
     <header style={{ height: uiConstants.header.heightDesktop, flexShrink: 0, background: color.surface.card, borderBottom: `1px solid ${color.line.DEFAULT}`, display: "flex", alignItems: "center", gap: 8, padding: "0 16px", position: "sticky", top: 0, zIndex: 40 }}>
+      <HeaderAiField />
       <span style={{ flex: 1 }} />
       <HeaderSearch />
       <HeaderTools />

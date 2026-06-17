@@ -135,6 +135,35 @@ export function AiLauncher() {
 }
 
 /**
+ * HeaderAiField — always-visible AI command field in the top bar (every page).
+ * Type a question or a command ("lege Kontakt an: …", "erstelle Rechnung für …")
+ * and press Enter; it opens the agentic launcher and runs it. Mirrors the
+ * original app's global command bar, embedded as part of the chrome.
+ */
+export function HeaderAiField() {
+  const [v, setV] = React.useState("");
+  const submit = () => {
+    const q = v.trim();
+    window.dispatchEvent(new CustomEvent("xentral-ai-ask", { detail: { q } }));
+    setV("");
+  };
+  return (
+    <div style={{ flex: 1, maxWidth: 520, minWidth: 0, display: "flex", alignItems: "center", gap: 8, height: 34, padding: "0 6px 0 12px", borderRadius: 999, background: "var(--surface-card)", border: "1px solid #ddd6fb", boxShadow: "0 0 0 3px rgba(107,78,217,0.06)" }}>
+      <span style={{ color: "#6b4ed9", fontSize: 14, flexShrink: 0 }}>✦</span>
+      <input
+        value={v}
+        onChange={(e) => setV(e.target.value)}
+        onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); submit(); } }}
+        placeholder="Ask Xentral AI or type a command…"
+        aria-label="Ask Xentral AI"
+        style={{ flex: 1, minWidth: 0, border: 0, outline: "none", background: "transparent", fontSize: 13, color: "var(--ink)", fontFamily: "inherit" }}
+      />
+      <button onClick={submit} aria-label="Send to Xentral AI" style={{ flexShrink: 0, width: 26, height: 26, borderRadius: 999, border: 0, cursor: "pointer", background: "linear-gradient(135deg, #6b4ed9, #8b5cf6)", color: "#fff", fontSize: 13, display: "inline-flex", alignItems: "center", justifyContent: "center" }}>↑</button>
+    </div>
+  );
+}
+
+/**
  * AskAiButton — drop on any quiet/empty surface. Opens the global launcher
  * pre-seeded with `seed`. Mirrors the original app's pattern exactly.
  */
