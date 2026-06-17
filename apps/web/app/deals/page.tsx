@@ -2,19 +2,23 @@
 
 import * as React from "react";
 import { color } from "@xentral/config";
-import { AppShell, PageTitleRow, FilterBar, Input, Button, DataTable, StagePill, EmptyState, type Column } from "@xentral/ui";
-import { listDeals, type DealRow } from "@xentral/module-crm";
+import { AppShell, PageTitleRow, FilterBar, Input, Button, DataTable, StagePill, EmptyState, Modal, type Column } from "@xentral/ui";
+import { listDeals, type DealRow, type DealStage } from "@xentral/module-crm";
 
-const ALL = listDeals();
 const aed = (n: number) => `AED ${n.toLocaleString()}`;
 const initials = (name: string) => name.split(" ").map((w) => w[0]).slice(0, 2).join("").toUpperCase();
+const LS_KEY = "xentral-deals-extra";
+const STAGES: DealStage[] = ["new", "qualified", "proposal", "won", "lost"];
+
+function loadExtra(): DealRow[] {
+  try { return JSON.parse(localStorage.getItem(LS_KEY) || "[]"); } catch { return []; }
+}
+function saveExtra(rows: DealRow[]) {
+  try { localStorage.setItem(LS_KEY, JSON.stringify(rows)); } catch {}
+}
 
 function Avatar({ name }: { name: string }) {
-  return (
-    <span style={{ display: "inline-flex", width: 26, height: 26, borderRadius: "50%", background: color.brand.primaryTint, color: color.brand.primary, fontSize: 11, fontWeight: 600, alignItems: "center", justifyContent: "center" }} aria-hidden="true">
-      {initials(name)}
-    </span>
-  );
+  return <span style={{ display: "inline-flex", width: 26, height: 26, borderRadius: "50%", background: color.brand.primaryTint, color: color.brand.primary, fontSize: 11, fontWeight: 600, alignItems: "center", justifyContent: "center" }} aria-hidden="true">{initials(name)}</span>;
 }
 
 const COLUMNS: Column<DealRow>[] = [
@@ -36,13 +40,28 @@ const TABS: [string, string][] = [["main", "Main view"], ["kanban", "Kanban"], [
 export default function DealsPage() {
   const [q, setQ] = React.useState("");
   const [view, setView] = React.useState("main");
+  const [extra, setExtra] = React.useState<DealRow[]>([]);
+  const [open, setOpen] = React.useState(false);
+  const [form, setForm] = React.useState({ name: "", account: "", value: "", stage: "new" as DealStage });
+
+  React.useEffect(() => { setExtra(loadExtra()); }, []);
+
+  const ALL = React.useMemo(() => [...extra, ...listDeals()], [extra]);
   const rows = ALL.filter((r) => (r.name + r.account + r.owner).toLowerCase().includes(q.toLowerCase()));
-  const open = ALL.filter((r) => r.stage !== "won" && r.stage !== "lost").reduce((s, r) => s + r.value, 0);
+  const openValue = ALL.filter((r) => r.stage !== "won" && r.stage !== "lost").reduce((s, r) => s + r.value, 0);
   const visibleGroups = GROUPS.map((g) => ({ g, gr: rows.filter((r) => g.match(r.stage)) })).filter((x) => x.gr.length > 0);
+
+  const submit = () => {
+    if (!form.name.trim()) return;
+    const deal: DealRow = { id: "u" + Date.now(), name: form.name.trim(), account: form.account.trim() || "—", stage: form.stage, value: Number(form.value) || 0, currency: "AED", owner: "Nami" };
+    const next = [deal, ...extra];
+    setExtra(next); saveExtra(next);
+    setForm({ name: "", account: "", value: "", stage: "new" }); setOpen(false);
+  };
 
   return (
     <AppShell active="deals">
-      <PageTitleRow title="Deals" subtitle={`${ALL.length} deals · ${aed(open)} open pipeline`} actions={<Button variant="primary">+ New deal</Button>} />
+      <PageTitleRow title="Deals" subtitle={`${ALL.length} deals · ${aed(openValue)} open pipeline`} actions={<Button variant="primary" onClick={() => setOpen(true)}>+ New deal</Button>} />
 
       <div style={{ display: "flex", gap: 20, borderBottom: `1px solid ${color.line.DEFAULT}`, marginBottom: 16 }}>
         {TABS.map(([id, label]) => (
@@ -73,7 +92,22 @@ export default function DealsPage() {
         </div>
       )}
 
-      <p style={{ fontSize: 11, color: color.ink.soft, textAlign: "center", marginTop: 18 }}>Grouped pipeline (monday-style) · locked DataTable + StagePill · pastel stage tokens from @xentral/config</p>
+      <Modal open={open} onClose={() => setOpen(false)} title="New deal" footer={<><Button onClick={() => setOpen(false)}>Cancel</Button><Button variant="primary" onClick={submit}>Create deal</Button></>}>
+        <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+          <label style={{ display: "block" }}><span style={{ display: "block", fontSize: 12.5, fontWeight: 600, color: color.ink.mid, marginBottom: 5 }}>Deal name</span><Input autoFocus placeholder="e.g. Office relocation" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} style={{ width: "100%" }} /></label>
+          <label style={{ display: "block" }}><span style={{ display: "block", fontSize: 12.5, fontWeight: 600, color: color.ink.mid, marginBottom: 5 }}>Contact / account</span><Input placeholder="e.g. Gulf Trading" value={form.account} onChange={(e) => setForm({ ...form, account: e.target.value })} style={{ width: "100%" }} /></label>
+          <div style={{ display: "flex", gap: 12 }}>
+            <label style={{ flex: 1 }}><span style={{ display: "block", fontSize: 12.5, fontWeight: 600, color: color.ink.mid, marginBottom: 5 }}>Value (AED)</span><Input type="number" placeholder="0" value={form.value} onChange={(e) => setForm({ ...form, value: e.target.value })} style={{ width: "100%" }} /></label>
+            <label style={{ flex: 1 }}><span style={{ display: "block", fontSize: 12.5, fontWeight: 600, color: color.ink.mid, marginBottom: 5 }}>Stage</span>
+              <select value={form.stage} onChange={(e) => setForm({ ...form, stage: e.target.value as DealStage })} style={{ width: "100%", height: 40, borderRadius: 8, border: `1px solid ${color.line.strong}`, background: color.surface.card, color: color.ink.DEFAULT, fontSize: 13, padding: "0 10px" }}>
+                {STAGES.map((s) => <option key={s} value={s}>{s.charAt(0).toUpperCase() + s.slice(1)}</option>)}
+              </select>
+            </label>
+          </div>
+        </div>
+      </Modal>
+
+      <p style={{ fontSize: 11, color: color.ink.soft, textAlign: "center", marginTop: 18 }}>Interactive · creates deals that persist in your browser (survives reload) · locked DataTable + Modal · tokens-only</p>
     </AppShell>
   );
 }
