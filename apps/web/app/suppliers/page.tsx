@@ -33,7 +33,7 @@ export default function SuppliersPage() {
         <EmptyState title="No suppliers" hint="Try a different search." action={<Button variant="primary" onClick={() => setQ("")}>Clear search</Button>} />
       ) : (
         <div style={{ marginTop: 8 }}>
-          <DataTable columns={COLUMNS} rows={rows} getKey={(r) => r.id} />
+          <DataTable columns={COLUMNS} rows={rows} getKey={(r) => r.id} rowHref={(r) => `/suppliers/${r.id}`} />
         </div>
       )}
       <p style={{ fontSize: 11, color: color.ink.soft, textAlign: "center", marginTop: 18 }}>Vendor directory · @xentral/module-erp · locked DataTable + StatusBadge</p>
