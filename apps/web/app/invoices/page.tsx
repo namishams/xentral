@@ -41,7 +41,7 @@ export default function InvoicesPage() {
 
   return (
     <AppShell active="invoice">
-      <PageTitleRow title="Invoices" subtitle={`${all.length} invoices · ${aed(outstanding)} outstanding`} actions={<Button variant="primary">+ New invoice</Button>} />
+      <PageTitleRow title="Invoices" subtitle={`${all.length} invoices · ${aed(outstanding)} outstanding`} actions={<Button variant="primary" onClick={() => { window.location.href = "/invoices/new"; }}>+ New invoice</Button>} />
       <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(150px, 1fr))", gap: 10, marginBottom: 16 }}>
         <KPICard label="Invoices" value={String(all.length)} note="issued" noteTone={color.brand.primary} />
         <KPICard label="Outstanding" value={aedShort(outstanding)} note="to collect" noteTone={color.status.critical} />

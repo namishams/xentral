@@ -42,7 +42,7 @@ export default function QuotationsPage() {
 
   return (
     <AppShell active="quotations">
-      <PageTitleRow title="Quotes" subtitle={`${all.length} quotes · ${aed(openValue)} open`} actions={<Button variant="primary">+ New quote</Button>} />
+      <PageTitleRow title="Quotes" subtitle={`${all.length} quotes · ${aed(openValue)} open`} actions={<Button variant="primary" onClick={() => { window.location.href = "/quotations/new"; }}>+ New quote</Button>} />
       <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(150px, 1fr))", gap: 10, marginBottom: 16 }}>
         <KPICard label="Quotes" value={String(all.length)} note="issued" noteTone={color.brand.primary} />
         <KPICard label="Open value" value={aedShort(openValue)} note="awaiting reply" noteTone={color.status.info} />
