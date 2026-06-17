@@ -18,9 +18,7 @@ export async function GET() {
   if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   try {
     const { rows } = await pool(url).query(
-      `select p.id, p.reference as ref, p.amount, p.method, to_char(p."paidAt",'DD Mon') as date, i.customer, i.number as "invoiceNo"
-         from "payment_records" p join "invoices" i on i.id = p."invoiceId"
-        where i."companyId" = $1 order by p."paidAt" desc limit 400`, [session.companyId]);
+      `select p.id, p.reference as ref, p.amount, p.method, to_char(p."paidAt",'DD Mon') as date, bc.name as customer, i.number as "invoiceNo" from "payment_records" p join "invoices" i on i.id = p."invoiceId" left join "billing_customers" bc on bc.id = i."customerId" where i."companyId" = $1 order by p."paidAt" desc limit 400`, [session.companyId]);
     return NextResponse.json({ rows });
   } catch { return NextResponse.json({ rows: [] }); }
 }

@@ -18,8 +18,7 @@ export async function GET() {
   if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   try {
     const { rows } = await pool(url).query(
-      `select id, number, customer, status::text as status, total, currency, to_char("validUntil",'DD Mon') as valid
-         from "quotes" where "companyId" = $1 order by "createdAt" desc limit 400`, [session.companyId]);
+      `select q.id, q.number, bc.name as customer, q.status::text as status, q.total, q.currency, to_char(q."validUntil",'DD Mon') as valid from "quotes" q left join "billing_customers" bc on bc.id = q."customerId" where q."companyId" = $1 order by q."createdAt" desc limit 400`, [session.companyId]);
     return NextResponse.json({ rows });
   } catch { return NextResponse.json({ rows: [] }); }
 }

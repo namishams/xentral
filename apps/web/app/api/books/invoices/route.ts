@@ -18,8 +18,7 @@ export async function GET() {
   if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   try {
     const { rows } = await pool(url).query(
-      `select id, number, customer, status::text as status, total, "amountPaid" as "amountPaid", currency, to_char("dueDate",'DD Mon') as due
-         from "invoices" where "companyId" = $1 order by "createdAt" desc limit 400`, [session.companyId]);
+      `select i.id, i.number, bc.name as customer, i.status::text as status, i.total, i."amountPaid" as "amountPaid", i.currency, to_char(i."dueDate",'DD Mon') as due from "invoices" i left join "billing_customers" bc on bc.id = i."customerId" where i."companyId" = $1 order by i."createdAt" desc limit 400`, [session.companyId]);
     return NextResponse.json({ rows });
   } catch { return NextResponse.json({ rows: [] }); }
 }
