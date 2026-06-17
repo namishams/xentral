@@ -7,6 +7,7 @@ import { AppShell, PageTitleRow, Button, Input } from "@xentral/ui";
 type Kind = "invoice" | "quote";
 type Line = { name: string; qty: string; unitPrice: string; vatRate: string; discountPct: string };
 type Customer = { id: string; name: string; email: string | null };
+type Item = { id: string; name: string; description: string; unitPrice: number | string; vatRate: number | string; kind?: string };
 
 const blankLine = (): Line => ({ name: "", qty: "1", unitPrice: "", vatRate: "5", discountPct: "0" });
 const aed = (n: number) => `AED ${n.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
@@ -23,6 +24,9 @@ export function BooksBuilder({ kind, editId }: { kind: Kind; editId?: string }) 
   const cfg = CFG[kind];
   const editing = !!editId;
   const [customers, setCustomers] = React.useState<Customer[]>([]);
+  const [items, setItems] = React.useState<Item[]>([]);
+  const [picker, setPicker] = React.useState(false);
+  const [pq, setPq] = React.useState("");
   const [mode, setMode] = React.useState<"existing" | "new">("existing");
   const [customerId, setCustomerId] = React.useState("");
   const [customerName, setCustomerName] = React.useState("");
@@ -34,6 +38,8 @@ export function BooksBuilder({ kind, editId }: { kind: Kind; editId?: string }) 
   const [saving, setSaving] = React.useState(false);
   const [loading, setLoading] = React.useState(editing);
   const [err, setErr] = React.useState("");
+
+  React.useEffect(() => { fetch("/api/books/items").then((r) => r.json()).then((d) => setItems(d.rows ?? [])).catch(() => {}); }, []);
 
   React.useEffect(() => {
     if (editing) {
@@ -68,6 +74,10 @@ export function BooksBuilder({ kind, editId }: { kind: Kind; editId?: string }) 
   function setLine(i: number, patch: Partial<Line>) { setLines((ls) => ls.map((l, k) => (k === i ? { ...l, ...patch } : l))); }
   function addLine() { setLines((ls) => [...ls, blankLine()]); }
   function removeLine(i: number) { setLines((ls) => (ls.length > 1 ? ls.filter((_, k) => k !== i) : ls)); }
+  function addFromCatalog(it: Item) {
+    const line: Line = { name: it.name, qty: "1", unitPrice: String(Number(it.unitPrice) || 0), vatRate: String(Number(it.vatRate) || 5), discountPct: "0" };
+    setLines((ls) => { const empty = ls.findIndex((l) => !l.name.trim() && !parseFloat(l.unitPrice)); if (empty >= 0) { const n = [...ls]; n[empty] = line; return n; } return [...ls, line]; });
+  }
 
   const hasCustomer = editing || (mode === "existing" ? !!customerId : !!customerName.trim());
   const hasLine = lines.some((l) => l.name.trim() || (parseFloat(l.unitPrice) || 0) > 0);
@@ -92,12 +102,13 @@ export function BooksBuilder({ kind, editId }: { kind: Kind; editId?: string }) 
   }
 
   const cancelHref = editing ? `${cfg.list}/${editId}` : cfg.list;
+  const filteredItems = items.filter((it) => (it.name + " " + it.description).toLowerCase().includes(pq.toLowerCase()));
 
   if (loading) return <AppShell active={cfg.active}><div style={{ padding: 40, textAlign: "center", color: color.ink.soft }}>Loading…</div></AppShell>;
 
   return (
     <AppShell active={cfg.active}>
-      <PageTitleRow title={editing ? `Edit ${cfg.title}` : `New ${cfg.title}`} subtitle={editing ? "Update line items, dates and notes" : "Build a draft, then send or convert later"}
+      <PageTitleRow title={editing ? `Edit ${cfg.title}` : `New ${cfg.title}`} subtitle={editing ? "Update line items, dates and notes" : "Add items from your catalog or type them in"}
         actions={<div style={{ display: "flex", gap: 8 }}><Button onClick={() => { window.location.href = cancelHref; }}>Cancel</Button><Button variant="primary" onClick={save} disabled={!canSave}>{saving ? "Saving…" : editing ? "Save changes" : "Create draft"}</Button></div>} />
 
       {err ? <div style={{ background: `color-mix(in srgb, ${color.status.critical} 12%, ${color.surface.card})`, color: color.status.critical, border: `1px solid ${color.status.critical}`, borderRadius: 8, padding: "9px 12px", fontSize: 13, marginBottom: 14 }}>{err}</div> : null}
@@ -134,7 +145,10 @@ export function BooksBuilder({ kind, editId }: { kind: Kind; editId?: string }) 
       </div>
 
       <section style={{ background: color.surface.card, border: `1px solid ${color.line.DEFAULT}`, borderRadius: 10, padding: "16px 18px", marginBottom: 16 }}>
-        <h2 style={{ fontSize: 14, fontWeight: 600, color: color.ink.DEFAULT, margin: "0 0 12px" }}>Line items</h2>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
+          <h2 style={{ fontSize: 14, fontWeight: 600, color: color.ink.DEFAULT, margin: 0 }}>Line items</h2>
+          <Button onClick={() => { setPq(""); setPicker(true); }}>≣ Add from catalog</Button>
+        </div>
         <div style={{ display: "grid", gridTemplateColumns: "1fr 70px 110px 70px 70px 110px 30px", gap: 8, fontSize: 11, fontWeight: 700, color: color.ink.soft, textTransform: "uppercase", letterSpacing: 0.3, padding: "0 2px 6px" }}>
           <span>Description</span><span>Qty</span><span>Unit price</span><span>VAT %</span><span>Disc %</span><span style={{ textAlign: "right" }}>Amount</span><span />
         </div>
@@ -168,7 +182,30 @@ export function BooksBuilder({ kind, editId }: { kind: Kind; editId?: string }) 
           <div style={{ marginTop: 14 }}><Button variant="primary" onClick={save} disabled={!canSave}>{saving ? "Saving…" : editing ? "Save changes" : "Create draft"}</Button></div>
         </section>
       </div>
-      <p style={{ fontSize: 11, color: color.ink.soft, textAlign: "center", marginTop: 18 }}>{editing ? `Editing ${cfg.title}` : `${cfg.title} · saves a DRAFT`} · tenant-scoped</p>
+
+      {picker ? (
+        <div onClick={() => setPicker(false)} style={{ position: "fixed", inset: 0, background: "rgba(20,28,38,0.45)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 100, padding: 16 }}>
+          <div onClick={(e) => e.stopPropagation()} style={{ width: "100%", maxWidth: 540, maxHeight: "80vh", background: color.surface.card, borderRadius: 14, boxShadow: "0 24px 60px -16px rgba(20,28,38,0.4)", padding: 20, display: "flex", flexDirection: "column" }}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
+              <h2 style={{ margin: 0, fontSize: 16, fontWeight: 700, color: color.ink.DEFAULT }}>Add from catalog</h2>
+              <button aria-label="Close" onClick={() => setPicker(false)} style={{ border: 0, background: "transparent", fontSize: 20, color: color.ink.soft, cursor: "pointer" }}>×</button>
+            </div>
+            <Input placeholder="Search items…" value={pq} onChange={(e) => setPq(e.target.value)} style={{ width: "100%", marginBottom: 10 }} />
+            <div style={{ overflowY: "auto", border: `1px solid ${color.line.DEFAULT}`, borderRadius: 9 }}>
+              {filteredItems.length === 0 ? <div style={{ padding: 20, textAlign: "center", color: color.ink.soft, fontSize: 13 }}>{items.length === 0 ? "No catalog items yet. Add some under Products." : "No matches."}</div>
+                : filteredItems.map((it) => (
+                  <button key={it.id} onClick={() => { addFromCatalog(it); setPicker(false); }} style={{ width: "100%", textAlign: "left", display: "flex", justifyContent: "space-between", alignItems: "center", gap: 12, padding: "10px 14px", border: 0, borderBottom: `1px solid ${color.line.DEFAULT}`, background: color.surface.card, cursor: "pointer" }}>
+                    <span style={{ minWidth: 0 }}><span style={{ display: "block", fontSize: 13.5, fontWeight: 600, color: color.ink.DEFAULT, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{it.name}</span>{it.description ? <span style={{ display: "block", fontSize: 12, color: color.ink.soft, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{it.description}</span> : null}</span>
+                    <span style={{ flexShrink: 0, fontSize: 13, fontWeight: 600, color: color.brand.primary }}>{aed(Number(it.unitPrice) || 0)}</span>
+                  </button>
+                ))}
+            </div>
+            <p style={{ fontSize: 11.5, color: color.ink.soft, marginTop: 10 }}>Click an item to add it as a line. You can adjust qty, price, VAT &amp; discount after.</p>
+          </div>
+        </div>
+      ) : null}
+
+      <p style={{ fontSize: 11, color: color.ink.soft, textAlign: "center", marginTop: 18 }}>{editing ? `Editing ${cfg.title}` : `${cfg.title} · saves a DRAFT`} · catalog + manual lines · tenant-scoped</p>
     </AppShell>
   );
 }
