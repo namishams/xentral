@@ -26,4 +26,5 @@ jobs:
             pnpm install
             pnpm -C apps/web build
             pm2 reload xentral-next --update-env
+            echo "$(date -u +%FT%TZ) gha-deploy $(git rev-parse --short HEAD)" >> /var/log/xentral-gha-deploy.log
             echo "deployed $(git rev-parse --short HEAD)"
