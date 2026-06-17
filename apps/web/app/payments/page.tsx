@@ -3,6 +3,7 @@
 import * as React from "react";
 import { color } from "@xentral/config";
 import { AppShell, PageTitleRow, KPICard, Input, Button, DataTable, StatusBadge, EmptyState, type Column } from "@xentral/ui";
+import { RecordPaymentButton } from "../../components/record-payment";
 
 type Row = { id: string; ref: string | null; amount: number; method: string | null; date: string | null; customer: string | null; invoiceNo: string | null };
 const aed = (n: number) => `AED ${Math.round(n || 0).toLocaleString()}`;
@@ -30,7 +31,7 @@ export default function PaymentsPage() {
 
   return (
     <AppShell active="payments">
-      <PageTitleRow title="Payments" subtitle={`${all.length} payments · ${aed(received)} received`} actions={<Button variant="primary">+ Record payment</Button>} />
+      <PageTitleRow title="Payments" subtitle={`${all.length} payments · ${aed(received)} received`} actions={<RecordPaymentButton />} />
       <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(150px, 1fr))", gap: 10, marginBottom: 16 }}>
         <KPICard label="Payments" value={String(all.length)} note="recorded" noteTone={color.brand.primary} />
         <KPICard label="Received" value={aedShort(received)} note="settled in" noteTone={color.status.positive} />
