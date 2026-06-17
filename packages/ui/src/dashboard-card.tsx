@@ -1,5 +1,5 @@
 import * as React from "react";
-import { uiConstants, color, radius } from "@xentral/config";
+import { uiConstants, color, radius, shadow } from "@xentral/config";
 
 /**
  * DashboardCard — fixed-size card. Heights/min-widths come from ui-constants.
@@ -27,6 +27,7 @@ export function DashboardCard({ children, size = "medium", title, className = ""
         padding: c.paddingX,
         border: `1px solid ${color.line.DEFAULT}`,
         borderRadius: radius.lg,
+        boxShadow: shadow.card,
       }}
     >
       {title && (
