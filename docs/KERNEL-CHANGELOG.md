@@ -7,3 +7,13 @@ Added: listContacts()/ContactRow, listCompanies()/CompanyRow, listLeads()/LeadRo
 Reason: wire the Layer-2 CRM core pages (Contacts, Companies, Leads) to a real contract
 instead of seed rows. No kernel change; no breaking change to existing exports
 (getDefaultPipeline, listDeals untouched). Vitest coverage added in contract.test.ts.
+
+
+## 2026-06-17 - Kernel DataPort + CRM async loadContacts (owner-approved)
+Kernel: added swappable DataSource port (packages/kernel/src/data.ts) - TenantScope,
+RawContact, DataSource, set/get/has/__resetDataSource. Mirrors LocaleCore/UpdatePort.
+Module crm: async loadContacts(scope?) reads via the port when a live DataSource is
+registered, else seed fallback (safe on public preview). New driver-injected adapter
+@xentral/data-pack implements listContacts() against the existing Postgres schema
+(read-only), tenant-scoped by companyId. eslint: new 'data' element type.
+Reason: Strangler-Fig migration of Contacts (Roadmap Phase 1) - proves seed->live path.

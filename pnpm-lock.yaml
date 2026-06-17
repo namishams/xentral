@@ -111,6 +111,9 @@ importers:
       '@xentral/config':
         specifier: workspace:*
         version: link:../../packages/config
+      '@xentral/kernel':
+        specifier: workspace:*
+        version: link:../../packages/kernel
 
   modules/developer:
     dependencies:
@@ -174,6 +177,12 @@ importers:
         version: link:../../packages/config
 
   packages/config: {}
+
+  packages/data-pack:
+    dependencies:
+      '@xentral/kernel':
+        specifier: workspace:*
+        version: link:../kernel
 
   packages/eslint-config:
     dependencies:

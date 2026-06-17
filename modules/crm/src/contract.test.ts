@@ -1,5 +1,6 @@
 import { describe, it, expect } from "vitest";
-import { getDefaultPipeline, listDeals, listContacts, listCompanies, listLeads } from "./contract";
+import { __resetDataSource } from "@xentral/kernel";
+import { getDefaultPipeline, listDeals, listContacts, listCompanies, listLeads, loadContacts } from "./contract";
 
 describe("crm contract", () => {
   it("default pipeline is ordered", () => {
@@ -35,5 +36,12 @@ describe("crm contract", () => {
       expect(l.score).toBeGreaterThanOrEqual(0);
       expect(l.score).toBeLessThanOrEqual(100);
     }
+  });
+
+  it("loadContacts falls back to seed when no data source is registered", async () => {
+    __resetDataSource();
+    expect(await loadContacts()).toEqual(listContacts());
+    // even with a scope, no registered source → seed (safe on public preview)
+    expect(await loadContacts({ companyId: "T-1" })).toEqual(listContacts());
   });
 });

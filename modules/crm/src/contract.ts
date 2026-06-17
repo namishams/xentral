@@ -2,6 +2,7 @@
  * @xentral/module-crm — PUBLIC CONTRACT.
  * The only surface other packages may import.
  */
+import { getDataSource, hasDataSource, type TenantScope } from "@xentral/kernel";
 
 export type PipelineStage = { id: string; label: string; order: number };
 export function getDefaultPipeline(): PipelineStage[] {
@@ -48,7 +49,31 @@ export type ContactRow = {
   owner: string;
 };
 
-/** List contacts for the workspace. */
+/**
+ * Load contacts for a workspace.
+ *
+ * Goes through the kernel DataPort: if a live DataSource is registered AND a
+ * tenant scope is supplied, returns real rows; otherwise falls back to the seed
+ * directory below. This is the reusable migration pattern — the same shape every
+ * Core page adopts to move from seed → live without touching the page's UI.
+ */
+export async function loadContacts(scope?: TenantScope): Promise<ContactRow[]> {
+  if (scope && hasDataSource()) {
+    const raw = await getDataSource()!.listContacts(scope);
+    return raw.map((r) => ({
+      id: r.id,
+      name: [r.firstName, r.lastName].filter(Boolean).join(" ").trim() || r.firstName,
+      title: r.title ?? "",
+      company: r.accountName ?? "",
+      email: r.email ?? "",
+      phone: r.phone ?? "",
+      owner: r.owner ?? "",
+    }));
+  }
+  return listContacts();
+}
+
+/** Seed contact directory for the workspace. */
 export function listContacts(): ContactRow[] {
   return [
     { id: "c1", name: "Aisha Rahman", title: "Procurement Lead", company: "Skyline Developers", email: "aisha@skyline.ae", phone: "+971 50 110 2200", owner: "Nami" },
