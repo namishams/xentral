@@ -48,9 +48,9 @@ export async function POST(req: Request) {
       if (!first) return NextResponse.json({ error: "First name required" }, { status: 400 });
       const value = Number(b.value); const v = Number.isFinite(value) ? value : 0;
       await p.query(
-        `insert into "leads" (id, "firstName", "lastName", company, email, phone, value, source, status, currency, country, position, tags, "createdAt", "updatedAt", "companyId")
-         values ($1,$2,$3,$4,$5,$6,$7,'OTHER','NEW','AED','UAE',0,'{}',now(),now(),$8)`,
-        [id, first, s(b.lastName) ?? "", s(b.company), s(b.email), s(b.phone), v, cid]);
+        `insert into "leads" (id, "firstName", "lastName", company, email, phone, value, source, status, currency, country, position, tags, "createdAt", "updatedAt", "companyId", "createdById")
+         values ($1,$2,$3,$4,$5,$6,$7,'OTHER','NEW','AED','UAE',0,'{}',now(),now(),$8,$9)`,
+        [id, first, s(b.lastName) ?? "", s(b.company), s(b.email), s(b.phone), v, cid, session.userId]);
     } else {
       return NextResponse.json({ error: "Unknown entity" }, { status: 400 });
     }
