@@ -125,13 +125,13 @@ const SIDEBAR_WIDTH = 240;
 
 /** GlobalHeader — rich shell bar (mirrors the live app top bar). */
 export function GlobalHeader({ right }: { right?: React.ReactNode }) {
-  const pill: React.CSSProperties = { display: "inline-flex", alignItems: "center", gap: 6, height: 32, padding: "0 11px", borderRadius: 8, border: `1px solid ${color.line.strong}`, background: color.surface.card, color: color.ink.DEFAULT, fontSize: 12.5, fontWeight: 600, whiteSpace: "nowrap", flexShrink: 0 };
-  const iconBtn: React.CSSProperties = { width: 32, height: 32, borderRadius: 8, border: `1px solid ${color.line.strong}`, background: color.surface.card, color: color.ink.mid, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 14, cursor: "pointer", position: "relative", flexShrink: 0 };
+  const pill: React.CSSProperties = { display: "inline-flex", alignItems: "center", gap: 6, height: 30, padding: "0 10px", borderRadius: 8, border: `1px solid ${color.line.DEFAULT}`, background: color.surface.card, color: color.ink.mid, fontSize: 12.5, fontWeight: 500, whiteSpace: "nowrap", flexShrink: 0 };
+  const iconBtn: React.CSSProperties = { width: 30, height: 30, borderRadius: 8, border: `1px solid ${color.line.DEFAULT}`, background: color.surface.card, color: color.ink.soft, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 14, cursor: "pointer", position: "relative", flexShrink: 0 };
   return (
     <header style={{ height: uiConstants.header.heightDesktop, flexShrink: 0, background: color.surface.card, borderBottom: `1px solid ${color.line.DEFAULT}`, display: "flex", alignItems: "center", gap: 8, padding: "0 16px", position: "sticky", top: 0, zIndex: 40 }}>
       <div style={{ flex: 1, maxWidth: 440, height: 36, border: `1px solid ${color.line.strong}`, borderRadius: 8, display: "flex", alignItems: "center", gap: 8, padding: "0 12px", color: color.ink.soft, fontSize: 13 }}><span style={{ opacity: 0.7 }}>⌕</span> Search leads, contacts, deals…</div>
       <span style={pill}>العربية</span>
-      <span style={{ ...pill, color: color.brand.primary }}>＄ Growth</span>
+      <span style={pill}>＄ Growth</span>
       <span style={pill}>◳ AED 999</span>
       <span style={pill}>⌖ All locations ▾</span>
       <span style={iconBtn} aria-label="Notifications">♪<span style={{ position: "absolute", top: -5, right: -5, minWidth: 15, height: 15, borderRadius: 8, background: color.status.negative, color: "#fff", fontSize: 9, fontWeight: 700, display: "flex", alignItems: "center", justifyContent: "center", padding: "0 3px" }}>4</span></span>

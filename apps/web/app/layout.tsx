@@ -11,6 +11,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html lang="en">
       <head>
         {/* Tailwind Play CDN — preview/staging only, so the locked utility classes render */}
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+        <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
         <script src="https://cdn.tailwindcss.com" />
         <style dangerouslySetInnerHTML={{ __html: `:root{
 --brand-primary:#0064d9;--brand-primary-hover:#0057be;--brand-tint:#e8f1ff;
@@ -30,7 +33,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
 }` }} />
         <script dangerouslySetInnerHTML={{ __html: "(function(){try{var t=localStorage.getItem('xentral-theme');if(t==='dark')document.documentElement.setAttribute('data-theme','dark');}catch(e){}})();" }} />
       </head>
-      <body style={{ margin: 0, background: "var(--surface-page)", color: "var(--ink)", fontFamily: "Inter, Arial, Helvetica, sans-serif" }}>
+      <body style={{ margin: 0, background: "var(--surface-page)", color: "var(--ink)", fontFamily: "Inter, system-ui, -apple-system, Segoe UI, Roboto, sans-serif" }}>
         {children}
       </body>
     </html>
