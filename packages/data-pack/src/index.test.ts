@@ -78,4 +78,29 @@ describe("data-pack live adapter", () => {
     expect(second?.score).toBe(0);
     expect(second?.company).toBeUndefined();
   });
+
+  it("listActivities coerces Date createdAt to ISO and booleans", async () => {
+    const when = new Date("2026-06-01T10:00:00.000Z");
+    const fakeQuery: QueryFn = async () => ({
+      rows: [{ id: "ac1", type: "CALL", subject: "Intro call", content: "Talked pricing", isCompleted: true, createdAt: when, user: "Nami" }],
+    });
+    const out = await createLiveDataSource(fakeQuery).listActivities({ companyId: "T-1" });
+    expect(out[0]).toMatchObject({ id: "ac1", type: "CALL", isCompleted: true, createdAt: "2026-06-01T10:00:00.000Z", user: "Nami" });
+  });
+
+  it("listTasks is tenant-scoped and maps owner + due", async () => {
+    let capturedParams: unknown[] = [];
+    const fakeQuery: QueryFn = async (_sql, params) => {
+      capturedParams = params;
+      return { rows: [
+        { id: "tk1", title: "Send proposal", dueAt: "2026-06-20", isCompleted: false, priority: "HIGH", owner: "Sara" },
+        { id: "tk2", title: "Follow up", dueAt: null, isCompleted: true, priority: "LOW", owner: null },
+      ] };
+    };
+    const out = await createLiveDataSource(fakeQuery).listTasks({ companyId: "T-2" });
+    expect(capturedParams).toEqual(["T-2"]);
+    expect(out[0]).toMatchObject({ id: "tk1", title: "Send proposal", priority: "HIGH", owner: "Sara" });
+    expect(out[1]?.dueAt).toBeUndefined();
+    expect(out[1]?.isCompleted).toBe(true);
+  });
 });

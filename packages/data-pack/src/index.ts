@@ -7,13 +7,19 @@
  * package driver-agnostic, unit-testable, and absent from the public preview
  * bundle. Registered via setDataSource() only in a private/authenticated host.
  */
-import type { DataSource, TenantScope, RawContact, RawCompany, RawLead } from "@xentral/kernel";
+import type { DataSource, TenantScope, RawContact, RawCompany, RawLead, RawActivity, RawTask } from "@xentral/kernel";
 
 /** Minimal query surface — satisfied by `pg`'s Client.query, or any equivalent. */
 export type QueryFn = (sql: string, params: unknown[]) => Promise<{ rows: Record<string, unknown>[] }>;
 
 function str(v: unknown): string | undefined {
   return typeof v === "string" && v.length > 0 ? v : undefined;
+}
+
+function dstr(v: unknown): string | undefined {
+  if (v instanceof Date) return v.toISOString();
+  if (typeof v === "string" && v.length > 0) return v;
+  return undefined;
 }
 
 /**
@@ -87,6 +93,49 @@ export function createLiveDataSource(query: QueryFn): DataSource {
         source: str(r.source),
         score: typeof r.probability === "number" ? r.probability : Number(r.probability ?? 0),
         stage: str(r.status),
+        owner: str(r.owner),
+      }));
+    },
+
+    async listActivities(scope: TenantScope): Promise<RawActivity[]> {
+      const { rows } = await query(
+        `select a."id", a."type", a."subject", a."content", a."isCompleted", a."createdAt",
+                u."name" as "user"
+           from "activities" a
+           left join "users" u on u."id" = a."userId"
+          where a."companyId" = $1
+          order by a."createdAt" desc
+          limit 500`,
+        [scope.companyId],
+      );
+      return rows.map((r) => ({
+        id: String(r.id),
+        type: str(r.type) ?? "note",
+        subject: str(r.subject),
+        content: str(r.content) ?? "",
+        isCompleted: Boolean(r.isCompleted),
+        createdAt: dstr(r.createdAt) ?? "",
+        user: str(r.user),
+      }));
+    },
+
+    async listTasks(scope: TenantScope): Promise<RawTask[]> {
+      const { rows } = await query(
+        `select t."id", t."title", t."dueAt", t."isCompleted", t."priority",
+                u."name" as "owner"
+           from "tasks" t
+           left join "users" u on u."id" = t."assignedToId"
+          where t."companyId" = $1
+          order by t."createdAt" desc
+          limit 500`,
+        [scope.companyId],
+      );
+      return rows.map((r) => ({
+        id: String(r.id),
+        title: str(r.title) ?? "",
+        dueAt: dstr(r.dueAt),
+        isCompleted: Boolean(r.isCompleted),
+        priority: str(r.priority) ?? "medium",
         owner: str(r.owner),
       }));
     },

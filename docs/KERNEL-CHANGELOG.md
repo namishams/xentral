@@ -34,3 +34,7 @@ Contacts & Companies pages now flow session->scope->data. Identity provider TBD.
 
 ## 2026-06-17 - DataPort listLeads + CRM loadLeads (owner-approved)
 Kernel DataSource gains listLeads + RawLead. data-pack listLeads reads leads (tenant-scoped, probability->score). module-crm loadLeads (port, seed fallback, stage normalized). /leads -> server component, session-scoped. CRM trias (contacts/companies/leads) now complete on the port pattern.
+
+
+## 2026-06-17 - DataPort listActivities/listTasks + CRM loadActivities/loadTasks
+Kernel DataSource gains listActivities/listTasks + RawActivity/RawTask. data-pack reads activities & tasks (tenant-scoped, Date->ISO). module-crm loadActivities/loadTasks (port, seed fallback). /activities & /tasks -> server components, session-scoped. Universal-Timeline bricks landed.

@@ -164,3 +164,81 @@ export function listLeads(): LeadRow[] {
     { id: "l5", name: "Tom Becker", company: "Becker GmbH", source: "Campaign", score: 28, stage: "unqualified", owner: "Sara" },
   ];
 }
+
+/* ── Activities (Universal Timeline) & Tasks ── */
+
+export type ActivityRow = {
+  id: string;
+  type: string;
+  summary: string;
+  when: string;
+  by: string;
+};
+
+/** Load activities for a workspace via the DataPort; seed fallback on preview. */
+export async function loadActivities(scope?: TenantScope): Promise<ActivityRow[]> {
+  if (scope && hasDataSource()) {
+    const raw = await getDataSource()!.listActivities(scope);
+    return raw.map((r) => ({
+      id: r.id,
+      type: r.type,
+      summary: (r.subject || r.content || "").slice(0, 120),
+      when: r.createdAt,
+      by: r.user ?? "",
+    }));
+  }
+  return listActivities();
+}
+
+/** Seed activity timeline for the workspace. */
+export function listActivities(): ActivityRow[] {
+  return [
+    { id: "ac1", type: "call", summary: "Discovery call — fit-out scope", when: "2026-06-15", by: "Nami" },
+    { id: "ac2", type: "email", summary: "Sent proposal v2 to Gulf Trading", when: "2026-06-14", by: "Sara" },
+    { id: "ac3", type: "note", summary: "Client prefers phased delivery", when: "2026-06-13", by: "Nami" },
+    { id: "ac4", type: "meeting", summary: "Site visit booked for Villa portfolio", when: "2026-06-12", by: "Omar" },
+    { id: "ac5", type: "whatsapp", summary: "Qualified inbound from Bright Interiors", when: "2026-06-11", by: "Nami" },
+  ];
+}
+
+export type TaskPriority = "low" | "medium" | "high";
+export type TaskRow = {
+  id: string;
+  title: string;
+  due: string;
+  priority: TaskPriority;
+  done: boolean;
+  owner: string;
+};
+
+const TASK_PRIORITIES: TaskPriority[] = ["low", "medium", "high"];
+function normalizePriority(raw?: string): TaskPriority {
+  const p = (raw ?? "").toLowerCase();
+  return (TASK_PRIORITIES as string[]).includes(p) ? (p as TaskPriority) : "medium";
+}
+
+/** Load tasks for a workspace via the DataPort; seed fallback on preview. */
+export async function loadTasks(scope?: TenantScope): Promise<TaskRow[]> {
+  if (scope && hasDataSource()) {
+    const raw = await getDataSource()!.listTasks(scope);
+    return raw.map((r) => ({
+      id: r.id,
+      title: r.title,
+      due: r.dueAt ?? "",
+      priority: normalizePriority(r.priority),
+      done: r.isCompleted,
+      owner: r.owner ?? "",
+    }));
+  }
+  return listTasks();
+}
+
+/** Seed task list for the workspace. */
+export function listTasks(): TaskRow[] {
+  return [
+    { id: "tk1", title: "Send proposal to Skyline Developers", due: "2026-06-18", priority: "high", done: false, owner: "Nami" },
+    { id: "tk2", title: "Follow up with Gulf Trading CFO", due: "2026-06-19", priority: "medium", done: false, owner: "Sara" },
+    { id: "tk3", title: "Prepare villa portfolio quote", due: "2026-06-20", priority: "high", done: false, owner: "Omar" },
+    { id: "tk4", title: "Archive lost Emaar deal", due: "2026-06-16", priority: "low", done: true, owner: "Sara" },
+  ];
+}

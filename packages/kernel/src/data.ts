@@ -45,11 +45,34 @@ export type RawLead = {
   owner?: string;
 };
 
+/** Raw activity (timeline event) as read from a data source. */
+export type RawActivity = {
+  id: string;
+  type: string;
+  subject?: string;
+  content: string;
+  isCompleted: boolean;
+  createdAt: string;
+  user?: string;
+};
+
+/** Raw task as read from a data source. */
+export type RawTask = {
+  id: string;
+  title: string;
+  dueAt?: string;
+  isCompleted: boolean;
+  priority: string;
+  owner?: string;
+};
+
 /** The port every data adapter implements. Grows one method per migrated area. */
 export interface DataSource {
   listContacts(scope: TenantScope): Promise<RawContact[]>;
   listCompanies(scope: TenantScope): Promise<RawCompany[]>;
   listLeads(scope: TenantScope): Promise<RawLead[]>;
+  listActivities(scope: TenantScope): Promise<RawActivity[]>;
+  listTasks(scope: TenantScope): Promise<RawTask[]>;
 }
 
 let _ds: DataSource | null = null;
