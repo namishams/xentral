@@ -26,7 +26,7 @@ export default function InvoicePage() {
         breadcrumb="Invoices › #1043"
         title="Invoice #1043"
         badge={<StatusBadge tone="warning" label="Partially paid" />}
-        actions={<button style={{ height: 32, padding: "0 14px", borderRadius: 8, background: color.brand.primary, color: "#fff", border: 0, fontSize: 13, fontWeight: 600, cursor: "pointer" }}>Send</button>}
+        actions={<button style={{ height: 32, padding: "0 14px", borderRadius: 8, background: color.brand.primary, color: color.ink.onPrimary, border: 0, fontSize: 13, fontWeight: 600, cursor: "pointer" }}>Send</button>}
       />
 
       {/* QuickActionsBar */}

@@ -65,7 +65,7 @@ export default function InboxPage() {
           <div style={{ display: "flex", alignItems: "center", gap: 10, padding: "10px 14px", borderTop: `1px solid ${color.line.DEFAULT}` }}>
             <span style={{ color: color.ink.soft, fontSize: 18 }}>📎</span>
             <div style={{ flex: 1, height: 32, border: `1px solid ${color.line.strong}`, borderRadius: 999, display: "flex", alignItems: "center", padding: "0 14px", color: color.ink.soft, fontSize: 12.5 }}>Message…</div>
-            <span style={{ width: 32, height: 32, borderRadius: "50%", background: color.brand.primary, color: "#fff", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 14 }}>➤</span>
+            <span style={{ width: 32, height: 32, borderRadius: "50%", background: color.brand.primary, color: color.ink.onPrimary, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 14 }}>➤</span>
           </div>
         </section>
 

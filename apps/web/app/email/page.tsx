@@ -76,7 +76,7 @@ export default function EmailPage() {
           </div>
           <div style={{ flexShrink: 0, background: color.surface.card, borderTop: `1px solid ${color.line.DEFAULT}`, padding: "12px 24px", display: "flex", alignItems: "center", gap: 10 }}>
             <div style={{ flex: 1, height: 40, border: `1px solid ${color.line.strong}`, borderRadius: 10, display: "flex", alignItems: "center", padding: "0 14px", color: color.ink.soft, fontSize: 13 }}>Reply to {active.initials}…</div>
-            <button style={{ height: 40, padding: "0 18px", borderRadius: 10, background: color.brand.primary, color: "#fff", border: 0, fontSize: 13, fontWeight: 600, cursor: "pointer" }}>Send</button>
+            <button style={{ height: 40, padding: "0 18px", borderRadius: 10, background: color.brand.primary, color: color.ink.onPrimary, border: 0, fontSize: 13, fontWeight: 600, cursor: "pointer" }}>Send</button>
             <button style={{ height: 40, padding: "0 14px", borderRadius: 10, background: color.surface.card, border: `1px solid ${color.line.strong}`, color: color.ink.DEFAULT, fontSize: 13, fontWeight: 600, cursor: "pointer" }}>✦ AI reply</button>
           </div>
         </div>

@@ -32,7 +32,7 @@ export default function BuildConsole() {
           <h1 style={{ fontSize: 28, fontWeight: 700, color: c.ink.DEFAULT, margin: "6px 0 4px" }}>Xentral — Modular Rebuild</h1>
           <p style={{ fontSize: 14, color: c.ink.mid }}>Follow the modular build live. Updated as packages, components and modules land. The production app stays on app.xentral.ae.</p>
           <div style={{ display: "flex", gap: 10, marginTop: 10, flexWrap: "wrap" }}>
-            <a href="/dashboard" style={{ display: "inline-flex", height: 34, padding: "0 16px", alignItems: "center", borderRadius: 8, background: c.brand.primary, color: "#fff", fontSize: 13, fontWeight: 600, textDecoration: "none" }}>Mission Control page →</a>
+            <a href="/dashboard" style={{ display: "inline-flex", height: 34, padding: "0 16px", alignItems: "center", borderRadius: 8, background: c.brand.primary, color: c.ink.onPrimary, fontSize: 13, fontWeight: 600, textDecoration: "none" }}>Mission Control page →</a>
             <a href="/invoice" style={{ display: "inline-flex", height: 34, padding: "0 16px", alignItems: "center", borderRadius: 8, background: "var(--surface-card)", border: `1px solid ${c.line.DEFAULT}`, color: c.ink.DEFAULT, fontSize: 13, fontWeight: 600, textDecoration: "none" }}>Invoice record page →</a>
             <a href="/inbox" style={{ display: "inline-flex", height: 34, padding: "0 16px", alignItems: "center", borderRadius: 8, background: "var(--surface-card)", border: `1px solid ${c.line.DEFAULT}`, color: c.ink.DEFAULT, fontSize: 13, fontWeight: 600, textDecoration: "none" }}>Inbox (Tool page) →</a>
             <a href="/invoices" style={{ display: "inline-flex", height: 34, padding: "0 16px", alignItems: "center", borderRadius: 8, background: "var(--surface-card)", border: `1px solid ${c.line.DEFAULT}`, color: c.ink.DEFAULT, fontSize: 13, fontWeight: 600, textDecoration: "none" }}>Invoices list (real data) →</a>
@@ -73,7 +73,7 @@ export default function BuildConsole() {
             <p style={{ fontSize: 13, color: c.ink.mid }}>Fixed height, token-bound, truncates overflow. This card is itself the component.</p>
           </DashboardCard>
           <div style={{ display: "grid", gap: 12 }}>
-            <button onClick={() => setOpen(true)} style={{ height: 36, padding: "0 16px", borderRadius: 8, background: c.brand.primary, color: "#fff", border: 0, fontWeight: 600, fontSize: 13, cursor: "pointer" }}>Open Modal</button>
+            <button onClick={() => setOpen(true)} style={{ height: 36, padding: "0 16px", borderRadius: 8, background: c.brand.primary, color: c.ink.onPrimary, border: 0, fontWeight: 600, fontSize: 13, cursor: "pointer" }}>Open Modal</button>
             <Pagination page={page} pageCount={8} pageSize={uiConstants.table.pageSizeDefault} total={186} onPageChange={setPage} onPageSizeChange={() => {}} />
           </div>
         </div>
@@ -108,7 +108,7 @@ export default function BuildConsole() {
       </PageContainer>
 
       <Modal open={open} onClose={() => setOpen(false)} title="Locked Modal component"
-        footer={<button onClick={() => setOpen(false)} style={{ height: 36, padding: "0 16px", borderRadius: 8, background: c.brand.primary, color: "#fff", border: 0, fontWeight: 600, cursor: "pointer" }}>Close</button>}>
+        footer={<button onClick={() => setOpen(false)} style={{ height: 36, padding: "0 16px", borderRadius: 8, background: c.brand.primary, color: c.ink.onPrimary, border: 0, fontWeight: 600, cursor: "pointer" }}>Close</button>}>
         Accessible dialog from <b>@xentral/ui</b> — ESC to close, overlay click, focus return. Dimensions from the locked design system.
       </Modal>
     </main>

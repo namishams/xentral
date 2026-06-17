@@ -44,7 +44,7 @@ export default function ChatPage() {
                     <span style={{ display: "block", fontSize: 13.5, fontWeight: 600, color: on ? color.brand.primary : color.ink.DEFAULT }}>{c.kind === "channel" ? "#" + c.name : c.name}</span>
                     <span style={{ display: "block", fontSize: 12, color: color.ink.soft, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{c.preview}</span>
                   </span>
-                  {c.unread ? <span style={{ flexShrink: 0, minWidth: 18, height: 18, borderRadius: 9, background: color.brand.primary, color: "#fff", fontSize: 11, fontWeight: 700, display: "flex", alignItems: "center", justifyContent: "center", padding: "0 5px" }}>{c.unread}</span> : null}
+                  {c.unread ? <span style={{ flexShrink: 0, minWidth: 18, height: 18, borderRadius: 9, background: color.brand.primary, color: color.ink.onPrimary, fontSize: 11, fontWeight: 700, display: "flex", alignItems: "center", justifyContent: "center", padding: "0 5px" }}>{c.unread}</span> : null}
                 </button>
               );
             })}
@@ -69,7 +69,7 @@ export default function ChatPage() {
           </div>
           <div style={{ flexShrink: 0, background: color.surface.card, borderTop: `1px solid ${color.line.DEFAULT}`, padding: "12px 24px", display: "flex", gap: 10 }}>
             <div style={{ flex: 1, height: 40, border: `1px solid ${color.line.strong}`, borderRadius: 10, display: "flex", alignItems: "center", padding: "0 14px", color: color.ink.soft, fontSize: 13 }}>Message {active.kind === "channel" ? "#" + active.name : active.name}…</div>
-            <button style={{ height: 40, padding: "0 18px", borderRadius: 10, background: color.brand.primary, color: "#fff", border: 0, fontSize: 13, fontWeight: 600, cursor: "pointer" }}>Send</button>
+            <button style={{ height: 40, padding: "0 18px", borderRadius: 10, background: color.brand.primary, color: color.ink.onPrimary, border: 0, fontSize: 13, fontWeight: 600, cursor: "pointer" }}>Send</button>
           </div>
         </div>
       </div>

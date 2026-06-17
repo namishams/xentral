@@ -58,7 +58,7 @@ export default function AiPage() {
             </div>
             <div style={{ display: "flex", gap: 10 }}>
               <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Ask Xentral AI anything…" style={{ flex: 1, height: 44, border: `1px solid ${color.line.strong}`, borderRadius: 12, padding: "0 16px", fontSize: 14, color: color.ink.DEFAULT, outline: "none" }} />
-              <button style={{ height: 44, padding: "0 20px", borderRadius: 12, background: color.brand.primary, color: "#fff", border: 0, fontSize: 14, fontWeight: 600, cursor: "pointer" }}>Send</button>
+              <button style={{ height: 44, padding: "0 20px", borderRadius: 12, background: color.brand.primary, color: color.ink.onPrimary, border: 0, fontSize: 14, fontWeight: 600, cursor: "pointer" }}>Send</button>
             </div>
           </div>
         </div>
