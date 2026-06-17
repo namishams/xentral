@@ -31,18 +31,22 @@ async function resolveKey(url: string, companyId: string): Promise<{ key: string
 
 const TOOLS: OpenAI.Chat.Completions.ChatCompletionTool[] = [
   { type: "function", function: { name: "create_contact", description: "Create a new CRM contact (a person).", parameters: { type: "object", properties: {
-    firstName: { type: "string" }, lastName: { type: "string" }, email: { type: "string" }, phone: { type: "string" },
-    title: { type: "string", description: "Job title / role" }, company: { type: "string", description: "Company/account name the contact belongs to" }, notes: { type: "string" },
-  }, required: ["firstName"] } } },
-  { type: "function", function: { name: "create_company", description: "Create a new company / account / organisation in the CRM.", parameters: { type: "object", properties: {
-    name: { type: "string" }, industry: { type: "string" }, website: { type: "string" }, phone: { type: "string" }, email: { type: "string" }, city: { type: "string" }, country: { type: "string" },
-  }, required: ["name"] } } },
+    firstName: { type: "string" }, lastName: { type: "string" }, email: { type: "string" }, phone: { type: "string" }, title: { type: "string" }, company: { type: "string" }, notes: { type: "string" } }, required: ["firstName"] } } },
+  { type: "function", function: { name: "create_company", description: "Create a new company / account / organisation.", parameters: { type: "object", properties: {
+    name: { type: "string" }, industry: { type: "string" }, website: { type: "string" }, phone: { type: "string" }, email: { type: "string" }, city: { type: "string" }, country: { type: "string" } }, required: ["name"] } } },
   { type: "function", function: { name: "create_lead", description: "Create a new sales lead/opportunity.", parameters: { type: "object", properties: {
-    firstName: { type: "string" }, lastName: { type: "string" }, email: { type: "string" }, phone: { type: "string" }, company: { type: "string" }, value: { type: "number", description: "Deal value in AED" }, notes: { type: "string" },
-  }, required: ["firstName", "lastName"] } } },
+    firstName: { type: "string" }, lastName: { type: "string" }, email: { type: "string" }, phone: { type: "string" }, company: { type: "string" }, value: { type: "number" }, notes: { type: "string" } }, required: ["firstName", "lastName"] } } },
+  { type: "function", function: { name: "create_task", description: "Create a to-do / task for the current user.", parameters: { type: "object", properties: {
+    title: { type: "string" }, description: { type: "string" }, dueAt: { type: "string", description: "Local date-time YYYY-MM-DDThh:mm (no timezone)" } }, required: ["title"] } } },
+  { type: "function", function: { name: "create_meeting", description: "Schedule a meeting / call / appointment in the calendar.", parameters: { type: "object", properties: {
+    title: { type: "string" }, whenISO: { type: "string", description: "Local start date-time YYYY-MM-DDThh:mm (no timezone/Z)" }, durationMins: { type: "number" }, type: { type: "string", enum: ["meeting", "call", "appointment"] }, location: { type: "string" } }, required: ["title", "whenISO"] } } },
+  { type: "function", function: { name: "find_contact", description: "Search existing contacts by name or email. Call this first to get a contactId before add_note or update_contact.", parameters: { type: "object", properties: { query: { type: "string" } }, required: ["query"] } } },
+  { type: "function", function: { name: "add_note", description: "Append a note to an existing contact (needs contactId from find_contact).", parameters: { type: "object", properties: { contactId: { type: "string" }, note: { type: "string" } }, required: ["contactId", "note"] } } },
+  { type: "function", function: { name: "update_contact", description: "Update fields on an existing contact (needs contactId from find_contact).", parameters: { type: "object", properties: { contactId: { type: "string" }, title: { type: "string" }, email: { type: "string" }, phone: { type: "string" }, notes: { type: "string" } }, required: ["contactId"] } } },
 ];
 
-type ExecResult = { ok: boolean; summary: string; action?: { type: string; label: string; href?: string } };
+type Action = { type: string; label: string; href?: string };
+type ExecResult = { ok: boolean; summary: string; data?: unknown; action?: Action };
 
 async function exec(url: string, companyId: string, userId: string, name: string, a: Record<string, unknown>): Promise<ExecResult> {
   const p = pool(url);
@@ -53,29 +57,58 @@ async function exec(url: string, companyId: string, userId: string, name: string
       await p.query(`insert into "contacts" (id,"firstName","lastName",email,phone,title,notes,"companyId","createdAt","updatedAt") values ($1,$2,$3,$4,$5,$6,$7,$8,now(),now())`,
         [id, s(a.firstName) || "Contact", s(a.lastName), s(a.email), s(a.phone), s(a.title), s(a.notes ? `${a.notes}${a.company ? ` · ${a.company}` : ""}` : a.company ? `Company: ${a.company}` : null), companyId]);
       const nm = [a.firstName, a.lastName].filter(Boolean).join(" ");
-      return { ok: true, summary: `Created contact ${nm} (id ${id})`, action: { type: "create_contact", label: `Contact created: ${nm}`, href: `/contacts/${id}` } };
+      return { ok: true, summary: `Created contact ${nm}`, action: { type: "create_contact", label: `Contact created: ${nm}`, href: `/contacts/${id}` } };
     }
     if (name === "create_company") {
       const id = newId("ac");
       await p.query(`insert into "accounts" (id,name,industry,website,phone,email,city,country,"companyId","createdAt","updatedAt") values ($1,$2,$3,$4,$5,$6,$7,$8,$9,now(),now())`,
         [id, s(a.name) || "Company", s(a.industry), s(a.website), s(a.phone), s(a.email), s(a.city), s(a.country), companyId]);
-      return { ok: true, summary: `Created company ${a.name} (id ${id})`, action: { type: "create_company", label: `Company created: ${a.name}`, href: `/companies/${id}` } };
+      return { ok: true, summary: `Created company ${a.name}`, action: { type: "create_company", label: `Company created: ${a.name}`, href: `/companies/${id}` } };
     }
     if (name === "create_lead") {
       const id = newId("ld");
       await p.query(`insert into "leads" (id,"firstName","lastName",email,phone,company,value,notes,"companyId","createdById","createdAt","updatedAt") values ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,now(),now())`,
         [id, s(a.firstName) || "Lead", s(a.lastName) || "", s(a.email), s(a.phone), s(a.company), a.value != null ? Number(a.value) : null, s(a.notes), companyId, userId]);
       const nm = [a.firstName, a.lastName].filter(Boolean).join(" ");
-      return { ok: true, summary: `Created lead ${nm} (id ${id})`, action: { type: "create_lead", label: `Lead created: ${nm}`, href: `/leads/${id}` } };
+      return { ok: true, summary: `Created lead ${nm}`, action: { type: "create_lead", label: `Lead created: ${nm}`, href: `/leads/${id}` } };
+    }
+    if (name === "create_task") {
+      const id = newId("tk");
+      await p.query(`insert into "tasks" (id,title,description,"dueAt","isCompleted","companyId","assignedToId","createdAt","updatedAt") values ($1,$2,$3,${a.dueAt ? "$4::timestamp" : "null"},false,${a.dueAt ? "$5" : "$4"},${a.dueAt ? "$6" : "$5"},now(),now())`,
+        a.dueAt ? [id, s(a.title) || "Task", s(a.description), s(a.dueAt), companyId, userId] : [id, s(a.title) || "Task", s(a.description), companyId, userId]);
+      return { ok: true, summary: `Created task "${a.title}"`, action: { type: "create_task", label: `Task created: ${a.title}`, href: `/work-queue` } };
+    }
+    if (name === "create_meeting") {
+      const id = newId("mt");
+      const dur = Number(a.durationMins) > 0 ? Number(a.durationMins) : 30;
+      await p.query(`insert into "calendar_meetings" (id,"companyId","organizerId",title,type,location,"startsAt","endsAt","createdAt","updatedAt") values ($1,$2,$3,$4,$5,$6,$7::timestamp,($7::timestamp + ($8 || ' minutes')::interval),now(),now())`,
+        [id, companyId, userId, s(a.title) || "Meeting", s(a.type) || "meeting", s(a.location), s(a.whenISO), String(dur)]);
+      return { ok: true, summary: `Scheduled "${a.title}" at ${a.whenISO}`, action: { type: "create_meeting", label: `Meeting scheduled: ${a.title}`, href: `/calendar` } };
+    }
+    if (name === "find_contact") {
+      const q = `%${String(a.query || "").toLowerCase()}%`;
+      const { rows } = await p.query(`select id, "firstName", "lastName", email, title from "contacts" where "companyId"=$1 and (lower(coalesce("firstName",'')||' '||coalesce("lastName",'')) like $2 or lower(coalesce(email,'')) like $2) order by "updatedAt" desc limit 5`, [companyId, q]);
+      return { ok: true, summary: `Found ${rows.length} contact(s)`, data: rows };
+    }
+    if (name === "add_note") {
+      const r = await p.query(`update "contacts" set notes = coalesce(notes || E'\\n', '') || $1, "updatedAt"=now() where id=$2 and "companyId"=$3`, [s(a.note) || "", s(a.contactId), companyId]);
+      if (!r.rowCount) return { ok: false, summary: "Contact not found" };
+      return { ok: true, summary: "Note added", action: { type: "add_note", label: "Note added", href: `/contacts/${s(a.contactId)}` } };
+    }
+    if (name === "update_contact") {
+      const sets: string[] = []; const vals: unknown[] = []; let i = 1;
+      for (const f of ["title", "email", "phone", "notes"]) if (f in a) { sets.push(`"${f}"=$${i}`); vals.push(s(a[f])); i++; }
+      if (!sets.length) return { ok: false, summary: "No fields to update" };
+      sets.push(`"updatedAt"=now()`); vals.push(s(a.contactId), companyId);
+      const r = await p.query(`update "contacts" set ${sets.join(", ")} where id=$${i} and "companyId"=$${i + 1}`, vals);
+      if (!r.rowCount) return { ok: false, summary: "Contact not found" };
+      return { ok: true, summary: "Contact updated", action: { type: "update_contact", label: "Contact updated", href: `/contacts/${s(a.contactId)}` } };
     }
     return { ok: false, summary: `Unknown tool ${name}` };
   } catch (e) {
     return { ok: false, summary: `Could not ${name}: ${(e as Error).message}` };
   }
 }
-
-const SYSTEM = `You are Xentral AI, the built-in agent inside Xentral — a UAE-first business OS (CRM, invoicing, inventory, payments via Telr). Currency AED, 5% VAT.
-You can take REAL actions with tools: create_contact, create_company, create_lead. When the user asks to add / create / log / "lege an" / "erstelle" a contact, company or lead, CALL the matching tool with the details they gave, then confirm in ONE short sentence what you created. The user may write German or English. For pure questions (no creation), just answer concisely. Never claim you created something unless a tool actually ran.`;
 
 export async function POST(req: Request) {
   const url = process.env.DATABASE_URL;
@@ -92,30 +125,43 @@ export async function POST(req: Request) {
   const cfg = await resolveKey(url, session.companyId);
   if (!cfg) return NextResponse.json({ answer: "Xentral AI isn't configured yet — add an OpenAI key in Settings → AI Hub.", actions: [] });
 
+  // workspace timezone + local now (so "tomorrow 3pm" resolves correctly)
+  let tz = "Asia/Dubai";
+  try { const c = await pool(url).query(`select timezone from "companies" where id=$1`, [session.companyId]); if (c.rows[0]?.timezone) tz = c.rows[0].timezone; } catch { /* default */ }
+  const localNow = new Intl.DateTimeFormat("en-CA", { timeZone: tz, year: "numeric", month: "2-digit", day: "2-digit", hour: "2-digit", minute: "2-digit", hour12: false }).format(new Date()).replace(", ", "T");
+
+  const SYSTEM = `You are Xentral AI, the built-in agent inside Xentral — a UAE-first business OS (CRM, invoicing, inventory, payments via Telr). Currency AED, 5% VAT.
+You take REAL actions with tools: create_contact, create_company, create_lead, create_task, create_meeting, find_contact, add_note, update_contact.
+When the user asks to add/create/log/schedule/note/update something ("lege an", "erstelle", "plane", "notiere", "aktualisiere"), CALL the matching tool, then confirm in ONE short sentence what you did. The user may write German or English.
+To add a note to or update an EXISTING contact, FIRST call find_contact to get its id, then call add_note / update_contact with that id. Never claim you found or changed a record without calling the tool.
+The workspace timezone is ${tz}; the current local date-time is ${localNow}. For create_task.dueAt and create_meeting.whenISO output LOCAL wall-clock "YYYY-MM-DDThh:mm" with NO timezone/Z (e.g. "morgen 15 Uhr" → tomorrow's date + "T15:00").
+For pure questions (no action), just answer concisely.`;
+
   const openai = new OpenAI({ apiKey: cfg.key });
-  const baseMsgs: OpenAI.Chat.Completions.ChatCompletionMessageParam[] = [
+  const messages: OpenAI.Chat.Completions.ChatCompletionMessageParam[] = [
     { role: "system", content: SYSTEM },
     ...history.map((m) => ({ role: m.role as "user" | "assistant", content: m.content })),
     { role: "user", content: prompt },
   ];
-  const actions: { type: string; label: string; href?: string }[] = [];
+  const actions: Action[] = [];
   try {
-    const first = await openai.chat.completions.create({ model: cfg.model, temperature: 0.3, max_tokens: 700, messages: baseMsgs, tools: TOOLS, tool_choice: "auto" });
-    const msg = first.choices[0]?.message;
-    if (msg?.tool_calls?.length) {
-      const toolMsgs: OpenAI.Chat.Completions.ChatCompletionMessageParam[] = [];
+    for (let round = 0; round < 4; round++) {
+      const last = round === 3;
+      const r = await openai.chat.completions.create({ model: cfg.model, temperature: 0.3, max_tokens: 600, messages, tools: TOOLS, tool_choice: last ? "none" : "auto" });
+      const msg = r.choices[0]?.message;
+      if (!msg) break;
+      messages.push(msg);
+      if (!msg.tool_calls?.length) return NextResponse.json({ answer: msg.content?.trim() || "Done.", actions });
       for (const tc of msg.tool_calls) {
         if (tc.type !== "function") continue;
         let args: Record<string, unknown> = {};
         try { args = JSON.parse(tc.function.arguments || "{}"); } catch { /* ignore */ }
-        const r = await exec(url, session.companyId, session.userId, tc.function.name, args);
-        if (r.action) actions.push(r.action);
-        toolMsgs.push({ role: "tool", tool_call_id: tc.id, content: JSON.stringify(r) });
+        const res = await exec(url, session.companyId, session.userId, tc.function.name, args);
+        if (res.action) actions.push(res.action);
+        messages.push({ role: "tool", tool_call_id: tc.id, content: JSON.stringify(res) });
       }
-      const second = await openai.chat.completions.create({ model: cfg.model, temperature: 0.3, max_tokens: 400, messages: [...baseMsgs, msg, ...toolMsgs] });
-      return NextResponse.json({ answer: second.choices[0]?.message?.content?.trim() || "Done.", actions });
     }
-    return NextResponse.json({ answer: msg?.content?.trim() || "Sorry, I couldn't respond.", actions });
+    return NextResponse.json({ answer: actions.length ? "Done." : "I couldn't complete that — please rephrase.", actions });
   } catch {
     return NextResponse.json({ answer: "I had trouble just now — please try again.", actions });
   }
