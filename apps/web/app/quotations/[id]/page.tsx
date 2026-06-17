@@ -55,7 +55,7 @@ export default function QuoteDetailPage({ params }: { params: { id: string } }) 
     <AppShell active="quotations">
       <PageTitleRow title={`Quote ${q.number}`} subtitle={`${q.customer || "—"}${q.issued ? ` · issued ${q.issued}` : ""}`}
         actions={<div style={{ display: "flex", gap: 8 }}>
-          <Button onClick={openEdit}>Edit</Button>
+          <Button onClick={() => { window.location.href = "/quotations/" + params.id + "/edit"; }}>Edit items</Button><Button onClick={openEdit}>Edit</Button>
           <Button onClick={openPdf}>Download PDF</Button>
           <Button onClick={copyLink}>Copy link</Button>
           <Button variant="primary" onClick={send} disabled={busy}>{busy ? "Sending…" : "Send to customer"}</Button>
