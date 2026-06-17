@@ -2,10 +2,11 @@
 
 import * as React from "react";
 import { color } from "@xentral/config";
-import { AppShell, PageTitleRow, FilterBar, Input, Button, DataTable, StagePill, EmptyState, Modal, type Column } from "@xentral/ui";
+import { AppShell, PageTitleRow, FilterBar, KPICard, Input, Button, DataTable, StagePill, EmptyState, Modal, type Column } from "@xentral/ui";
 import { listDeals, type DealRow, type DealStage } from "@xentral/module-crm";
 
 const aed = (n: number) => `AED ${n.toLocaleString()}`;
+const aedShort = (n: number) => n >= 1000 ? `AED ${(n / 1000).toFixed(n >= 10000 ? 0 : 1)}k` : `AED ${n}`;
 const initials = (name: string) => name.split(" ").map((w) => w[0]).slice(0, 2).join("").toUpperCase();
 const LS_KEY = "xentral-deals-extra";
 const STAGES: DealStage[] = ["new", "qualified", "proposal", "won", "lost"];
@@ -49,6 +50,13 @@ export default function DealsPage() {
   const ALL = React.useMemo(() => [...extra, ...listDeals()], [extra]);
   const rows = ALL.filter((r) => (r.name + r.account + r.owner).toLowerCase().includes(q.toLowerCase()));
   const openValue = ALL.filter((r) => r.stage !== "won" && r.stage !== "lost").reduce((s, r) => s + r.value, 0);
+  const wonValue = ALL.filter((r) => r.stage === "won").reduce((s, r) => s + r.value, 0);
+  const wonCount = ALL.filter((r) => r.stage === "won").length;
+  const lostCount = ALL.filter((r) => r.stage === "lost").length;
+  const winRate = wonCount + lostCount > 0 ? Math.round((wonCount / (wonCount + lostCount)) * 100) : 0;
+  const openCount = ALL.filter((r) => r.stage !== "won" && r.stage !== "lost").length;
+  const avgDeal = ALL.length ? Math.round(ALL.reduce((s, r) => s + r.value, 0) / ALL.length) : 0;
+  const largestOpen = ALL.filter((r) => r.stage !== "won" && r.stage !== "lost").reduce((m, r) => Math.max(m, r.value), 0);
   const visibleGroups = GROUPS.map((g) => ({ g, gr: rows.filter((r) => g.match(r.stage)) })).filter((x) => x.gr.length > 0);
 
   const submit = () => {
@@ -62,6 +70,15 @@ export default function DealsPage() {
   return (
     <AppShell active="deals">
       <PageTitleRow title="Deals" subtitle={`${ALL.length} deals · ${aed(openValue)} open pipeline`} actions={<Button variant="primary" onClick={() => setOpen(true)}>+ New deal</Button>} />
+
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(150px, 1fr))", gap: 10, marginBottom: 16 }}>
+        <KPICard label="Open pipeline" value={aedShort(openValue)} note={`${openCount} active deals`} noteTone={color.brand.primary} />
+        <KPICard label="Won" value={aedShort(wonValue)} note={`${wonCount} closed won`} noteTone={color.status.positive} />
+        <KPICard label="Win rate" value={`${winRate}%`} note="won vs lost" noteTone={winRate >= 50 ? color.status.positive : color.status.critical} />
+        <KPICard label="Avg deal" value={aedShort(avgDeal)} note="all deals" noteTone={color.ink.soft} />
+        <KPICard label="Largest open" value={aedShort(largestOpen)} note="top opportunity" noteTone={color.ink.soft} />
+        <KPICard label="Deals" value={String(ALL.length)} note="total tracked" noteTone={color.ink.soft} />
+      </div>
 
       <div style={{ display: "flex", gap: 20, borderBottom: `1px solid ${color.line.DEFAULT}`, marginBottom: 16 }}>
         {TABS.map(([id, label]) => (
@@ -85,6 +102,7 @@ export default function DealsPage() {
                 <span style={{ width: 3, height: 16, borderRadius: 2, background: g.accent }} />
                 <span style={{ fontSize: 14, fontWeight: 600, color: g.accent }}>{g.title}</span>
                 <span style={{ fontSize: 12, color: color.ink.soft }}>{gr.length}</span>
+                <span style={{ fontSize: 12, color: color.ink.soft, marginLeft: "auto" }}>{aed(gr.reduce((s, r) => s + r.value, 0))}</span>
               </div>
               <DataTable columns={COLUMNS} rows={gr} getKey={(r) => r.id} rowHref={(r) => `/deals/${r.id}`} />
             </div>
