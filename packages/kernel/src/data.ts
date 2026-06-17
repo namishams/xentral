@@ -23,9 +23,20 @@ export type RawContact = {
   owner?: string;
 };
 
+/** Raw company/account as read from a data source. */
+export type RawCompany = {
+  id: string;
+  name: string;
+  industry?: string;
+  city?: string;
+  openDeals?: number;
+  owner?: string;
+};
+
 /** The port every data adapter implements. Grows one method per migrated area. */
 export interface DataSource {
   listContacts(scope: TenantScope): Promise<RawContact[]>;
+  listCompanies(scope: TenantScope): Promise<RawCompany[]>;
 }
 
 let _ds: DataSource | null = null;

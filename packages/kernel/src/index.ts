@@ -31,4 +31,4 @@ export type { UpdatePort, PackageVersion, UpdateInfo } from "./update";
 
 // Swappable data source (ports & adapters):
 export { setDataSource, getDataSource, hasDataSource, __resetDataSource } from "./data";
-export type { DataSource, TenantScope, RawContact } from "./data";
+export type { DataSource, TenantScope, RawContact, RawCompany } from "./data";

@@ -7,7 +7,7 @@
  * package driver-agnostic, unit-testable, and absent from the public preview
  * bundle. Registered via setDataSource() only in a private/authenticated host.
  */
-import type { DataSource, TenantScope, RawContact } from "@xentral/kernel";
+import type { DataSource, TenantScope, RawContact, RawCompany } from "@xentral/kernel";
 
 /** Minimal query surface — satisfied by `pg`'s Client.query, or any equivalent. */
 export type QueryFn = (sql: string, params: unknown[]) => Promise<{ rows: Record<string, unknown>[] }>;
@@ -43,6 +43,28 @@ export function createLiveDataSource(query: QueryFn): DataSource {
         phone: str(r.phone),
         accountName: str(r.accountName),
         owner: str(r.owner),
+      }));
+    },
+
+    async listCompanies(scope: TenantScope): Promise<RawCompany[]> {
+      const { rows } = await query(
+        `select a."id", a."name", a."industry", a."city",
+                u."name" as "owner",
+                (select count(*)::int from "leads" l where l."accountId" = a."id") as "openDeals"
+           from "accounts" a
+           left join "users" u on u."id" = a."ownerId"
+          where a."companyId" = $1 and a."isArchived" = false
+          order by a."createdAt" desc
+          limit 500`,
+        [scope.companyId],
+      );
+      return rows.map((r) => ({
+        id: String(r.id),
+        name: str(r.name) ?? "",
+        industry: str(r.industry),
+        city: str(r.city),
+        owner: str(r.owner),
+        openDeals: typeof r.openDeals === "number" ? r.openDeals : Number(r.openDeals ?? 0),
       }));
     },
   };

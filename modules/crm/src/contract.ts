@@ -93,7 +93,23 @@ export type CompanyRow = {
   owner: string;
 };
 
-/** List companies for the workspace. */
+/** Load companies for a workspace via the DataPort; seed fallback on preview. */
+export async function loadCompanies(scope?: TenantScope): Promise<CompanyRow[]> {
+  if (scope && hasDataSource()) {
+    const raw = await getDataSource()!.listCompanies(scope);
+    return raw.map((r) => ({
+      id: r.id,
+      name: r.name,
+      industry: r.industry ?? "",
+      city: r.city ?? "",
+      openDeals: r.openDeals ?? 0,
+      owner: r.owner ?? "",
+    }));
+  }
+  return listCompanies();
+}
+
+/** Seed company directory for the workspace. */
 export function listCompanies(): CompanyRow[] {
   return [
     { id: "a1", name: "Skyline Developers", industry: "Construction", city: "Dubai", openDeals: 3, owner: "Nami" },

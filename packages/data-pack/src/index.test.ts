@@ -30,4 +30,28 @@ describe("data-pack live adapter", () => {
     expect(second?.email).toBeUndefined();
     expect(second?.owner).toBeUndefined();
   });
+
+  it("listCompanies is tenant-scoped and coerces openDeals to a number", async () => {
+    let capturedSql = "";
+    let capturedParams: unknown[] = [];
+    const fakeQuery: QueryFn = async (sql, params) => {
+      capturedSql = sql;
+      capturedParams = params;
+      return {
+        rows: [
+          { id: "a1", name: "Skyline Developers", industry: "Construction", city: "Dubai", owner: "Nami", openDeals: 3 },
+          { id: "a2", name: "Gulf Trading", industry: null, city: null, owner: null, openDeals: "0" },
+        ],
+      };
+    };
+    const ds = createLiveDataSource(fakeQuery);
+    const out = await ds.listCompanies({ companyId: "T-9" });
+
+    expect(capturedParams).toEqual(["T-9"]);
+    expect(capturedSql).toContain('a."companyId" = $1');
+    const [first, second] = out;
+    expect(first).toMatchObject({ id: "a1", name: "Skyline Developers", openDeals: 3 });
+    expect(second?.openDeals).toBe(0);
+    expect(second?.industry).toBeUndefined();
+  });
 });

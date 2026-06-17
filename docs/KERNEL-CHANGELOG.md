@@ -17,3 +17,9 @@ registered, else seed fallback (safe on public preview). New driver-injected ada
 @xentral/data-pack implements listContacts() against the existing Postgres schema
 (read-only), tenant-scoped by companyId. eslint: new 'data' element type.
 Reason: Strangler-Fig migration of Contacts (Roadmap Phase 1) - proves seed->live path.
+
+
+## 2026-06-17 - DataPort listCompanies + CRM loadCompanies (owner-approved)
+Kernel: DataSource port gains listCompanies(scope) + RawCompany type (additive).
+data-pack: listCompanies reads accounts (tenant-scoped by companyId, openDeals = lead count).
+module-crm: async loadCompanies(scope?) via port, seed fallback. /companies -> server component.
