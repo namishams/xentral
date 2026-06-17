@@ -54,3 +54,15 @@ export const colorDark = {
   ink: { DEFAULT: "#e7edf6", mid: "#aebccf", soft: "#7e8ea4", onPrimary: "#0b1220" },
   status: { positive: "#46c560", critical: "#f0944a", negative: "#ff6b6b", info: "#4a9eff" },
 } as const;
+
+
+/** Pastel pipeline-stage palette (monday.com style). bg = pastel fill, fg = dark
+ * shade of the same family (AA contrast). Read by the locked StagePill. */
+export const pipeline = {
+  new:         { bg: "#BFDBFE", fg: "#1E3A8A" },
+  qualified:   { bg: "#93C5FD", fg: "#1E3A8A" },
+  proposal:    { bg: "#A5B4FC", fg: "#312E81" },
+  negotiation: { bg: "#C4B5FD", fg: "#4C1D95" },
+  won:         { bg: "#86EFAC", fg: "#14532D" },
+  lost:        { bg: "#FCA5A5", fg: "#7F1D1D" },
+} as const;

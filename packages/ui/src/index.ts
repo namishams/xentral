@@ -20,6 +20,7 @@ export { Input } from "./input";
 export { Modal, type ModalProps } from "./modal";
 export { Pagination, type PaginationProps } from "./pagination";
 export { ActionTile } from "./action-tile";
+export { StagePill } from "./stage-pill";
 
 // Migrated next: AISearchBar, QuickActionsBar, FormSection, DetailDrawer,
 // Panel, Skeleton, Toaster.
