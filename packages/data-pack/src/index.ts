@@ -7,7 +7,7 @@
  * package driver-agnostic, unit-testable, and absent from the public preview
  * bundle. Registered via setDataSource() only in a private/authenticated host.
  */
-import type { DataSource, TenantScope, RawContact, RawCompany, RawLead, RawActivity, RawTask, RawUser } from "@xentral/kernel";
+import type { DataSource, TenantScope, RawContact, RawCompany, RawLead, RawActivity, RawTask, RawUser, RawMarketLead } from "@xentral/kernel";
 
 /** Minimal query surface — satisfied by `pg`'s Client.query, or any equivalent. */
 export type QueryFn = (sql: string, params: unknown[]) => Promise<{ rows: Record<string, unknown>[] }>;
@@ -157,6 +157,39 @@ export function createLiveDataSource(query: QueryFn): DataSource {
         isActive: Boolean(r.isActive),
         lastLoginAt: dstr(r.lastLoginAt),
       }));
+    },
+    async listMarketplaceLeads(_scope: TenantScope): Promise<RawMarketLead[]> {
+      const { rows } = await query(
+        'select id, specialty, category, "originRegion", "currentLocation", quality::text as quality, "viewCount", "watchCount", "maxPurchases", "purchaseCount", "isExclusive", "initialPrice", "minPrice", "decayAmount", "decayInterval", "listedAt", "firstName", "lastName", phone, "hasPhone", "hasWhatsApp", "hasEmail", "hasLinkedIn", "hasCV", "hasDataflow" from "marketplace_leads" where status = $1 and "purchaseCount" < "maxPurchases" order by "listedAt" desc limit 200',
+        ["AVAILABLE"],
+      );
+      return rows.map((r) => ({
+        id: String(r.id),
+        specialty: str(r.specialty) ?? "",
+        category: str(r.category) ?? "",
+        originRegion: str(r.originRegion) ?? "",
+        currentLocation: str(r.currentLocation),
+        quality: str(r.quality) ?? "WARM",
+        viewCount: Number(r.viewCount) || 0,
+        watchCount: Number(r.watchCount) || 0,
+        maxPurchases: Number(r.maxPurchases) || 1,
+        purchaseCount: Number(r.purchaseCount) || 0,
+        isExclusive: Boolean(r.isExclusive),
+        initialPrice: Number(r.initialPrice) || 0,
+        minPrice: Number(r.minPrice) || 0,
+        decayAmount: Number(r.decayAmount) || 0,
+        decayInterval: Number(r.decayInterval) || 6,
+        listedAt: dstr(r.listedAt) ?? new Date().toISOString(),
+        firstName: str(r.firstName),
+        lastName: str(r.lastName),
+        phone: str(r.phone),
+        hasPhone: Boolean(r.hasPhone),
+        hasWhatsApp: Boolean(r.hasWhatsApp),
+        hasEmail: Boolean(r.hasEmail),
+        hasLinkedIn: Boolean(r.hasLinkedIn),
+        hasCV: Boolean(r.hasCV),
+        hasDataflow: Boolean(r.hasDataflow),
+      })) as RawMarketLead[];
     },
   };
 }

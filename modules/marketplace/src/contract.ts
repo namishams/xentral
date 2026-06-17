@@ -1,3 +1,4 @@
+import { getDataSource, hasDataSource, type TenantScope } from "@xentral/kernel";
 export type ListingKind = { id: string; label: string };
 export function getListingKinds(): ListingKind[] {
   return [{ id: "lead", label: "Lead" }, { id: "saved-search", label: "Saved search" }];
@@ -51,4 +52,69 @@ export function listMarketLeads(): MarketLead[] {
     { id: "m5", title: "Fit-out Contractor", categoryLabel: "CONSTRUCTION", category: "construction", region: "UAE", city: "Sharjah", quality: "standard", freshLabel: "2d ago", spots: 4, views: 9, price: 90, basePrice: 160, dropAmount: 8, dropInLabel: "5h 02m", dropAtLabel: "11:40 PM", maskedName: "K** M***", maskedPhone: "55778 *** **** **42", channels: { phone: true, whatsapp: false, email: true, linkedin: false, cv: false, dataflow: false } },
     { id: "m6", title: "Logistics Lead", categoryLabel: "LOGISTICS", category: "logistics", region: "GCC", city: "Riyadh", quality: "warm", freshLabel: "1d ago", spots: 3, views: 12, price: 70, basePrice: 120, dropAmount: 6, dropInLabel: "2h 15m", dropAtLabel: "10:20 PM", maskedName: "T** B***", maskedPhone: "52330 *** **** **87", channels: { phone: false, whatsapp: true, email: true, linkedin: true, cv: false, dataflow: false } },
   ];
+}
+
+
+/* ── Live Mediflow lead-sale connector (read side). Maps real marketplace_leads
+   through the DataPort, masks PII, applies the dutch-auction price. Seed fallback
+   on the public preview (no scope / no source). ── */
+function mpCurrentPrice(initial: number, minP: number, decayAmount: number, decayInterval: number, listedAtISO: string): number {
+  const hrs = (Date.now() - new Date(listedAtISO).getTime()) / 3600000;
+  const drops = Math.floor(hrs / Math.max(1, decayInterval));
+  return Math.max(minP, initial - drops * decayAmount);
+}
+function mpNextDropLabel(decayInterval: number, listedAtISO: string): string {
+  const intervalMs = Math.max(1, decayInterval) * 3600000;
+  const remain = intervalMs - ((Date.now() - new Date(listedAtISO).getTime()) % intervalMs);
+  const m = Math.max(0, Math.floor(remain / 60000));
+  const h = Math.floor(m / 60);
+  return h > 0 ? (h + "h " + (m % 60) + "m") : (m + "m");
+}
+function mpDropAtLabel(decayInterval: number, listedAtISO: string): string {
+  const intervalMs = Math.max(1, decayInterval) * 3600000;
+  const remain = intervalMs - ((Date.now() - new Date(listedAtISO).getTime()) % intervalMs);
+  return new Date(Date.now() + remain).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+}
+function mpFresh(listedAtISO: string): string {
+  const days = Math.floor((Date.now() - new Date(listedAtISO).getTime()) / 86400000);
+  return days <= 0 ? "Fresh today" : days === 1 ? "1d ago" : (days + "d ago");
+}
+function mpMaskName(f?: string, l?: string): string {
+  const a = f ? f[0] + "**" : "";
+  const b = l ? l[0] + "***" : "";
+  return [a, b].filter(Boolean).join(" ") || "Verified lead";
+}
+function mpMaskPhone(p?: string): string {
+  if (!p) return "*** **** ****";
+  const digits = p.replace(/\D/g, "");
+  return p.slice(0, 5) + " *** **** **" + digits.slice(-2);
+}
+const MP_Q: Record<string, LeadQuality> = { HOT: "hot", WARM: "warm", STANDARD: "standard" };
+
+/** Load marketplace listings via the DataPort (live, masked); seed fallback on preview. */
+export async function loadMarketLeads(scope?: TenantScope): Promise<MarketLead[]> {
+  if (scope && hasDataSource()) {
+    const raw = await getDataSource()!.listMarketplaceLeads(scope);
+    return raw.map((r) => ({
+      id: r.id,
+      title: r.specialty || "Lead",
+      categoryLabel: (r.category || "").toUpperCase(),
+      category: r.category || "",
+      region: r.originRegion || "Unknown",
+      city: r.currentLocation || "",
+      quality: MP_Q[r.quality] ?? "warm",
+      freshLabel: mpFresh(r.listedAt),
+      spots: Math.max(0, r.maxPurchases - r.purchaseCount),
+      views: r.viewCount,
+      price: mpCurrentPrice(r.initialPrice, r.minPrice, r.decayAmount, r.decayInterval, r.listedAt),
+      basePrice: r.initialPrice,
+      dropAmount: r.decayAmount,
+      dropInLabel: mpNextDropLabel(r.decayInterval, r.listedAt),
+      dropAtLabel: mpDropAtLabel(r.decayInterval, r.listedAt),
+      maskedName: mpMaskName(r.firstName, r.lastName),
+      maskedPhone: mpMaskPhone(r.phone),
+      channels: { phone: r.hasPhone, whatsapp: r.hasWhatsApp, email: r.hasEmail, linkedin: r.hasLinkedIn, cv: r.hasCV, dataflow: r.hasDataflow },
+    }));
+  }
+  return listMarketLeads();
 }

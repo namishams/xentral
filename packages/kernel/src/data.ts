@@ -77,6 +77,35 @@ export type RawUser = {
 };
 
 /** The port every data adapter implements. Grows one method per migrated area. */
+/** Raw marketplace lead (Mediflow lead-sale connector) as read from a data source. */
+export type RawMarketLead = {
+  id: string;
+  specialty: string;
+  category: string;
+  originRegion: string;
+  currentLocation?: string;
+  quality: string;
+  viewCount: number;
+  watchCount: number;
+  maxPurchases: number;
+  purchaseCount: number;
+  isExclusive: boolean;
+  initialPrice: number;
+  minPrice: number;
+  decayAmount: number;
+  decayInterval: number;
+  listedAt: string;
+  firstName?: string;
+  lastName?: string;
+  phone?: string;
+  hasPhone: boolean;
+  hasWhatsApp: boolean;
+  hasEmail: boolean;
+  hasLinkedIn: boolean;
+  hasCV: boolean;
+  hasDataflow: boolean;
+};
+
 export interface DataSource {
   listContacts(scope: TenantScope): Promise<RawContact[]>;
   listCompanies(scope: TenantScope): Promise<RawCompany[]>;
@@ -84,6 +113,7 @@ export interface DataSource {
   listActivities(scope: TenantScope): Promise<RawActivity[]>;
   listTasks(scope: TenantScope): Promise<RawTask[]>;
   listUsers(scope: TenantScope): Promise<RawUser[]>;
+  listMarketplaceLeads(scope: TenantScope): Promise<RawMarketLead[]>;
 }
 
 let _ds: DataSource | null = null;
