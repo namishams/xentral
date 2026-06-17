@@ -20,11 +20,11 @@ const KPIS = [
   { label: "Avg net order", value: "AED 311.65", note: "▼ AED 7.65", tone: color.status.negative },
 ];
 
-const RECOMMENDATIONS: { label: string; count: number; tone: string }[] = [
-  { label: "Great! All packages have been shipped.", count: 0, tone: color.status.positive },
-  { label: "Cut customer wait time — handle the open orders.", count: 4, tone: color.status.critical },
-  { label: "Check your customers' open emails.", count: 1, tone: color.status.critical },
-  { label: "Restock items — inventory is running very low.", count: 15, tone: color.status.critical },
+const RECOMMENDATIONS: { label: string; count: number; tone: string; href: string }[] = [
+  { label: "Great! All packages have been shipped.", count: 0, tone: color.status.positive, href: "/orders" },
+  { label: "Cut customer wait time — handle the open orders.", count: 4, tone: color.status.critical, href: "/orders" },
+  { label: "Check your customers' open emails.", count: 1, tone: color.status.critical, href: "/email" },
+  { label: "Restock items — inventory is running very low.", count: 15, tone: color.status.critical, href: "/inventory" },
 ];
 
 // Launchpad — ordered by the BUSINESS LIFECYCLE, not technical modules.
@@ -112,12 +112,12 @@ export default function DashboardPage() {
         <Panel title="Recommendations">
           <div>
             {RECOMMENDATIONS.map((r, i) => (
-              <div key={i} style={{ display: "flex", alignItems: "center", gap: 12, height: d.recommendation.rowHeight, borderTop: i === 0 ? "none" : `1px solid ${color.line.DEFAULT}` }}>
+              <a key={i} href={r.href} style={{ display: "flex", alignItems: "center", gap: 12, height: d.recommendation.rowHeight, borderTop: i === 0 ? "none" : `1px solid ${color.line.DEFAULT}`, textDecoration: "none" }}>
                 <span style={{ width: d.recommendation.accentWidth, height: 22, borderRadius: 2, background: r.tone, flexShrink: 0 }} />
                 <span style={{ fontSize: d.recommendation.iconSize, color: color.ink.soft, width: 22, textAlign: "center", flexShrink: 0 }} aria-hidden="true">◍</span>
                 <span style={{ flex: 1, minWidth: 0, fontSize: d.recommendation.fontSize, color: color.ink.DEFAULT, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{r.label}</span>
                 <span style={{ fontSize: d.recommendation.countFontSize, fontWeight: 600, color: r.count > 0 ? color.ink.DEFAULT : color.ink.soft }}>{r.count}</span>
-              </div>
+              </a>
             ))}
           </div>
         </Panel>
