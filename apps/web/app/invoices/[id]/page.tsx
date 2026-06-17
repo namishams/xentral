@@ -4,10 +4,11 @@ import * as React from "react";
 import { color } from "@xentral/config";
 import { AppShell, PageTitleRow, Button, StatusBadge, type BadgeTone } from "@xentral/ui";
 
-type Line = { name: string; description: string | null; qty: number; unitPrice: number; vatRate: number; lineTotal: number };
-type Inv = { id: string; number: string; status: string; total: number; amountPaid: number; subtotal: number; vatTotal: number; currency: string; issued: string | null; due: string | null; notes: string | null; customer: string; customerEmail: string | null };
+type Line = { name: string; description: string | null; qty: number; unitPrice: number; lineTotal: number };
+type Inv = { id: string; number: string; status: string; total: number; amountPaid: number; subtotal: number; vatTotal: number; currency: string; issued: string | null; due: string | null; dueDateRaw: string | null; notes: string | null; customer: string; customerEmail: string | null };
 const aed = (n: number, c = "AED") => `${c} ${(Number(n) || 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 const TONE: Record<string, BadgeTone> = { DRAFT: "neutral", SENT: "info", PARTIALLY_PAID: "warning", PAID: "positive", CANCELLED: "neutral", OVERDUE: "critical" };
+const STATUSES = ["DRAFT", "SENT", "PARTIALLY_PAID", "PAID", "OVERDUE", "CANCELLED"];
 
 export default function InvoiceDetailPage({ params }: { params: { id: string } }) {
   const [inv, setInv] = React.useState<Inv | null>(null);
@@ -15,6 +16,7 @@ export default function InvoiceDetailPage({ params }: { params: { id: string } }
   const [loading, setLoading] = React.useState(true);
   const [busy, setBusy] = React.useState(false);
   const [toast, setToast] = React.useState("");
+  const [edit, setEdit] = React.useState<{ status: string; dueDate: string; notes: string } | null>(null);
 
   const load = React.useCallback(() => {
     fetch(`/api/books/invoices/${params.id}`).then((r) => r.json()).then((d) => { setInv(d.invoice ?? null); setLines(d.lines ?? []); setLoading(false); }).catch(() => setLoading(false));
@@ -32,18 +34,31 @@ export default function InvoiceDetailPage({ params }: { params: { id: string } }
     } catch { setToast("Network error"); } finally { setBusy(false); }
   }
   function copyLink() { navigator.clipboard?.writeText(payUrl).then(() => setToast("Pay link copied")); }
+  function openPdf() { window.open(`/invoices/${params.id}/print`, "_blank"); }
+  function openEdit() { if (inv) setEdit({ status: inv.status, dueDate: inv.dueDateRaw || "", notes: inv.notes || "" }); }
+  async function saveEdit() {
+    if (!edit) return;
+    setBusy(true);
+    try {
+      const res = await fetch(`/api/books/invoices/${params.id}`, { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ status: edit.status, dueDate: edit.dueDate || null, notes: edit.notes }) });
+      if (res.ok) { setEdit(null); setToast("Saved"); load(); } else { const j = await res.json().catch(() => ({})); setToast(j.error || "Could not save"); }
+    } finally { setBusy(false); }
+  }
 
   if (loading) return <AppShell active="invoice"><div style={{ padding: 40, textAlign: "center", color: color.ink.soft }}>Loading…</div></AppShell>;
   if (!inv) return <AppShell active="invoice"><div style={{ padding: 40, textAlign: "center", color: color.ink.soft }}>Invoice not found. <a href="/invoices" style={{ color: color.brand.primary }}>Back to invoices</a></div></AppShell>;
 
   const bal = Math.max(0, (inv.total || 0) - (inv.amountPaid || 0));
+  const fieldS: React.CSSProperties = { width: "100%", boxSizing: "border-box", height: 38, border: `1px solid ${color.line.strong}`, borderRadius: 8, padding: "0 11px", fontSize: 13.5, color: color.ink.DEFAULT, background: color.surface.card, marginBottom: 12 };
+  const lbl: React.CSSProperties = { display: "block", fontSize: 11.5, fontWeight: 700, letterSpacing: 0.3, color: color.ink.soft, textTransform: "uppercase", marginBottom: 5 };
 
   return (
     <AppShell active="invoice">
       <PageTitleRow title={`Invoice ${inv.number}`} subtitle={`${inv.customer || "—"}${inv.issued ? ` · issued ${inv.issued}` : ""}`}
         actions={<div style={{ display: "flex", gap: 8 }}>
+          <Button onClick={openEdit}>Edit</Button>
+          <Button onClick={openPdf}>Download PDF</Button>
           <Button onClick={copyLink}>Copy pay link</Button>
-          <a href={payUrl} target="_blank" rel="noreferrer"><Button>Open pay page</Button></a>
           <Button variant="primary" onClick={send} disabled={busy}>{busy ? "Sending…" : "Send to customer"}</Button>
         </div>} />
 
@@ -89,10 +104,31 @@ export default function InvoiceDetailPage({ params }: { params: { id: string } }
           <div style={{ fontSize: 13, color: color.ink.mid, marginBottom: 16 }}>{inv.customerEmail || "No email on file"}</div>
           <h2 style={{ fontSize: 13, fontWeight: 700, color: color.ink.DEFAULT, margin: "0 0 8px" }}>Payment link</h2>
           <div style={{ fontSize: 12, color: color.ink.soft, wordBreak: "break-all", background: color.surface.sunken, borderRadius: 8, padding: "8px 10px", marginBottom: 10 }}>{payUrl}</div>
-          <Button onClick={copyLink}>Copy link</Button>
-          <p style={{ fontSize: 11.5, color: color.ink.soft, marginTop: 14, lineHeight: 1.5 }}>“Send to customer” emails a branded invoice with a secure <b>Pay with Telr</b> button. Paying marks this invoice as paid automatically.</p>
+          <div style={{ display: "flex", gap: 8 }}><Button onClick={copyLink}>Copy link</Button><a href={payUrl} target="_blank" rel="noreferrer"><Button>Open</Button></a></div>
+          <p style={{ fontSize: 11.5, color: color.ink.soft, marginTop: 14, lineHeight: 1.5 }}>“Send to customer” emails a branded invoice with a secure <b>Pay with Telr</b> button. “Download PDF” opens a print-ready copy.</p>
         </section>
       </div>
+
+      {edit ? (
+        <div onClick={() => !busy && setEdit(null)} style={{ position: "fixed", inset: 0, background: "rgba(20,28,38,0.45)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 100, padding: 16 }}>
+          <div onClick={(e) => e.stopPropagation()} style={{ width: "100%", maxWidth: 420, background: color.surface.card, borderRadius: 14, boxShadow: "0 24px 60px -16px rgba(20,28,38,0.4)", padding: 22 }}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
+              <h2 style={{ margin: 0, fontSize: 17, fontWeight: 700, color: color.ink.DEFAULT }}>Edit invoice</h2>
+              <button aria-label="Close" onClick={() => setEdit(null)} style={{ border: 0, background: "transparent", fontSize: 20, color: color.ink.soft, cursor: "pointer" }}>×</button>
+            </div>
+            <label style={lbl}>Status</label>
+            <select value={edit.status} onChange={(e) => setEdit({ ...edit, status: e.target.value })} style={fieldS}>{STATUSES.map((st) => <option key={st} value={st}>{st.replace("_", " ").toLowerCase()}</option>)}</select>
+            <label style={lbl}>Due date</label>
+            <input type="date" value={edit.dueDate} onChange={(e) => setEdit({ ...edit, dueDate: e.target.value })} style={fieldS} />
+            <label style={lbl}>Notes</label>
+            <textarea value={edit.notes} onChange={(e) => setEdit({ ...edit, notes: e.target.value })} rows={3} style={{ ...fieldS, height: "auto", padding: 11, resize: "vertical" }} />
+            <div style={{ display: "flex", justifyContent: "flex-end", gap: 8 }}>
+              <Button onClick={() => setEdit(null)} disabled={busy}>Cancel</Button>
+              <Button variant="primary" onClick={saveEdit} disabled={busy}>{busy ? "Saving…" : "Save changes"}</Button>
+            </div>
+          </div>
+        </div>
+      ) : null}
     </AppShell>
   );
 }
