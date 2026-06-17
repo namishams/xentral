@@ -6,6 +6,7 @@ import { AppShell, PageTitleRow, Button, StatusBadge } from "@xentral/ui";
 
 type Cat = { icon: string; title: string; desc: string; href: string; tag?: string };
 const CATS: Cat[] = [
+  { icon: "❑", title: "Company profile", desc: "Name, phone, address, TRN, currency, timezone & language.", href: "/settings/company" },
   { icon: "❑", title: "Books & invoice designer", desc: "Company identity, TRN, bank details & invoice look.", href: "/books/settings" },
   { icon: "▸", title: "Billing & plans", desc: "Subscription, payment method (Telr) & usage.", href: "/billing", tag: "Telr" },
   { icon: "✦", title: "AI Hub", desc: "Providers, API keys, agent models & auto-reply.", href: "/settings/ai-hub", tag: "Live" },
