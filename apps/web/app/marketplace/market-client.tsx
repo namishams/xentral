@@ -80,7 +80,7 @@ export function MarketplaceClient({ initialRows }: { initialRows: MarketLead[] }
     try {
       const res = await fetch(`/api/marketplace/${id}/buy`, { method: "POST" });
       const d = await res.json();
-      if (res.ok) { setBought((b) => { const n = new Set(b); n.add(id); return n; }); setMsg(`Lead purchased for AED ${d.price} · ${d.balanceAfter} credits left.`); }
+      if (res.ok && d.success) { setBought((b) => { const n = new Set(b); n.add(id); return n; }); setMsg(`✓ Lead purchased for AED ${d.pricePaid} · ${d.creditsRemaining} credits left.`); }
       else if (d.error === "insufficient_credits") setMsg(`Not enough credits — this lead needs AED ${d.required}.`);
       else setMsg(d.message || d.error || "Could not purchase.");
     } catch { setMsg("Network error — please try again."); } finally { setBusyId(""); }
