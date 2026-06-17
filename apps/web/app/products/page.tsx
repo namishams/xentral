@@ -4,6 +4,7 @@ import * as React from "react";
 import { color } from "@xentral/config";
 import { AppShell, PageTitleRow, KPICard, Input, Button, DataTable, StatusBadge, EmptyState, type Column } from "@xentral/ui";
 
+type ApiRow = { id: string; name: string; description: string; sku: string; category: string; unitPrice: number; vatRate: number; kind: string; active: boolean };
 type Row = { id: string; name: string; sku: string; kind: string; price: number; vat: number; category: string; active: boolean };
 const aed = (n: number) => `AED ${Math.round(Number(n) || 0).toLocaleString()}`;
 
@@ -11,7 +12,12 @@ export default function ProductsPage() {
   const [all, setAll] = React.useState<Row[]>([]);
   const [loading, setLoading] = React.useState(true);
   const [q, setQ] = React.useState("");
-  React.useEffect(() => { fetch("/api/erp/products").then((r) => r.json()).then((d) => { setAll(d.rows ?? []); setLoading(false); }).catch(() => setLoading(false)); }, []);
+  React.useEffect(() => {
+    fetch("/api/books/items?all=1").then((r) => r.json()).then((d) => {
+      setAll((d.rows ?? []).map((x: ApiRow) => ({ id: x.id, name: x.name, sku: x.sku, kind: x.kind, price: Number(x.unitPrice) || 0, vat: Number(x.vatRate) || 0, category: x.category, active: !!x.active })));
+      setLoading(false);
+    }).catch(() => setLoading(false));
+  }, []);
   const rows = all.filter((r) => ((r.name || "") + (r.sku || "") + (r.category || "")).toLowerCase().includes(q.toLowerCase()));
   const services = all.filter((r) => (r.kind || "").toUpperCase() === "SERVICE").length;
 
@@ -38,8 +44,8 @@ export default function ProductsPage() {
       </div>
       {loading ? <div style={{ padding: 30, textAlign: "center", color: color.ink.soft, fontSize: 13 }}>Loading…</div>
         : rows.length === 0 ? <EmptyState title="No items" hint="Catalog items for your workspace appear here." action={<Button variant="primary" onClick={() => setQ("")}>Clear search</Button>} />
-          : <DataTable columns={COLS} rows={rows} getKey={(r) => r.id} />}
-      <p style={{ fontSize: 11, color: color.ink.soft, textAlign: "center", marginTop: 18 }}>Products · live via API · tenant-scoped</p>
+          : <DataTable columns={COLS} rows={rows} getKey={(r) => r.id} rowHref={(r) => `/products/${r.id}`} />}
+      <p style={{ fontSize: 11, color: color.ink.soft, textAlign: "center", marginTop: 18 }}>Products · live catalog · tenant-scoped</p>
     </AppShell>
   );
 }

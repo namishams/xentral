@@ -15,16 +15,19 @@ function pool(url: string): Pool {
   return _pool;
 }
 
-/** Catalog items (services & products) for the line-item picker. */
-export async function GET() {
+/** Catalog items (services & products). Default: active only (line-item picker).
+ *  ?all=1 returns every item incl. inactive (products list page). */
+export async function GET(req: Request) {
   const url = process.env.DATABASE_URL;
   if (process.env.XENTRAL_LIVE_DATA !== "1" || !url) return NextResponse.json({ rows: [] });
   const session = await resolveSession();
   if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  const all = new URL(req.url).searchParams.get("all") === "1";
   try {
     const { rows } = await pool(url).query(
-      `select id, name, coalesce(description,'') as description, "unitPrice" as "unitPrice", "vatRate" as "vatRate", kind::text as kind, "isActive" as active
-         from "catalog_items" where "companyId" = $1 and "isActive" = true order by name asc limit 1000`, [session.companyId]);
+      `select id, name, coalesce(description,'') as description, coalesce(sku,'') as sku, coalesce(category,'') as category,
+              "unitPrice" as "unitPrice", "vatRate" as "vatRate", kind::text as kind, "isActive" as active
+         from "catalog_items" where "companyId" = $1 ${all ? "" : `and "isActive" = true`} order by name asc limit 1000`, [session.companyId]);
     return NextResponse.json({ rows });
   } catch { return NextResponse.json({ rows: [] }); }
 }
