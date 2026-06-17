@@ -80,6 +80,7 @@ const NAV: NavGroup[] = [
   {
     group: "Administration",
     items: [
+      { id: "admin", label: "Admin Portal", href: "/admin", glyph: "⌂" },
       { id: "users", label: "Users", href: "/users", glyph: "◍" },
       { id: "roles", label: "Roles", href: "/roles", glyph: "⚿" },
       { id: "audit-logs", label: "Audit Logs", href: "/audit-logs", glyph: "▤" },

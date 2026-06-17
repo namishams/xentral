@@ -101,3 +101,62 @@ export function listRoles(): RoleRow[] {
     { id: "viewer", name: "Viewer", members: 4, permissions: 6, scope: "Read only" },
   ];
 }
+
+/* ── Platform Admin (cross-tenant SaaS operator view). Seeded, fictional. ── */
+
+export type TenantStatus = "active" | "trial" | "suspended";
+export type TenantRow = {
+  id: string;
+  name: string;
+  plan: string;
+  users: number;
+  mrr: number;
+  status: TenantStatus;
+  joined: string;
+};
+export function listTenants(): TenantRow[] {
+  return [
+    { id: "t1", name: "ICSL FZE", plan: "Growth", users: 16, mrr: 999, status: "active", joined: "Jan 2026" },
+    { id: "t2", name: "Damac Properties", plan: "Enterprise", users: 42, mrr: 2400, status: "active", joined: "Feb 2026" },
+    { id: "t3", name: "Bright Interiors", plan: "Starter", users: 5, mrr: 299, status: "trial", joined: "Jun 2026" },
+    { id: "t4", name: "Coastal Logistics", plan: "Growth", users: 11, mrr: 999, status: "active", joined: "Mar 2026" },
+    { id: "t5", name: "Vertex Clinics", plan: "Growth", users: 9, mrr: 999, status: "suspended", joined: "Apr 2026" },
+  ];
+}
+
+export type SaasMetrics = { mrr: number; arr: number; activeTenants: number; trials: number; churnPct: number; newThisMonth: number };
+export function getSaasMetrics(): SaasMetrics {
+  const t = listTenants();
+  const mrr = t.filter((x) => x.status === "active").reduce((s, x) => s + x.mrr, 0);
+  return { mrr, arr: mrr * 12, activeTenants: t.filter((x) => x.status === "active").length, trials: t.filter((x) => x.status === "trial").length, churnPct: 2.1, newThisMonth: 3 };
+}
+
+export type DisputeStatus = "open" | "escalated" | "resolved";
+export type DisputeRow = { id: string; tenant: string; subject: string; amount: number; status: DisputeStatus; age: string };
+export function listDisputes(): DisputeRow[] {
+  return [
+    { id: "d1", tenant: "Bright Interiors", subject: "Lead quality — refund request", amount: 320, status: "open", age: "2d" },
+    { id: "d2", tenant: "Coastal Logistics", subject: "Double charge on top-up", amount: 999, status: "escalated", age: "4d" },
+    { id: "d3", tenant: "Damac Properties", subject: "Disputed marketplace lead", amount: 280, status: "resolved", age: "1w" },
+  ];
+}
+
+export type QuestionStatus = "open" | "answered";
+export type QuestionRow = { id: string; tenant: string; question: string; status: QuestionStatus; age: string };
+export function listQuestions(): QuestionRow[] {
+  return [
+    { id: "q1", tenant: "ICSL FZE", question: "How do I enable FTA e-invoicing for my TRN?", status: "open", age: "3h" },
+    { id: "q2", tenant: "Vertex Clinics", question: "Can I export the audit log for ISO?", status: "answered", age: "1d" },
+    { id: "q3", tenant: "Bright Interiors", question: "Is WhatsApp included in the Starter plan?", status: "open", age: "2d" },
+  ];
+}
+
+export type AnnouncementStatus = "draft" | "published";
+export type AnnouncementRow = { id: string; title: string; audience: string; status: AnnouncementStatus; date: string };
+export function listAnnouncements(): AnnouncementRow[] {
+  return [
+    { id: "a1", title: "New: Corporate Tax (9%) engine is live", audience: "All tenants", status: "published", date: "12 Jun" },
+    { id: "a2", title: "Scheduled maintenance — 22 Jun, 02:00 GST", audience: "All tenants", status: "published", date: "10 Jun" },
+    { id: "a3", title: "Beta: AI deal copilot", audience: "Growth + Enterprise", status: "draft", date: "—" },
+  ];
+}
