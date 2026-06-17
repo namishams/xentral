@@ -37,7 +37,11 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
 --line:#27324a;--line-strong:#384a66;
 --ink:#e7edf6;--ink-mid:#aebccf;--ink-soft:#7e8ea4;--ink-on-primary:#0b1220;
 --status-positive:#46c560;--status-critical:#f0944a;--status-negative:#ff6b6b;--status-info:#4a9eff;
-}` }} />
+}
+.xui-tr{transition:background 120ms ease;}
+.xui-tr:hover{background:var(--surface-page);}
+.xui-panel--i:hover{box-shadow:0 4px 12px rgba(16,24,40,0.10)!important;}
+.xui-row-link:hover{background:var(--surface-page);}` }} />
         <script dangerouslySetInnerHTML={{ __html: "(function(){try{var t=localStorage.getItem('xentral-theme');if(t==='dark')document.documentElement.setAttribute('data-theme','dark');}catch(e){}})();" }} />
       </head>
       <body style={{ margin: 0, background: "var(--surface-page)", color: "var(--ink)", fontFamily: "Inter, system-ui, -apple-system, Segoe UI, Roboto, sans-serif" }}>

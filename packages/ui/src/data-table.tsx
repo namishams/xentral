@@ -34,8 +34,8 @@ export function DataTable<T>({ columns, rows, rowHref, getKey }: {
         ));
         const href = rowHref?.(row);
         return href
-          ? <a key={getKey(row)} href={href} style={rowStyle}>{inner}</a>
-          : <div key={getKey(row)} style={rowStyle}>{inner}</div>;
+          ? <a key={getKey(row)} href={href} className="xui-row-link" style={rowStyle}>{inner}</a>
+          : <div key={getKey(row)} className="xui-row-link" style={rowStyle}>{inner}</div>;
       })}
     </div>
   );
