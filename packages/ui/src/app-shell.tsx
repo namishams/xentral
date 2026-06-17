@@ -99,6 +99,10 @@ const NAV: NavGroup[] = [
       { id: "api-keys", label: "API Keys", href: "/api-keys", glyph: "⚇" },
       { id: "security", label: "Security", href: "/security", glyph: "⛨" },
       { id: "settings", label: "Settings", href: "/settings", glyph: "⚙" },
+      { id: "ai-hub", label: "AI Hub", href: "/settings/ai-hub", glyph: "✦" },
+      { id: "integrations", label: "Integrations", href: "/settings/integrations", glyph: "⚯" },
+      { id: "automations", label: "Automations", href: "/automations", glyph: "⚙" },
+      { id: "branches", label: "Branches", href: "/org/branches", glyph: "▢" },
     ],
   },
 ];
