@@ -2,51 +2,82 @@
 
 import * as React from "react";
 import { color } from "@xentral/config";
-import { AppShell, PageTitleRow, KPICard, Button, DataTable, StatusBadge, type Column, type BadgeTone } from "@xentral/ui";
+import { AppShell, PageTitleRow, Button, Input } from "@xentral/ui";
 
-type Provider = { id: string; name: string; models: string; status: "connected" | "byok" | "off" };
-const PROVIDERS: Provider[] = [
-  { id: "anthropic", name: "Anthropic (Claude)", models: "Opus, Sonnet, Haiku", status: "connected" },
-  { id: "openai", name: "OpenAI", models: "GPT-4o, o-series", status: "byok" },
-  { id: "google", name: "Google (Gemini)", models: "1.5 Pro/Flash", status: "byok" },
-  { id: "mistral", name: "Mistral", models: "Large, Small", status: "off" },
-];
-type Agent = { id: string; name: string; role: string; model: string; status: "on" | "off" };
-const AGENTS: Agent[] = [
-  { id: "wa", name: "WhatsApp Qualifier", role: "Scores & replies to inbound leads", model: "Claude Sonnet", status: "on" },
-  { id: "deal", name: "Deal Copilot", role: "Drafts next steps on records", model: "Claude Opus", status: "on" },
-  { id: "books", name: "Finance Assistant", role: "Drafts invoices, explains VAT", model: "Claude Sonnet", status: "on" },
-  { id: "camp", name: "Campaign Writer", role: "Generates campaign copy", model: "GPT-4o", status: "off" },
-];
-const P_TONE: Record<Provider["status"], BadgeTone> = { connected: "positive", byok: "info", off: "neutral" };
-const A_TONE: Record<Agent["status"], BadgeTone> = { on: "positive", off: "neutral" };
+type Cfg = { agentName: string; agentTone: string; agentBusinessType: string; agentKnowledge: string; agentCustomPrompt: string; agentPlaybook: string; agentSignoff: string; openaiKeySet?: boolean };
 
-const PCols: Column<Provider>[] = [
-  { key: "name", header: "Provider", render: (r) => <span style={{ fontWeight: 600, color: color.ink.DEFAULT }}>{r.name}</span> },
-  { key: "models", header: "Models", render: (r) => <span style={{ color: color.ink.mid }}>{r.models}</span> },
-  { key: "status", header: "Status", width: 130, render: (r) => <StatusBadge tone={P_TONE[r.status]} label={r.status === "byok" ? "BYOK" : r.status} /> },
-];
-const ACols: Column<Agent>[] = [
-  { key: "name", header: "Agent", render: (r) => <span><span style={{ fontWeight: 600, color: color.ink.DEFAULT, display: "block" }}>{r.name}</span><span style={{ fontSize: 12, color: color.ink.soft }}>{r.role}</span></span> },
-  { key: "model", header: "Model", width: 150, render: (r) => <span style={{ color: color.ink.mid }}>{r.model}</span> },
-  { key: "status", header: "", width: 90, render: (r) => <StatusBadge tone={A_TONE[r.status]} label={r.status === "on" ? "active" : "off"} /> },
-];
+const empty: Cfg = { agentName: "", agentTone: "", agentBusinessType: "", agentKnowledge: "", agentCustomPrompt: "", agentPlaybook: "", agentSignoff: "" };
+
+function Field({ label, hint, children }: { label: string; hint?: string; children: React.ReactNode }) {
+  return (
+    <label style={{ display: "block", marginBottom: 16 }}>
+      <span style={{ display: "block", fontSize: 12.5, fontWeight: 600, color: color.ink.mid, marginBottom: 5 }}>{label}{hint ? <span style={{ color: color.ink.soft, fontWeight: 400 }}> · {hint}</span> : null}</span>
+      {children}
+    </label>
+  );
+}
+const area: React.CSSProperties = { width: "100%", minHeight: 90, border: `1px solid ${color.line.strong}`, borderRadius: 9, padding: "9px 12px", fontSize: 13.5, color: color.ink.DEFAULT, background: color.surface.card, outline: "none", boxSizing: "border-box", fontFamily: "inherit", lineHeight: "19px", resize: "vertical" };
 
 export default function AiHubPage() {
+  const [cfg, setCfg] = React.useState<Cfg>(empty);
+  const [loading, setLoading] = React.useState(true);
+  const [saving, setSaving] = React.useState(false);
+  const [notice, setNotice] = React.useState("");
+  const [keyInput, setKeyInput] = React.useState("");
+
+  React.useEffect(() => {
+    fetch("/api/settings/ai").then(async (r) => { if (r.ok) { const d = await r.json(); setCfg({ ...empty, ...d }); } setLoading(false); }).catch(() => setLoading(false));
+  }, []);
+
+  const set = (k: keyof Cfg) => (v: string) => setCfg((c) => ({ ...c, [k]: v }));
+
+  const save = async () => {
+    setSaving(true); setNotice("");
+    try {
+      const body: Record<string, unknown> = { ...cfg };
+      if (keyInput.trim()) body.openaiKey = keyInput.trim();
+      const r = await fetch("/api/settings/ai", { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
+      if (r.ok) { setNotice("Saved ✓"); setKeyInput(""); if (keyInput.trim()) setCfg((c) => ({ ...c, openaiKeySet: true })); }
+      else if (r.status === 503) setNotice("Activates when the workspace is live.");
+      else setNotice("Could not save — please try again.");
+    } catch { setNotice("Network error."); }
+    setSaving(false);
+  };
+
   return (
     <AppShell active="ai-hub">
-      <PageTitleRow title="AI Hub" subtitle="Providers, models and agents — one control center" actions={<Button variant="primary">+ Add provider</Button>} />
-      <div style={{ display: "flex", gap: 12, marginBottom: 18, flexWrap: "wrap" }}>
-        <KPICard label="Providers" value={String(PROVIDERS.filter((p) => p.status !== "off").length)} note="connected / BYOK" noteTone={color.status.positive} />
-        <KPICard label="Active agents" value={String(AGENTS.filter((a) => a.status === "on").length)} note={`of ${AGENTS.length}`} noteTone={color.ink.soft} />
-        <KPICard label="Credits used" value="AED 124" note="this month" noteTone={color.ink.soft} />
-        <KPICard label="Default model" value="Claude Sonnet" note="workspace" noteTone={color.brand.primary} />
-      </div>
-      <div style={{ fontSize: 13, fontWeight: 600, color: color.ink.mid, marginBottom: 8 }}>Providers</div>
-      <DataTable columns={PCols} rows={PROVIDERS} getKey={(r) => r.id} />
-      <div style={{ fontSize: 13, fontWeight: 600, color: color.ink.mid, margin: "20px 0 8px" }}>Agents</div>
-      <DataTable columns={ACols} rows={AGENTS} getKey={(r) => r.id} />
-      <p style={{ fontSize: 11, color: color.ink.soft, textAlign: "center", marginTop: 18 }}>AI Hub · providers · models · agents · tokens-only, theme-aware</p>
+      <PageTitleRow title="AI Hub" subtitle="Configure your WhatsApp AI assistant — persona, tone and knowledge" actions={<Button variant="primary" onClick={save} disabled={saving || loading}>{saving ? "Saving…" : "Save changes"}</Button>} />
+
+      {notice ? <div style={{ fontSize: 13, color: notice.includes("✓") ? color.status.positive : color.ink.mid, background: color.brand.primaryTint, border: `1px solid ${color.line.DEFAULT}`, borderRadius: 9, padding: "9px 12px", marginBottom: 14 }}>{notice}</div> : null}
+
+      {loading ? <div style={{ padding: 30, textAlign: "center", color: color.ink.soft, fontSize: 13 }}>Loading…</div> : (
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(320px, 1fr))", gap: 18 }}>
+          <div style={{ background: color.surface.card, border: `1px solid ${color.line.DEFAULT}`, borderRadius: 12, padding: 18, boxShadow: "0 1px 2px rgba(16,24,40,0.04)" }}>
+            <div style={{ fontSize: 14, fontWeight: 700, color: color.ink.DEFAULT, marginBottom: 14 }}>Persona</div>
+            <div style={{ display: "flex", gap: 12 }}>
+              <div style={{ flex: 1 }}><Field label="Agent name"><Input value={cfg.agentName} onChange={(e) => set("agentName")(e.target.value)} placeholder="e.g. Sara" style={{ width: "100%" }} /></Field></div>
+              <div style={{ flex: 1 }}><Field label="Tone"><Input value={cfg.agentTone} onChange={(e) => set("agentTone")(e.target.value)} placeholder="professional, warm…" style={{ width: "100%" }} /></Field></div>
+            </div>
+            <Field label="Business type"><Input value={cfg.agentBusinessType} onChange={(e) => set("agentBusinessType")(e.target.value)} placeholder="e.g. healthcare licensing consultancy" style={{ width: "100%" }} /></Field>
+            <Field label="Sign-off" hint="how the agent closes"><Input value={cfg.agentSignoff} onChange={(e) => set("agentSignoff")(e.target.value)} placeholder="— Team Xentral" style={{ width: "100%" }} /></Field>
+          </div>
+
+          <div style={{ background: color.surface.card, border: `1px solid ${color.line.DEFAULT}`, borderRadius: 12, padding: 18, boxShadow: "0 1px 2px rgba(16,24,40,0.04)" }}>
+            <div style={{ fontSize: 14, fontWeight: 700, color: color.ink.DEFAULT, marginBottom: 14 }}>Knowledge & behaviour</div>
+            <Field label="Knowledge base" hint="facts the agent may use"><textarea value={cfg.agentKnowledge} onChange={(e) => set("agentKnowledge")(e.target.value)} style={area} placeholder="Services, pricing rules, FAQs…" /></Field>
+            <Field label="Playbook" hint="how to handle conversations"><textarea value={cfg.agentPlaybook} onChange={(e) => set("agentPlaybook")(e.target.value)} style={area} placeholder="Qualify, then offer a consultant call…" /></Field>
+            <Field label="Custom instructions"><textarea value={cfg.agentCustomPrompt} onChange={(e) => set("agentCustomPrompt")(e.target.value)} style={{ ...area, minHeight: 70 }} placeholder="Any extra rules for the agent" /></Field>
+          </div>
+
+          <div style={{ background: color.surface.card, border: `1px solid ${color.line.DEFAULT}`, borderRadius: 12, padding: 18, boxShadow: "0 1px 2px rgba(16,24,40,0.04)" }}>
+            <div style={{ fontSize: 14, fontWeight: 700, color: color.ink.DEFAULT, marginBottom: 6 }}>OpenAI key</div>
+            <p style={{ fontSize: 12.5, color: color.ink.soft, margin: "0 0 12px" }}>{cfg.openaiKeySet ? "A key is set for this workspace. Leave blank to keep it; enter a new one to replace." : "No key set — the platform key is used as fallback. Add your own to use your account."}</p>
+            <Field label="API key"><Input type="password" value={keyInput} onChange={(e) => setKeyInput(e.target.value)} placeholder={cfg.openaiKeySet ? "•••••••••• (set)" : "sk-…"} style={{ width: "100%" }} /></Field>
+            <div style={{ fontSize: 12, color: color.ink.soft, marginTop: 8, lineHeight: "17px" }}>The auto-reply itself is switched on by the platform flag <code style={{ background: color.surface.sunken, padding: "1px 5px", borderRadius: 4 }}>XENTRAL_WA_AI</code>. Per-chat you can also set a conversation to manual in the inbox.</div>
+          </div>
+        </div>
+      )}
+      <p style={{ fontSize: 11, color: color.ink.soft, textAlign: "center", marginTop: 18 }}>AI Hub · edits your workspace agent config · tenant-scoped · tokens-only</p>
     </AppShell>
   );
 }
