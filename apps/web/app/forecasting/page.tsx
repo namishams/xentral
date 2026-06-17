@@ -18,15 +18,15 @@ const COLUMNS: Column<Row>[] = [
   { key: "status", header: "Status", width: 120, render: (r) => <StatusBadge tone="info" label={r.status} /> },
 ];
 
-export default function __PASCAL__Page() {
+export default function ForecastingPage() {
   const [q, setQ] = React.useState("");
   const [page, setPage] = React.useState(1);
   const [pageSize, setPageSize] = React.useState<number>(uiConstants.table.pageSizeDefault);
   const rows = ROWS.filter((r) => r.name.toLowerCase().includes(q.toLowerCase()));
 
   return (
-    <AppShell active="__SLUG__">
-      <PageTitleRow title="__TITLE__" subtitle={`${ROWS.length} items`} actions={<Button variant="primary">+ New</Button>} />
+    <AppShell active="forecasting">
+      <PageTitleRow title="Forecasting" subtitle={`${ROWS.length} items`} actions={<Button variant="primary">+ New</Button>} />
       <FilterBar>
         <Input placeholder="Search…" value={q} onChange={(e) => { setQ(e.target.value); setPage(1); }} style={{ width: 240 }} />
       </FilterBar>
@@ -38,7 +38,7 @@ export default function __PASCAL__Page() {
           <Pagination page={page} pageCount={Math.max(1, Math.ceil(rows.length / pageSize))} pageSize={pageSize} total={rows.length} onPageChange={setPage} onPageSizeChange={(s) => { setPageSize(s); setPage(1); }} />
         </>
       )}
-      <p style={{ fontSize: 11, color: color.ink.soft, textAlign: "center", marginTop: 14 }}>Scaffolded with `pnpm gen:page` · locked components only · __SLUG__</p>
+      <p style={{ fontSize: 11, color: color.ink.soft, textAlign: "center", marginTop: 14 }}>Scaffolded with `pnpm gen:page` · locked components only · forecasting</p>
     </AppShell>
   );
 }

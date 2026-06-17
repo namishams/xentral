@@ -2,13 +2,62 @@ import * as React from "react";
 import { color, uiConstants } from "@xentral/config";
 import { PageContainer } from "./page-container";
 
-const NAV = [
-  { id: "dashboard", label: "Mission Control", href: "/dashboard", glyph: "◷" },
-  { id: "invoice", label: "Invoices", href: "/invoice", glyph: "▤" },
-  { id: "inbox", label: "Inbox", href: "/inbox", glyph: "✉" },
-  { id: "deals", label: "Deals", href: "/dashboard", glyph: "◇" },
-  { id: "books", label: "Books", href: "/invoice", glyph: "▣" },
-  { id: "products", label: "Products", href: "/products", glyph: "▦" },
+/**
+ * NAV — the locked navigation map. Grouped by platform layer:
+ *  • Core  — Layer 1 (Identity, AI OS, Communication Hub, Timeline, Mission Control)
+ *  • CRM   — Layer 2 (the mandatory CRM core)
+ *  • Business — Layer 3 preview (Finance / Inventory routes already migrated)
+ * `id` matches each page's <AppShell active="…">; `href` is the live route.
+ */
+type NavItem = { id: string; label: string; href: string; glyph: string };
+type NavGroup = { group: string; items: NavItem[] };
+
+const NAV: NavGroup[] = [
+  {
+    group: "Core",
+    items: [
+      { id: "dashboard", label: "Mission Control", href: "/dashboard", glyph: "◷" },
+      { id: "ai", label: "Ask Xentral AI", href: "/ai", glyph: "✦" },
+      { id: "timeline", label: "Timeline", href: "/timeline", glyph: "≡" },
+      { id: "inbox", label: "WhatsApp", href: "/inbox", glyph: "✆" },
+      { id: "email", label: "Email", href: "/email", glyph: "@" },
+      { id: "chat", label: "Chat", href: "/chat", glyph: "◐" },
+      { id: "calls", label: "Calls", href: "/calls", glyph: "☎" },
+      { id: "meetings", label: "Meetings", href: "/meetings", glyph: "▭" },
+      { id: "campaigns", label: "Campaigns", href: "/campaigns", glyph: "◫" },
+      { id: "users", label: "Users & Roles", href: "/users", glyph: "◍" },
+      { id: "audit-logs", label: "Audit Logs", href: "/audit-logs", glyph: "▤" },
+      { id: "api-keys", label: "API Keys", href: "/api-keys", glyph: "⚿" },
+      { id: "security", label: "Security", href: "/security", glyph: "⛨" },
+    ],
+  },
+  {
+    group: "CRM",
+    items: [
+      { id: "contacts", label: "Contacts", href: "/contacts", glyph: "◍" },
+      { id: "companies", label: "Companies", href: "/companies", glyph: "▢" },
+      { id: "leads", label: "Leads", href: "/leads", glyph: "✸" },
+      { id: "deals", label: "Deals", href: "/deals", glyph: "◇" },
+      { id: "pipelines", label: "Pipelines", href: "/pipelines", glyph: "≣" },
+      { id: "tasks", label: "Tasks", href: "/tasks", glyph: "✓" },
+      { id: "activities", label: "Activities", href: "/activities", glyph: "•" },
+      { id: "sales-teams", label: "Sales Teams", href: "/sales-teams", glyph: "⬡" },
+      { id: "sales-performance", label: "Sales Performance", href: "/sales-performance", glyph: "▲" },
+      { id: "forecasting", label: "Forecasting", href: "/forecasting", glyph: "◴" },
+      { id: "quotations", label: "Quotations", href: "/quotations", glyph: "▥" },
+      { id: "customer-journey", label: "Customer Journey", href: "/customer-journey", glyph: "➔" },
+      { id: "relationship-intelligence", label: "Relationship Intel", href: "/relationship-intelligence", glyph: "✦" },
+    ],
+  },
+  {
+    group: "Business",
+    items: [
+      { id: "invoice", label: "Invoices", href: "/invoices", glyph: "▣" },
+      { id: "products", label: "Products", href: "/products", glyph: "▦" },
+      { id: "suppliers", label: "Suppliers", href: "/suppliers", glyph: "◰" },
+      { id: "customer", label: "Customer 360", href: "/customer", glyph: "❏" },
+    ],
+  },
 ];
 
 const SIDEBAR_WIDTH = 240;
@@ -26,18 +75,23 @@ export function GlobalHeader({ right }: { right?: React.ReactNode }) {
   );
 }
 
-/** Sidebar — fixed navigation rail. */
+/** Sidebar — fixed, grouped navigation rail. Scrolls independently of content. */
 export function Sidebar({ active }: { active?: string }) {
   return (
-    <nav style={{ width: SIDEBAR_WIDTH, flexShrink: 0, background: "#fff", borderRight: `1px solid ${color.line.DEFAULT}`, padding: "12px 10px", display: "flex", flexDirection: "column", gap: 2 }}>
-      {NAV.map((n) => {
-        const on = n.id === active;
-        return (
-          <a key={n.id} href={n.href} style={{ display: "flex", alignItems: "center", gap: 10, height: 36, padding: "0 12px", borderRadius: 8, textDecoration: "none", fontSize: 13, fontWeight: on ? 600 : 500, color: on ? color.brand.primary : color.ink.mid, background: on ? color.brand.primaryTint : "transparent" }}>
-            <span style={{ width: 18, textAlign: "center", opacity: 0.9 }}>{n.glyph}</span>{n.label}
-          </a>
-        );
-      })}
+    <nav style={{ width: SIDEBAR_WIDTH, flexShrink: 0, background: "#fff", borderRight: `1px solid ${color.line.DEFAULT}`, padding: "10px 10px 16px", display: "flex", flexDirection: "column", gap: 4, overflowY: "auto" }}>
+      {NAV.map((section) => (
+        <div key={section.group} style={{ display: "flex", flexDirection: "column", gap: 2, marginTop: 6 }}>
+          <div style={{ fontSize: 10.5, fontWeight: 700, letterSpacing: 0.8, textTransform: "uppercase", color: color.ink.soft, padding: "6px 12px 4px" }}>{section.group}</div>
+          {section.items.map((n) => {
+            const on = n.id === active;
+            return (
+              <a key={n.id} href={n.href} style={{ display: "flex", alignItems: "center", gap: 10, height: 34, padding: "0 12px", borderRadius: 8, textDecoration: "none", fontSize: 13, fontWeight: on ? 600 : 500, color: on ? color.brand.primary : color.ink.mid, background: on ? color.brand.primaryTint : "transparent" }}>
+                <span style={{ width: 18, textAlign: "center", opacity: 0.9 }}>{n.glyph}</span>{n.label}
+              </a>
+            );
+          })}
+        </div>
+      ))}
     </nav>
   );
 }

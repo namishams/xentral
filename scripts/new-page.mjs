@@ -17,7 +17,7 @@ const title = titleParts.join(" ") || slug.charAt(0).toUpperCase() + slug.slice(
 const pascal = slug.replace(/(^|[-_])(\w)/g, (_m, _s, ch) => ch.toUpperCase());
 
 const tpl = readFileSync(join(here, "page.template.txt"), "utf8");
-const out = tpl.replaceAll("__PASCAL__", pascal).replaceAll("__TITLE__", title);
+const out = tpl.replaceAll("__PASCAL__", pascal).replaceAll("__TITLE__", title).replaceAll("__SLUG__", slug);
 
 const dir = join(root, "apps", "web", "app", slug);
 if (existsSync(join(dir, "page.tsx"))) {
@@ -27,5 +27,5 @@ if (existsSync(join(dir, "page.tsx"))) {
 mkdirSync(dir, { recursive: true });
 writeFileSync(join(dir, "page.tsx"), out);
 
-console.log("created apps/web/app/" + slug + "/page.tsx  (" + pascal + 'Page, title "' + title + '")');
+console.log("created apps/web/app/" + slug + "/page.tsx  (" + pascal + 'Page, title "' + title + '", active "' + slug + '")');
 console.log("next: 1) wire a module contract for rows  2) add Sidebar nav  3) pnpm build");

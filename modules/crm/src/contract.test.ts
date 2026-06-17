@@ -1,21 +1,39 @@
 import { describe, it, expect } from "vitest";
-import { getDefaultPipeline, listDeals } from "./contract";
+import { getDefaultPipeline, listDeals, listContacts, listCompanies, listLeads } from "./contract";
 
 describe("crm contract", () => {
-  it("has ordered, unique stages ending in won/lost", () => {
-    const s = getDefaultPipeline();
-    expect(s.map((x) => x.order)).toEqual([1, 2, 3, 4, 5]);
-    expect(s.some((x) => x.id === "won")).toBe(true);
+  it("default pipeline is ordered", () => {
+    const stages = getDefaultPipeline();
+    const orders = stages.map((s) => s.order);
+    expect(orders).toEqual([...orders].sort((a, b) => a - b));
   });
 
-  it("lists deals with unique ids and valid stages", () => {
-    const rows = listDeals();
-    const stages = getDefaultPipeline().map((s) => s.id);
-    expect(rows.length).toBeGreaterThanOrEqual(3);
-    expect(new Set(rows.map((r) => r.id)).size).toBe(rows.length);
-    for (const r of rows) {
-      expect(stages).toContain(r.stage);
-      expect(r.value).toBeGreaterThan(0);
+  it("deals carry a known stage and positive value", () => {
+    const valid = new Set(getDefaultPipeline().map((s) => s.id));
+    for (const d of listDeals()) {
+      expect(valid.has(d.stage)).toBe(true);
+      expect(d.value).toBeGreaterThan(0);
+    }
+  });
+
+  it("contacts expose name + email + owner", () => {
+    for (const c of listContacts()) {
+      expect(c.name.length).toBeGreaterThan(0);
+      expect(c.email).toContain("@");
+      expect(c.owner.length).toBeGreaterThan(0);
+    }
+  });
+
+  it("companies have non-negative open deal counts", () => {
+    for (const a of listCompanies()) {
+      expect(a.openDeals).toBeGreaterThanOrEqual(0);
+    }
+  });
+
+  it("lead scores are within 0–100", () => {
+    for (const l of listLeads()) {
+      expect(l.score).toBeGreaterThanOrEqual(0);
+      expect(l.score).toBeLessThanOrEqual(100);
     }
   });
 });

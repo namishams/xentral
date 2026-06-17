@@ -35,3 +35,68 @@ export function listDeals(): DealRow[] {
     { id: "d5", name: "Mall units", account: "Emaar Group", stage: "lost", value: 310000, currency: "AED", owner: "Sara" },
   ];
 }
+
+/* ── CRM core directories (Layer 2). Seeded; real adapters replace the bodies later. ── */
+
+export type ContactRow = {
+  id: string;
+  name: string;
+  title: string;
+  company: string;
+  email: string;
+  phone: string;
+  owner: string;
+};
+
+/** List contacts for the workspace. */
+export function listContacts(): ContactRow[] {
+  return [
+    { id: "c1", name: "Aisha Rahman", title: "Procurement Lead", company: "Skyline Developers", email: "aisha@skyline.ae", phone: "+971 50 110 2200", owner: "Nami" },
+    { id: "c2", name: "Omar Haddad", title: "CFO", company: "Gulf Trading", email: "omar@gulftrading.ae", phone: "+971 52 330 9087", owner: "Sara" },
+    { id: "c3", name: "Lena Fischer", title: "Operations Manager", company: "Al Noor Real Estate", email: "lena@alnoor.ae", phone: "+971 55 778 0042", owner: "Nami" },
+    { id: "c4", name: "Yusuf Khan", title: "Managing Director", company: "Damac Properties", email: "yusuf@damac.ae", phone: "+971 50 901 7765", owner: "Omar" },
+    { id: "c5", name: "Mariam Saleh", title: "Buyer", company: "Emaar Group", email: "mariam@emaar.ae", phone: "+971 56 220 3318", owner: "Sara" },
+  ];
+}
+
+export type CompanyRow = {
+  id: string;
+  name: string;
+  industry: string;
+  city: string;
+  openDeals: number;
+  owner: string;
+};
+
+/** List companies for the workspace. */
+export function listCompanies(): CompanyRow[] {
+  return [
+    { id: "a1", name: "Skyline Developers", industry: "Construction", city: "Dubai", openDeals: 3, owner: "Nami" },
+    { id: "a2", name: "Gulf Trading", industry: "Wholesale", city: "Sharjah", openDeals: 1, owner: "Sara" },
+    { id: "a3", name: "Al Noor Real Estate", industry: "Real Estate", city: "Abu Dhabi", openDeals: 2, owner: "Nami" },
+    { id: "a4", name: "Damac Properties", industry: "Real Estate", city: "Dubai", openDeals: 4, owner: "Omar" },
+    { id: "a5", name: "Emaar Group", industry: "Real Estate", city: "Dubai", openDeals: 1, owner: "Sara" },
+  ];
+}
+
+export type LeadStage = "new" | "working" | "qualified" | "unqualified";
+export type LeadRow = {
+  id: string;
+  name: string;
+  company: string;
+  source: string;
+  score: number;
+  stage: LeadStage;
+  owner: string;
+};
+
+/** List leads for the workspace. */
+export function listLeads(): LeadRow[] {
+  return [
+    { id: "l1", name: "Hassan Ali", company: "Bright Interiors", source: "WhatsApp", score: 82, stage: "qualified", owner: "Nami" },
+    { id: "l2", name: "Nadia Sterling", company: "Coastal Logistics", source: "Website", score: 64, stage: "working", owner: "Sara" },
+    { id: "l3", name: "Karim Mansour", company: "Vertex Clinics", source: "Marketplace", score: 91, stage: "qualified", owner: "Omar" },
+    { id: "l4", name: "Priya Nair", company: "Nair Consulting", source: "Referral", score: 40, stage: "new", owner: "Nami" },
+    { id: "l5", name: "Tom Becker", company: "Becker GmbH", source: "Campaign", score: 28, stage: "unqualified", owner: "Sara" },
+  ];
+}
