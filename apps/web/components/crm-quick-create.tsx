@@ -4,7 +4,7 @@ import * as React from "react";
 import { color } from "@xentral/config";
 import { Button } from "@xentral/ui";
 
-type Entity = "contact" | "company" | "lead";
+type Entity = "contact" | "company" | "lead" | "supplier";
 type Field = { key: string; label: string; placeholder?: string; type?: string; required?: boolean };
 
 const FIELDS: Record<Entity, { title: string; fields: Field[] }> = {
@@ -30,6 +30,12 @@ const FIELDS: Record<Entity, { title: string; fields: Field[] }> = {
     { key: "email", label: "Email", type: "email" },
     { key: "phone", label: "Phone" },
     { key: "value", label: "Value (AED)", type: "number" },
+  ] },
+  supplier: { title: "New supplier", fields: [
+    { key: "name", label: "Supplier name", required: true },
+    { key: "email", label: "Email", type: "email" },
+    { key: "phone", label: "Phone" },
+    { key: "currency", label: "Currency", placeholder: "AED" },
   ] },
 };
 

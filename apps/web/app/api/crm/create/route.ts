@@ -52,6 +52,13 @@ export async function POST(req: Request) {
         `insert into "leads" (id, "firstName", "lastName", company, email, phone, value, source, status, currency, country, position, tags, "createdAt", "updatedAt", "companyId", "createdById")
          values ($1,$2,$3,$4,$5,$6,$7,'OTHER','NEW','AED','UAE',0,'{}',now(),now(),$8,$9)`,
         [id, first, s(b.lastName) ?? "", s(b.company), s(b.email), s(b.phone), v, cid, session.userId]);
+    } else if (entity === "supplier") {
+      const name = s(b.name);
+      if (!name) return NextResponse.json({ error: "Name required" }, { status: 400 });
+      await p.query(
+        `insert into "suppliers" (id, "companyId", name, email, phone, currency, active, "createdAt")
+         values ($1,$2,$3,coalesce($4,''),coalesce($5,''),coalesce($6,'AED'),true,now())`,
+        [id, cid, name, s(b.email), s(b.phone), s(b.currency)]);
     } else {
       return NextResponse.json({ error: "Unknown entity" }, { status: 400 });
     }

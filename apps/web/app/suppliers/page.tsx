@@ -3,6 +3,7 @@
 import * as React from "react";
 import { color } from "@xentral/config";
 import { AppShell, PageTitleRow, KPICard, Input, Button, DataTable, StatusBadge, EmptyState, type Column } from "@xentral/ui";
+import { NewCrmButton } from "../../components/crm-quick-create";
 
 type Row = { id: string; name: string; email: string | null; phone: string | null; currency: string | null; active: boolean };
 const ACCENTS = ["#0064d9", "#188918", "#9a5800", "#0e7490", "#6b3fd4", "#b3261e"];
@@ -27,7 +28,7 @@ export default function SuppliersPage() {
 
   return (
     <AppShell active="suppliers">
-      <PageTitleRow title="Suppliers" subtitle={`${all.length} vendors`} actions={<Button variant="primary">+ New supplier</Button>} />
+      <PageTitleRow title="Suppliers" subtitle={`${all.length} vendors`} actions={<NewCrmButton entity="supplier" label="+ New supplier" />} />
       <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(150px, 1fr))", gap: 10, marginBottom: 16 }}>
         <KPICard label="Suppliers" value={String(all.length)} note="vendors" noteTone={color.brand.primary} />
         <KPICard label="Active" value={String(activeCount)} note="enabled" noteTone={color.status.positive} />
