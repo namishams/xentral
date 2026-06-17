@@ -82,3 +82,22 @@ export function listApiKeys(): ApiKeyRow[] {
     { id: "k3", name: "Old mobile app", prefix: "xk_live_55ad…", created: "10 Feb", lastUsed: "30 d ago", status: "revoked" },
   ];
 }
+
+export type RoleRow = {
+  id: string;
+  name: string;
+  members: number;
+  permissions: number;
+  scope: string;
+};
+
+/** List roles for the workspace. Seeded now; a real adapter replaces the body later. */
+export function listRoles(): RoleRow[] {
+  return [
+    { id: "owner", name: "Owner", members: 1, permissions: 48, scope: "Full access" },
+    { id: "admin", name: "Admin", members: 2, permissions: 42, scope: "Manage workspace" },
+    { id: "manager", name: "Manager", members: 3, permissions: 30, scope: "Team + reports" },
+    { id: "sales", name: "Sales", members: 6, permissions: 18, scope: "Own records" },
+    { id: "viewer", name: "Viewer", members: 4, permissions: 6, scope: "Read only" },
+  ];
+}
