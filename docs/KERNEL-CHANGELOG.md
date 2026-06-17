@@ -38,3 +38,7 @@ Kernel DataSource gains listLeads + RawLead. data-pack listLeads reads leads (te
 
 ## 2026-06-17 - DataPort listActivities/listTasks + CRM loadActivities/loadTasks
 Kernel DataSource gains listActivities/listTasks + RawActivity/RawTask. data-pack reads activities & tasks (tenant-scoped, Date->ISO). module-crm loadActivities/loadTasks (port, seed fallback). /activities & /tasks -> server components, session-scoped. Universal-Timeline bricks landed.
+
+
+## 2026-06-17 - DataPort listUsers + platform loadUsers (Identity)
+Kernel DataSource gains listUsers + RawUser. data-pack reads users (tenant-scoped by companyId, lastLoginAt Date->ISO). module-platform now consumes the DataPort: loadUsers (port, seed fallback) + UserRow; added @xentral/kernel dep. /users -> session-scoped server component, wired @xentral/module-platform into the app. Proves the port pattern generalizes beyond crm.

@@ -56,6 +56,9 @@ importers:
       '@xentral/module-marketing':
         specifier: workspace:*
         version: link:../../modules/marketing
+      '@xentral/module-platform':
+        specifier: workspace:*
+        version: link:../../modules/platform
       '@xentral/ui':
         specifier: workspace:*
         version: link:../../packages/ui
@@ -169,6 +172,9 @@ importers:
       '@xentral/config':
         specifier: workspace:*
         version: link:../../packages/config
+      '@xentral/kernel':
+        specifier: workspace:*
+        version: link:../../packages/kernel
 
   modules/portal:
     dependencies:

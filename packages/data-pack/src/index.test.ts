@@ -103,4 +103,20 @@ describe("data-pack live adapter", () => {
     expect(out[1]?.dueAt).toBeUndefined();
     expect(out[1]?.isCompleted).toBe(true);
   });
+
+  it("listUsers is tenant-scoped and maps role + active flag", async () => {
+    let capturedParams: unknown[] = [];
+    const fakeQuery: QueryFn = async (_sql, params) => {
+      capturedParams = params;
+      return { rows: [
+        { id: "u1", name: "Nami", email: "nami@x.ae", role: "OWNER", isActive: true, lastLoginAt: new Date("2026-06-16T08:00:00.000Z") },
+        { id: "u2", name: "Sara", email: "sara@x.ae", role: "SALES", isActive: false, lastLoginAt: null },
+      ] };
+    };
+    const out = await createLiveDataSource(fakeQuery).listUsers({ companyId: "T-3" });
+    expect(capturedParams).toEqual(["T-3"]);
+    expect(out[0]).toMatchObject({ id: "u1", name: "Nami", role: "OWNER", isActive: true, lastLoginAt: "2026-06-16T08:00:00.000Z" });
+    expect(out[1]?.isActive).toBe(false);
+    expect(out[1]?.lastLoginAt).toBeUndefined();
+  });
 });

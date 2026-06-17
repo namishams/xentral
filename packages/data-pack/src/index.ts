@@ -7,7 +7,7 @@
  * package driver-agnostic, unit-testable, and absent from the public preview
  * bundle. Registered via setDataSource() only in a private/authenticated host.
  */
-import type { DataSource, TenantScope, RawContact, RawCompany, RawLead, RawActivity, RawTask } from "@xentral/kernel";
+import type { DataSource, TenantScope, RawContact, RawCompany, RawLead, RawActivity, RawTask, RawUser } from "@xentral/kernel";
 
 /** Minimal query surface — satisfied by `pg`'s Client.query, or any equivalent. */
 export type QueryFn = (sql: string, params: unknown[]) => Promise<{ rows: Record<string, unknown>[] }>;
@@ -137,6 +137,25 @@ export function createLiveDataSource(query: QueryFn): DataSource {
         isCompleted: Boolean(r.isCompleted),
         priority: str(r.priority) ?? "medium",
         owner: str(r.owner),
+      }));
+    },
+
+    async listUsers(scope: TenantScope): Promise<RawUser[]> {
+      const { rows } = await query(
+        `select u."id", u."name", u."email", u."role", u."isActive", u."lastLoginAt"
+           from "users" u
+          where u."companyId" = $1
+          order by u."name" asc
+          limit 500`,
+        [scope.companyId],
+      );
+      return rows.map((r) => ({
+        id: String(r.id),
+        name: str(r.name) ?? "",
+        email: str(r.email) ?? "",
+        role: str(r.role) ?? "member",
+        isActive: Boolean(r.isActive),
+        lastLoginAt: dstr(r.lastLoginAt),
       }));
     },
   };

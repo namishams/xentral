@@ -19,7 +19,8 @@
     "@xentral/module-erp": "workspace:*",
     "next": "14.2.15",
     "react": "^18.3.1",
-    "react-dom": "^18.3.1"
+    "react-dom": "^18.3.1",
+    "@xentral/module-platform": "workspace:*"
   },
   "devDependencies": {
     "@types/node": "^20",

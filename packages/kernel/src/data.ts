@@ -66,6 +66,16 @@ export type RawTask = {
   owner?: string;
 };
 
+/** Raw user (workspace member) as read from a data source. */
+export type RawUser = {
+  id: string;
+  name: string;
+  email: string;
+  role: string;
+  isActive: boolean;
+  lastLoginAt?: string;
+};
+
 /** The port every data adapter implements. Grows one method per migrated area. */
 export interface DataSource {
   listContacts(scope: TenantScope): Promise<RawContact[]>;
@@ -73,6 +83,7 @@ export interface DataSource {
   listLeads(scope: TenantScope): Promise<RawLead[]>;
   listActivities(scope: TenantScope): Promise<RawActivity[]>;
   listTasks(scope: TenantScope): Promise<RawTask[]>;
+  listUsers(scope: TenantScope): Promise<RawUser[]>;
 }
 
 let _ds: DataSource | null = null;
