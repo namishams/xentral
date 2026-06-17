@@ -1,12 +1,12 @@
 "use client";
 
 import * as React from "react";
-import { color } from "@xentral/config";
+import { color, shadow } from "@xentral/config";
 import { AppShell, PageTitleRow, Button, StatusBadge } from "@xentral/ui";
 
 function Panel({ title, children }: { title: string; children: React.ReactNode }) {
   return (
-    <section style={{ background: color.surface.card, border: `1px solid ${color.line.DEFAULT}`, borderRadius: 10, padding: "16px 20px" }}>
+    <section style={{ background: color.surface.card, border: `1px solid ${color.line.DEFAULT}`, borderRadius: 12, padding: "16px 20px", boxShadow: shadow.card }}>
       <h2 style={{ fontSize: 14, fontWeight: 600, color: color.ink.DEFAULT, margin: "0 0 4px" }}>{title}</h2>
       {children}
     </section>
