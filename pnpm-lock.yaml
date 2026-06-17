@@ -56,6 +56,9 @@ importers:
       '@xentral/module-marketing':
         specifier: workspace:*
         version: link:../../modules/marketing
+      '@xentral/module-marketplace':
+        specifier: workspace:*
+        version: link:../../modules/marketplace
       '@xentral/module-platform':
         specifier: workspace:*
         version: link:../../modules/platform
