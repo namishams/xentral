@@ -77,7 +77,7 @@ export default function ContactRecordPage({ params }: { params: { id: string } }
               <span style={{ position: "absolute", left: 4, top: 4, bottom: 4, width: 2, background: color.line.DEFAULT }} />
               {TIMELINE.map((e) => (
                 <div key={e.id} style={{ position: "relative", paddingBottom: 16 }}>
-                  <span style={{ position: "absolute", left: -18, top: 3, width: 10, height: 10, borderRadius: "50%", background: KIND_TONE[e.kind], border: "2px solid #fff", boxShadow: `0 0 0 1px ${color.line.DEFAULT}` }} />
+                  <span style={{ position: "absolute", left: -18, top: 3, width: 10, height: 10, borderRadius: "50%", background: KIND_TONE[e.kind], border: `2px solid ${color.surface.card}`, boxShadow: `0 0 0 1px ${color.line.DEFAULT}` }} />
                   <div style={{ display: "flex", alignItems: "baseline", gap: 8 }}>
                     <span style={{ fontSize: 13, fontWeight: 600, color: color.ink.DEFAULT }}>{e.who}</span>
                     <span style={{ fontSize: 11, color: color.ink.soft }}>{e.when}</span>
