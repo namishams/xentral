@@ -27,3 +27,4 @@ export { StagePill } from "./stage-pill";
 
 export { ThemeToggle } from "./theme-toggle";
 export { XentralMark } from "./xentral-mark";
+export { HeaderSearch, HeaderAvatar } from "./header-menu";
