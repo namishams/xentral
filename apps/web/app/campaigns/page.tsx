@@ -2,69 +2,79 @@
 
 import * as React from "react";
 import { color } from "@xentral/config";
-import { AppShell, PageTitleRow, FilterBar, Input, Button, DataTable, StatusBadge, EmptyState, type Column, type BadgeTone } from "@xentral/ui";
+import { AppShell, PageTitleRow, KPICard, Input, Button, DataTable, StatusBadge, EmptyState, type Column, type BadgeTone } from "@xentral/ui";
 
-type CampaignRow = { id: string; name: string; channel: "Email" | "WhatsApp" | "SMS"; status: "active" | "scheduled" | "draft" | "done"; audience: number; openRate: number; replies: number };
+type Campaign = { id: string; name: string; status: string; createdAt: string; audience: number; sent: number; opens: number; replies: number };
 
-const ALL: CampaignRow[] = [
-  { id: "k1", name: "Ramadan villa offers", channel: "WhatsApp", status: "active", audience: 1240, openRate: 71, replies: 86 },
-  { id: "k2", name: "Q3 fit-out newsletter", channel: "Email", status: "active", audience: 3180, openRate: 38, replies: 24 },
-  { id: "k3", name: "Brokerage re-engagement", channel: "Email", status: "scheduled", audience: 540, openRate: 0, replies: 0 },
-  { id: "k4", name: "New product launch — locks", channel: "SMS", status: "draft", audience: 0, openRate: 0, replies: 0 },
-  { id: "k5", name: "Spring brochure blast", channel: "Email", status: "done", audience: 2760, openRate: 44, replies: 51 },
-];
+const TONE: Record<string, BadgeTone> = { ACTIVE: "positive", DRAFT: "neutral", PAUSED: "warning", COMPLETED: "info" };
+const openRate = (c: Campaign) => c.sent > 0 ? Math.round((c.opens / c.sent) * 100) : 0;
 
-const STATUS: Record<CampaignRow["status"], { label: string; tone: BadgeTone }> = {
-  active: { label: "active", tone: "positive" }, scheduled: { label: "scheduled", tone: "info" }, draft: { label: "draft", tone: "neutral" }, done: { label: "completed", tone: "neutral" },
-};
-const CHANNEL: Record<CampaignRow["channel"], BadgeTone> = { Email: "info", WhatsApp: "positive", SMS: "warning" };
-
-const COLUMNS: Column<CampaignRow>[] = [
-  { key: "name", header: "Campaign", render: (r) => <span style={{ fontWeight: 600, color: color.ink.DEFAULT }}>{r.name}</span> },
-  { key: "channel", header: "Channel", width: 120, render: (r) => <StatusBadge tone={CHANNEL[r.channel]} label={r.channel} /> },
-  { key: "audience", header: "Audience", width: 110, align: "right", render: (r) => <span style={{ color: color.ink.mid }}>{r.audience ? r.audience.toLocaleString() : "—"}</span> },
-  { key: "openRate", header: "Open rate", width: 110, align: "right", render: (r) => <span style={{ fontWeight: 600, color: r.openRate >= 50 ? color.status.positive : color.ink.DEFAULT }}>{r.audience ? r.openRate + "%" : "—"}</span> },
-  { key: "replies", header: "Replies", width: 100, align: "right", render: (r) => <span style={{ color: color.ink.mid }}>{r.audience ? r.replies : "—"}</span> },
-];
-
-const GROUPS: { id: CampaignRow["status"]; title: string; accent: string }[] = [
-  { id: "active", title: "Active", accent: color.status.positive },
-  { id: "scheduled", title: "Scheduled", accent: color.status.info },
-  { id: "draft", title: "Drafts", accent: color.ink.soft },
-  { id: "done", title: "Completed", accent: color.ink.mid },
+const FILTERS: { id: string; label: string; match: (s: string) => boolean }[] = [
+  { id: "all", label: "All", match: () => true },
+  { id: "active", label: "Active", match: (s) => s === "ACTIVE" },
+  { id: "draft", label: "Draft", match: (s) => s === "DRAFT" },
+  { id: "completed", label: "Completed", match: (s) => s === "COMPLETED" || s === "PAUSED" },
 ];
 
 export default function CampaignsPage() {
+  const [all, setAll] = React.useState<Campaign[]>([]);
+  const [loading, setLoading] = React.useState(true);
   const [q, setQ] = React.useState("");
-  const rows = ALL.filter((r) => r.name.toLowerCase().includes(q.toLowerCase()));
-  const visible = GROUPS.map((g) => ({ g, gr: rows.filter((r) => r.status === g.id) })).filter((x) => x.gr.length > 0);
-  const reach = ALL.filter((r) => r.status === "active").reduce((s, r) => s + r.audience, 0);
+  const [filt, setFilt] = React.useState("all");
+
+  React.useEffect(() => {
+    fetch("/api/campaigns").then((r) => r.json()).then((d) => { setAll(d.campaigns ?? []); setLoading(false); }).catch(() => setLoading(false));
+  }, []);
+
+  const active = FILTERS.find((f) => f.id === filt) ?? FILTERS[0]!;
+  const rows = all.filter((c) => active.match(c.status)).filter((c) => c.name.toLowerCase().includes(q.toLowerCase()));
+  const kpis = {
+    total: all.length,
+    active: all.filter((c) => c.status === "ACTIVE").length,
+    audience: all.reduce((s, c) => s + (c.audience || 0), 0),
+    avgOpen: (() => { const withSent = all.filter((c) => c.sent > 0); return withSent.length ? Math.round(withSent.reduce((s, c) => s + openRate(c), 0) / withSent.length) : 0; })(),
+  };
+
+  const COLUMNS: Column<Campaign>[] = [
+    { key: "name", header: "Campaign", render: (r) => <span style={{ fontWeight: 600, color: color.ink.DEFAULT }}>{r.name}</span> },
+    { key: "status", header: "Status", width: 120, render: (r) => <StatusBadge tone={TONE[r.status] ?? "neutral"} label={r.status.toLowerCase()} /> },
+    { key: "audience", header: "Audience", width: 100, align: "right", render: (r) => <span style={{ color: color.ink.mid, fontVariantNumeric: "tabular-nums" }}>{r.audience.toLocaleString()}</span> },
+    { key: "sent", header: "Sent", width: 90, align: "right", render: (r) => <span style={{ color: color.ink.mid, fontVariantNumeric: "tabular-nums" }}>{r.sent.toLocaleString()}</span> },
+    { key: "open", header: "Open rate", width: 110, align: "right", render: (r) => <span style={{ fontWeight: 600, color: openRate(r) >= 40 ? color.status.positive : color.ink.mid }}>{openRate(r)}%</span> },
+    { key: "replies", header: "Replies", width: 90, align: "right", render: (r) => <span style={{ color: color.ink.mid, fontVariantNumeric: "tabular-nums" }}>{r.replies}</span> },
+  ];
 
   return (
     <AppShell active="campaigns">
-      <PageTitleRow title="Campaigns" subtitle={`${ALL.length} campaigns · ${reach.toLocaleString()} active reach`} actions={<Button variant="primary">+ New campaign</Button>} />
-      <FilterBar>
-        <Input placeholder="Search campaigns…" value={q} onChange={(e) => setQ(e.target.value)} style={{ width: 240 }} />
-        <Button>Channel</Button>
-        <Button>Status</Button>
-      </FilterBar>
-      {visible.length === 0 ? (
-        <EmptyState title="No campaigns match your search" hint="Try a different name." action={<Button variant="primary" onClick={() => setQ("")}>Clear search</Button>} />
-      ) : (
-        <div style={{ display: "flex", flexDirection: "column", gap: 22, marginTop: 8 }}>
-          {visible.map(({ g, gr }) => (
-            <div key={g.id}>
-              <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 6 }}>
-                <span style={{ width: 3, height: 16, borderRadius: 2, background: g.accent }} />
-                <span style={{ fontSize: 14, fontWeight: 600, color: g.accent }}>{g.title}</span>
-                <span style={{ fontSize: 12, color: color.ink.soft }}>{gr.length}</span>
-              </div>
-              <DataTable columns={COLUMNS} rows={gr} getKey={(r) => r.id} />
-            </div>
-          ))}
-        </div>
-      )}
-      <p style={{ fontSize: 11, color: color.ink.soft, textAlign: "center", marginTop: 18 }}>Campaign manager (monday-style) · locked DataTable + StatusBadge · tokens only</p>
+      <PageTitleRow title="Campaigns" subtitle={`${all.length} campaigns`} actions={<Button variant="primary">+ New campaign</Button>} />
+
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(150px, 1fr))", gap: 10, marginBottom: 16 }}>
+        <KPICard label="Campaigns" value={String(kpis.total)} note="total" noteTone={color.brand.primary} />
+        <KPICard label="Active" value={String(kpis.active)} note="running now" noteTone={color.status.positive} />
+        <KPICard label="Audience" value={kpis.audience.toLocaleString()} note="leads enrolled" noteTone={color.ink.soft} />
+        <KPICard label="Avg open rate" value={`${kpis.avgOpen}%`} note="across sent" noteTone={kpis.avgOpen >= 40 ? color.status.positive : color.ink.soft} />
+      </div>
+
+      <div style={{ display: "flex", gap: 10, alignItems: "center", flexWrap: "wrap", marginBottom: 12 }}>
+        <Input placeholder="Search campaigns…" value={q} onChange={(e) => setQ(e.target.value)} style={{ width: 280 }} />
+      </div>
+      <div style={{ display: "flex", gap: 7, flexWrap: "wrap", marginBottom: 16 }}>
+        {FILTERS.map((f) => {
+          const on = filt === f.id;
+          return (
+            <button key={f.id} onClick={() => setFilt(f.id)} style={{ fontSize: 12, fontWeight: 600, padding: "4px 11px", borderRadius: 999, cursor: "pointer",
+              border: `1px solid ${on ? color.ink.DEFAULT : color.line.strong}`, background: on ? color.ink.DEFAULT : color.surface.card, color: on ? color.surface.card : color.ink.mid }}>
+              {f.label}{f.id !== "all" ? <span style={{ opacity: 0.6, marginLeft: 5 }}>{all.filter((c) => f.match(c.status)).length}</span> : null}
+            </button>
+          );
+        })}
+      </div>
+
+      {loading ? <div style={{ padding: 30, textAlign: "center", color: color.ink.soft, fontSize: 13 }}>Loading…</div>
+        : rows.length === 0 ? <EmptyState title="No campaigns" hint="Email campaigns for your workspace will appear here." action={<Button variant="primary" onClick={() => { setQ(""); setFilt("all"); }}>Clear filters</Button>} />
+          : <DataTable columns={COLUMNS} rows={rows} getKey={(r) => r.id} />}
+
+      <p style={{ fontSize: 11, color: color.ink.soft, textAlign: "center", marginTop: 18 }}>Campaigns · live email campaigns + open/reply stats via DataPort · tenant-scoped</p>
     </AppShell>
   );
 }
