@@ -1,6 +1,7 @@
 import { XentralMark } from "./xentral-mark";
 import { HeaderSearch, HeaderTools, HeaderAvatar } from "./header-menu";
 import * as React from "react";
+import { NavIcon } from "./nav-icons";
 import { ThemeToggle } from "./theme-toggle";
 import { color, uiConstants } from "@xentral/config";
 import { PageContainer } from "./page-container";
@@ -167,7 +168,7 @@ export function Sidebar({ active }: { active?: string }) {
               const on = n.id === active;
               return (
                 <a key={n.id} href={n.href} style={{ display: "flex", alignItems: "center", gap: 10, height: 34, padding: "0 12px", borderRadius: 8, textDecoration: "none", fontSize: 13, fontWeight: on ? 600 : 500, color: on ? color.brand.primary : color.ink.mid, background: on ? color.brand.primaryTint : "transparent" }}>
-                  <span style={{ width: 18, textAlign: "center", opacity: 0.9 }}>{n.glyph}</span>{n.label}
+                  <span style={{ width: 18, display: "inline-flex", alignItems: "center", justifyContent: "center" }}><NavIcon id={n.id} glyph={n.glyph} /></span>{n.label}
                 </a>
               );
             })}
