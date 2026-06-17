@@ -67,7 +67,7 @@ export default function DealsPage() {
                 <span style={{ fontSize: 14, fontWeight: 600, color: g.accent }}>{g.title}</span>
                 <span style={{ fontSize: 12, color: color.ink.soft }}>{gr.length}</span>
               </div>
-              <DataTable columns={COLUMNS} rows={gr} getKey={(r) => r.id} />
+              <DataTable columns={COLUMNS} rows={gr} getKey={(r) => r.id} rowHref={(r) => `/deals/${r.id}`} />
             </div>
           ))}
         </div>
