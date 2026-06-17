@@ -1,0 +1,1 @@
+# plugins/\n\nManifest-based plugins (Backstage/VS-Code model). Each plugin declares its\ncontributions (routes, nav, theme, hooks). Installable per workspace.\nExample to migrate: Dubai Real Estate pack.\n

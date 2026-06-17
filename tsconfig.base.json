@@ -1,0 +1,25 @@
+{
+  "$schema": "https://json.schemastore.org/tsconfig",
+  "compilerOptions": {
+    "target": "ES2022",
+    "lib": ["ES2022", "DOM", "DOM.Iterable"],
+    "module": "ESNext",
+    "moduleResolution": "Bundler",
+    "strict": true,
+    "noUncheckedIndexedAccess": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "declaration": true,
+    "composite": false,
+    "jsx": "preserve",
+    "baseUrl": ".",
+    "paths": {
+      "@xentral/config": ["packages/config/src/index.ts"],
+      "@xentral/ui": ["packages/ui/src/index.ts"],
+      "@xentral/kernel": ["packages/kernel/src/index.ts"]
+    }
+  },
+  "exclude": ["node_modules", "dist", ".next"]
+}

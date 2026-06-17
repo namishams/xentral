@@ -1,0 +1,1 @@
+# modules/\n\nOne package per business module (@xentral/module-crm, -books, -erp, -payments, -portal, -comms, -ai, ...).\nEach exposes a public contract.ts; cross-module access goes through contracts only.\n

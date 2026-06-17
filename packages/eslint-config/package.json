@@ -1,0 +1,7 @@
+{
+  "name": "@xentral/eslint-config",
+  "version": "0.1.0",
+  "description": "Shared ESLint config incl. module-boundary enforcement.",
+  "main": "index.js",
+  "dependencies": { "eslint-plugin-boundaries": "^5.0.0" }
+}

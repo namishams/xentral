@@ -1,0 +1,22 @@
+{
+  "id": "compliance-uae",
+  "name": "UAE Compliance",
+  "region": "AE",
+  "version": "0.1.0",
+  "contributes": {
+    "tax": {
+      "vatRate": 0.05,
+      "corporateTaxRate": 0.09,
+      "vatReturnForm": "VAT201",
+      "engines": ["vat", "corporate-tax"]
+    },
+    "eInvoicing": { "standard": "PINT-AE", "authority": "FTA" },
+    "payroll": { "standard": "WPS", "fileFormat": "SIF" },
+    "locale": { "adds": ["ar"], "rtl": true },
+    "currency": { "default": "AED" }
+  },
+  "migratesFrom": {
+    "note": "Live app modules to fold into this plugin during export:",
+    "modules": ["FTA e-Invoicing (PINT-AE)", "Corporate Tax 9% engine", "WPS Payroll .SIF", "VAT Return 201"]
+  }
+}

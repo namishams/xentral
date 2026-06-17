@@ -1,0 +1,1 @@
+# @xentral/plugin-compliance-uae\n\nThe first compliance pack and the worked example for the one-click profile system\n(`profiles/uae.profile.json`). To add another country: copy this plugin, adjust the\nmanifest, and author a matching profile. The kernel never changes.\n

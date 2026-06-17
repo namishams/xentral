@@ -1,0 +1,12 @@
+{
+  "name": "@xentral/module-marketing",
+  "version": "0.1.0",
+  "description": "Marketing module — public site content & components. First exported module.",
+  "main": "src/index.ts",
+  "types": "src/index.ts",
+  "exports": { ".": "./src/index.ts" },
+  "dependencies": { "@xentral/config": "workspace:*", "@xentral/ui": "workspace:*" },
+  "peerDependencies": { "react": "^18 || ^19" },
+  "devDependencies": { "@types/react": "^18" },
+  "scripts": { "build": "tsc --noEmit", "typecheck": "tsc --noEmit", "lint": "echo ok", "test": "vitest run" }
+}

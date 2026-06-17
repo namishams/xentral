@@ -1,0 +1,60 @@
+{
+  "$schema": "./_schema.json",
+  "id": "uae",
+  "label": "UAE-conform (United Arab Emirates)",
+  "product": {
+    "name": "Xentral",
+    "appDomain": "app.xentral.ae",
+    "marketingDomain": "xentral.ae",
+    "kbDomain": "help.xentral.ae"
+  },
+  "region": {
+    "code": "AE",
+    "compliancePlugin": "@xentral/plugin-compliance-uae",
+    "dataResidency": "UAE"
+  },
+  "locale": {
+    "default": "en",
+    "supported": ["en", "ar"],
+    "rtl": true,
+    "core": "@xentral/locale-pack"
+  },
+  "currency": {
+    "default": "AED",
+    "display": "AED #,##0.00"
+  },
+  "tax": {
+    "vatRate": 0.05,
+    "corporateTaxRate": 0.09,
+    "corporateTaxSmallBusinessReliefThreshold": 3000000,
+    "eInvoiceStandard": "PINT-AE",
+    "taxAuthority": "FTA",
+    "vatReturnForm": "VAT201"
+  },
+  "payroll": {
+    "standard": "WPS",
+    "fileFormat": "SIF"
+  },
+  "modules": {
+    "enabled": [
+      "crm", "books", "erp", "payments", "portal",
+      "comms", "ai", "marketplace", "payroll", "developer", "packs"
+    ]
+  },
+  "payments": {
+    "gateways": ["stripe", "telr"]
+  },
+  "theme": {
+    "tokensRef": "@xentral/config/design-tokens",
+    "language": "SAP Fiori Horizon Light",
+    "brandPrimary": "#0064d9"
+  },
+  "agents": {
+    "enabled": ["architect", "backend", "frontend", "ux", "export-assistant"]
+  },
+  "updates": { "core": "@xentral/update-pack", "decoupled": true },
+  "governance": {
+    "kernelChangeApproval": "owner",
+    "boundaryEnforcement": "error"
+  }
+}
