@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import "../lib/live-data";
 
 export const metadata: Metadata = {
   title: "Xentral — Modular Build Console",

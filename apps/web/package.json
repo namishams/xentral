@@ -21,9 +21,12 @@
     "next": "14.2.15",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
-    "@xentral/module-platform": "workspace:*"
+    "@xentral/module-platform": "workspace:*",
+    "@xentral/data-pack": "workspace:*",
+    "pg": "^8.13.1"
   },
   "devDependencies": {
+    "@types/pg": "^8.11.10",
     "@types/node": "^20",
     "@types/react": "^18",
     "@types/react-dom": "^18",

@@ -45,7 +45,7 @@ export default [
           { from: "locale", allow: ["kernel", "config"] },
           { from: "update", allow: ["kernel", "config"] },
           { from: "data", allow: ["kernel", "config"] },
-          { from: "app", allow: ["kernel", "ui", "config", "module", "plugin", "locale", "update", "data"] },
+          { from: "app", allow: ["app", "kernel", "ui", "config", "module", "plugin", "locale", "update", "data"] },
         ],
       }],
     },
