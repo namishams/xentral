@@ -45,6 +45,14 @@ const NAV: NavGroup[] = [
     ],
   },
   {
+    group: "Processes",
+    items: [
+      { id: "o2c", label: "Order-to-Cash", href: "/o2c", glyph: "⇄" },
+      { id: "p2p", label: "Procure-to-Pay", href: "/p2p", glyph: "⇆" },
+      { id: "parties", label: "Business Partners", href: "/parties", glyph: "◑" },
+    ],
+  },
+  {
     group: "Operations",
     items: [
       { id: "orders", label: "Orders", href: "/orders", glyph: "▤" },
