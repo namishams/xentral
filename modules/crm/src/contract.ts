@@ -242,3 +242,27 @@ export function listTasks(): TaskRow[] {
     { id: "tk4", title: "Archive lost Emaar deal", due: "2026-06-16", priority: "low", done: true, owner: "Sara" },
   ];
 }
+
+/* ── Universal Timeline ── a unified chronological feed composed from other
+   sources through the same port. No new adapter needed: it merges loadActivities
+   + loadTasks, so it works on live data and seed identically. ── */
+
+export type TimelineKind = "activity" | "task";
+export type TimelineEvent = {
+  id: string;
+  kind: TimelineKind;
+  title: string;
+  when: string;
+  who: string;
+  detail: string;
+};
+
+/** Load a merged, reverse-chronological timeline for the workspace. */
+export async function loadTimeline(scope?: TenantScope): Promise<TimelineEvent[]> {
+  const [acts, tasks] = await Promise.all([loadActivities(scope), loadTasks(scope)]);
+  const events: TimelineEvent[] = [
+    ...acts.map((a): TimelineEvent => ({ id: `a-${a.id}`, kind: "activity", title: a.summary, when: a.when, who: a.by, detail: a.type })),
+    ...tasks.map((t): TimelineEvent => ({ id: `t-${t.id}`, kind: "task", title: t.title, when: t.due, who: t.owner, detail: t.done ? "done" : t.priority })),
+  ];
+  return events.sort((x, y) => (y.when || "").localeCompare(x.when || ""));
+}

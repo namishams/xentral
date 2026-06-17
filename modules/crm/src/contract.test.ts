@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { __resetDataSource } from "@xentral/kernel";
-import { getDefaultPipeline, listDeals, listContacts, listCompanies, listLeads, loadContacts, loadCompanies, loadLeads, listActivities, loadActivities, listTasks, loadTasks } from "./contract";
+import { getDefaultPipeline, listDeals, listContacts, listCompanies, listLeads, loadContacts, loadCompanies, loadLeads, listActivities, loadActivities, listTasks, loadTasks, loadTimeline } from "./contract";
 
 describe("crm contract", () => {
   it("default pipeline is ordered", () => {
@@ -63,5 +63,17 @@ describe("crm contract", () => {
     expect(await loadActivities({ companyId: "T-1" })).toEqual(listActivities());
     expect(await loadTasks()).toEqual(listTasks());
     expect(await loadTasks({ companyId: "T-1" })).toEqual(listTasks());
+  });
+
+  it("loadTimeline merges activities + tasks, newest first", async () => {
+    __resetDataSource();
+    const tl = await loadTimeline();
+    expect(tl.length).toBe(listActivities().length + listTasks().length);
+    for (let i = 1; i < tl.length; i++) {
+      const prev = tl[i - 1]!.when;
+      const cur = tl[i]!.when;
+      expect(prev >= cur).toBe(true);
+    }
+    expect(new Set(tl.map((e) => e.kind))).toEqual(new Set(["activity", "task"]));
   });
 });
