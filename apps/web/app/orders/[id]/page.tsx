@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { color } from "@xentral/config";
+import { color, shadow } from "@xentral/config";
 import { AppShell, KPICard, Button, StatusBadge, DataTable, type Column, type BadgeTone } from "@xentral/ui";
 import { listOrders, type OrderStatus } from "@xentral/module-erp";
 
@@ -18,7 +18,7 @@ type Line = { n: number; description: string; qty: number; unit: number; amount:
 
 function Panel({ title, sub, action, children }: { title: string; sub?: string; action?: React.ReactNode; children: React.ReactNode }) {
   return (
-    <section style={{ background: color.surface.card, border: `1px solid ${color.line.DEFAULT}`, borderRadius: 10, padding: "16px 18px" }}>
+    <section style={{ background: color.surface.card, border: `1px solid ${color.line.DEFAULT}`, borderRadius: 12, padding: "16px 18px", boxShadow: shadow.card }}>
       <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 12, marginBottom: 12 }}>
         <div><h2 style={{ fontSize: 14, fontWeight: 600, color: color.ink.DEFAULT, margin: 0 }}>{title}</h2>{sub ? <div style={{ fontSize: 12.5, color: color.ink.soft, marginTop: 2 }}>{sub}</div> : null}</div>
         {action}

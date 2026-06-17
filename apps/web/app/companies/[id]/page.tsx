@@ -1,5 +1,5 @@
 import * as React from "react";
-import { color } from "@xentral/config";
+import { color, shadow } from "@xentral/config";
 import { currentScope } from "@xentral/kernel";
 import { AppShell, KPICard, Button, StatusBadge } from "@xentral/ui";
 import { loadCompanies } from "@xentral/module-crm";
@@ -9,7 +9,7 @@ const initials = (name: string) => name.split(" ").map((w) => w[0]).slice(0, 2).
 
 function Panel({ title, action, children }: { title: string; action?: React.ReactNode; children: React.ReactNode }) {
   return (
-    <section style={{ background: color.surface.card, border: `1px solid ${color.line.DEFAULT}`, borderRadius: 10, padding: "16px 18px" }}>
+    <section style={{ background: color.surface.card, border: `1px solid ${color.line.DEFAULT}`, borderRadius: 12, padding: "16px 18px", boxShadow: shadow.card }}>
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12 }}><h2 style={{ fontSize: 14, fontWeight: 600, color: color.ink.DEFAULT, margin: 0 }}>{title}</h2>{action}</div>
       {children}
     </section>

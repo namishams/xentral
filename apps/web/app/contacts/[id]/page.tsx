@@ -1,32 +1,12 @@
 import * as React from "react";
 import { color } from "@xentral/config";
 import { currentScope } from "@xentral/kernel";
-import { AppShell, KPICard, Button, StatusBadge } from "@xentral/ui";
+import { AppShell, PageTitleRow, KPICard, Button, StatusBadge, Panel, PanelHeader, PanelBody, FactStrip } from "@xentral/ui";
 import { loadContacts } from "@xentral/module-crm";
 
 export const dynamic = "force-dynamic";
 
 const initials = (name: string) => name.split(" ").map((w) => w[0]).slice(0, 2).join("").toUpperCase();
-
-function Panel({ title, action, children }: { title: string; action?: React.ReactNode; children: React.ReactNode }) {
-  return (
-    <section style={{ background: color.surface.card, border: `1px solid ${color.line.DEFAULT}`, borderRadius: 10, padding: "16px 18px" }}>
-      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12 }}>
-        <h2 style={{ fontSize: 14, fontWeight: 600, color: color.ink.DEFAULT, margin: 0 }}>{title}</h2>
-        {action}
-      </div>
-      {children}
-    </section>
-  );
-}
-function SumRow({ label, children }: { label: string; children: React.ReactNode }) {
-  return (
-    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 12, padding: "9px 0", borderTop: `1px solid ${color.line.DEFAULT}` }}>
-      <span style={{ fontSize: 13, color: color.ink.soft }}>{label}</span>
-      <span style={{ fontSize: 13, fontWeight: 500, color: color.ink.DEFAULT, textAlign: "right", minWidth: 0, overflow: "hidden", textOverflow: "ellipsis" }}>{children}</span>
-    </div>
-  );
-}
 
 export default async function ContactRecordPage({ params }: { params: { id: string } }) {
   const rows = await loadContacts(await currentScope());
@@ -34,60 +14,83 @@ export default async function ContactRecordPage({ params }: { params: { id: stri
   if (!c) {
     return (
       <AppShell active="contacts">
-        <a href="/contacts" style={{ fontSize: 13, color: color.ink.mid, textDecoration: "none" }}>← Contacts</a>
-        <div style={{ padding: 40, textAlign: "center", color: color.ink.soft }}>Contact not found.</div>
+        <PageTitleRow title="Contact" breadcrumb="CRM · Contacts" />
+        <div style={{ padding: 40, textAlign: "center", color: color.ink.soft }}>Contact not found. <a href="/contacts" style={{ color: color.brand.primary }}>Back to contacts</a></div>
       </AppShell>
     );
   }
 
+  const empty = (label: string) => (
+    <div style={{ padding: "20px 0", textAlign: "center", fontSize: 12.5, color: color.ink.soft }}>{label}</div>
+  );
+
   return (
     <AppShell active="contacts">
-      <a href="/contacts" style={{ fontSize: 13, color: color.ink.mid, textDecoration: "none" }}>← Contacts</a>
-      <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 16, margin: "8px 0 18px" }}>
-        <div style={{ display: "flex", gap: 14, alignItems: "center" }}>
-          <span style={{ width: 46, height: 46, borderRadius: "50%", background: color.brand.primaryTint, color: color.brand.primary, fontSize: 17, fontWeight: 600, display: "flex", alignItems: "center", justifyContent: "center" }}>{initials(c.name)}</span>
-          <div>
-            <h1 style={{ fontSize: 22, fontWeight: 700, color: color.ink.DEFAULT, margin: 0 }}>{c.name}</h1>
-            <div style={{ fontSize: 13, color: color.ink.mid, marginTop: 4 }}>{[c.title, c.company].filter(Boolean).join(" · ") || "—"}</div>
-          </div>
-        </div>
-        <div style={{ display: "flex", gap: 8, flexShrink: 0, flexWrap: "wrap", justifyContent: "flex-end" }}>
+      <PageTitleRow title={c.name} breadcrumb="CRM · Contacts"
+        badge={c.owner ? <StatusBadge tone="info" label={c.owner} /> : null}
+        actions={<div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
           {c.email ? <a href={`mailto:${c.email}`} style={{ textDecoration: "none" }}><Button>Email</Button></a> : null}
           {c.phone ? <a href={`tel:${c.phone}`} style={{ textDecoration: "none" }}><Button>Call</Button></a> : null}
           <Button variant="primary">+ New deal</Button>
-        </div>
-      </div>
+        </div>} />
 
-      <div style={{ display: "flex", gap: 12, marginBottom: 18, flexWrap: "wrap" }}>
-        <KPICard label="Company" value={c.company || "—"} note="account" noteTone={color.ink.soft} />
-        <KPICard label="Owner" value={c.owner || "Unassigned"} note="account executive" noteTone={color.ink.soft} />
-        <KPICard label="Email" value={c.email ? "On file" : "—"} note={c.email || "no email"} noteTone={color.ink.soft} />
-        <KPICard label="Phone" value={c.phone ? "On file" : "—"} note={c.phone || "no phone"} noteTone={color.ink.soft} />
-      </div>
+      {/* Fiori object-page header band */}
+      <Panel style={{ marginBottom: 16 }}>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 24, padding: "18px 20px", borderBottom: `1px solid ${color.line.DEFAULT}`, flexWrap: "wrap" }}>
+          <div style={{ display: "flex", gap: 14, alignItems: "center", minWidth: 0 }}>
+            <span style={{ width: 52, height: 52, borderRadius: "50%", background: color.brand.primaryTint, color: color.brand.primary, fontSize: 19, fontWeight: 700, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>{initials(c.name)}</span>
+            <div style={{ minWidth: 0 }}>
+              <div style={{ fontSize: 18, fontWeight: 700, color: color.ink.DEFAULT }}>{c.name}</div>
+              <div style={{ fontSize: 12.5, color: color.ink.mid }}>{[c.title, c.company].filter(Boolean).join(" · ") || "—"}</div>
+            </div>
+          </div>
+        </div>
+        <PanelBody>
+          <FactStrip facts={[
+            { label: "Company", value: c.company || "—" },
+            { label: "Owner", value: c.owner || "Unassigned" },
+            { label: "Email", value: c.email || "—" },
+            { label: "Phone", value: c.phone || "—" },
+          ]} />
+        </PanelBody>
+      </Panel>
 
-      <div style={{ display: "grid", gridTemplateColumns: "minmax(0,1fr) 320px", gap: 16, alignItems: "start" }}>
+      <div style={{ display: "grid", gridTemplateColumns: "minmax(0,1fr) 340px", gap: 16, alignItems: "start" }}>
         <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
-          <Panel title="Activity & notes" action={<Button>+ Note</Button>}>
-            <div style={{ fontSize: 12.5, color: color.ink.soft, padding: "4px 0" }}>No activity logged yet for this contact.</div>
+          <Panel>
+            <PanelHeader title="Activity & notes" actions={<Button>+ Note</Button>} />
+            <PanelBody>{empty("No activity logged yet for this contact.")}</PanelBody>
           </Panel>
-          <Panel title="Linked deals">
-            <div style={{ fontSize: 12.5, color: color.ink.soft }}>No deals linked yet.</div>
+          <Panel>
+            <PanelHeader title="Linked deals" />
+            <PanelBody>{empty("No deals linked yet.")}</PanelBody>
+          </Panel>
+          <Panel>
+            <PanelHeader title="Documents" subtitle="Quotes & invoices" />
+            <PanelBody>{empty("No documents linked to this contact yet.")}</PanelBody>
           </Panel>
         </div>
         <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
-          <Panel title="Details">
-            <SumRow label="Email">{c.email ? <a href={`mailto:${c.email}`} style={{ color: color.brand.primary, textDecoration: "none" }}>{c.email}</a> : "—"}</SumRow>
-            <SumRow label="Phone">{c.phone || "—"}</SumRow>
-            <SumRow label="Company">{c.company || "—"}</SumRow>
-            <SumRow label="Title">{c.title || "—"}</SumRow>
-            <SumRow label="Owner">{c.owner ? <StatusBadge tone="info" label={c.owner} /> : "Unassigned"}</SumRow>
+          <Panel>
+            <PanelHeader title="Details" />
+            <PanelBody>
+              <Row k="Email" v={c.email ? <a href={`mailto:${c.email}`} style={{ color: color.brand.primary, textDecoration: "none" }}>{c.email}</a> : "—"} />
+              <Row k="Phone" v={c.phone || "—"} />
+              <Row k="Company" v={c.company || "—"} />
+              <Row k="Title" v={c.title || "—"} />
+              <Row k="Owner" v={c.owner ? <StatusBadge tone="info" label={c.owner} /> : "Unassigned"} />
+            </PanelBody>
           </Panel>
-          <Panel title="Attachments" action={<Button>Upload</Button>}>
-            <div style={{ fontSize: 12.5, color: color.ink.soft, padding: "4px 0" }}>No files yet.</div>
+          <Panel>
+            <PanelHeader title="Attachments" actions={<Button>Upload</Button>} />
+            <PanelBody>{empty("No files yet.")}</PanelBody>
           </Panel>
         </div>
       </div>
-      <p style={{ fontSize: 11, color: color.ink.soft, textAlign: "center", marginTop: 18 }}>Contact record · live via DataPort (real contact by id) · tenant-scoped</p>
     </AppShell>
   );
+}
+
+function Row({ k, v }: { k: string; v: React.ReactNode }) {
+  return <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 16, padding: "7px 0", borderBottom: `1px solid ${color.line.DEFAULT}` }}><span style={{ fontSize: 13, color: color.ink.soft }}>{k}</span><span style={{ fontSize: 13, fontWeight: 500, color: color.ink.DEFAULT, textAlign: "right", minWidth: 0, overflow: "hidden", textOverflow: "ellipsis" }}>{v}</span></div>;
 }

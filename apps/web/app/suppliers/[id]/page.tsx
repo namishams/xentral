@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { color } from "@xentral/config";
+import { color, shadow } from "@xentral/config";
 import { AppShell, KPICard, Button, StatusBadge, type BadgeTone } from "@xentral/ui";
 import { listSuppliers, listBills, type BillStatus } from "@xentral/module-erp";
 
@@ -11,7 +11,7 @@ const BILL_TONE: Record<BillStatus, BadgeTone> = { open: "info", approved: "warn
 
 function Panel({ title, action, children }: { title: string; action?: React.ReactNode; children: React.ReactNode }) {
   return (
-    <section style={{ background: color.surface.card, border: `1px solid ${color.line.DEFAULT}`, borderRadius: 10, padding: "16px 18px" }}>
+    <section style={{ background: color.surface.card, border: `1px solid ${color.line.DEFAULT}`, borderRadius: 12, padding: "16px 18px", boxShadow: shadow.card }}>
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12 }}>
         <h2 style={{ fontSize: 14, fontWeight: 600, color: color.ink.DEFAULT, margin: 0 }}>{title}</h2>{action}
       </div>
