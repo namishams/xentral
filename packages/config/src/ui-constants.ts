@@ -61,5 +61,20 @@ export const form = {
   columnsMobile: 1,
 } as const;
 
-export const uiConstants = { header, aiSearch, quickActions, card, table, form } as const;
+/**
+ * Dashboard / Home — fixed dimensions for the KPI row, recommendation/bookmark
+ * panels and the module action-tile grids. Every tile is identical because its
+ * size comes from here, never from the page. This is the "germany-style"
+ * pixel-consistency lock.
+ */
+export const dashboard = {
+  greeting: { titleFontSize: 20, subFontSize: 13, marginBottom: 20 },
+  kpiPerRow: 4,
+  recommendation: { rowHeight: 52, accentWidth: 3, iconSize: 18, fontSize: 13.5, countFontSize: 13 },
+  panel: { minHeight: 268, padding: 20, radius: 10, titleFontSize: 14, gap: 16 },
+  actionTile: { width: 152, height: 100, iconSize: 26, radius: 10, gap: 16, labelFontSize: 13 },
+  section: { titleFontSize: 14, marginTop: 28, marginBottom: 14 },
+} as const;
+
+export const uiConstants = { header, aiSearch, quickActions, card, table, form, dashboard } as const;
 export default uiConstants;

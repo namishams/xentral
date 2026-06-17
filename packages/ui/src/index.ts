@@ -19,6 +19,7 @@ export { Button, type ButtonVariant } from "./button";
 export { Input } from "./input";
 export { Modal, type ModalProps } from "./modal";
 export { Pagination, type PaginationProps } from "./pagination";
+export { ActionTile } from "./action-tile";
 
 // Migrated next: AISearchBar, QuickActionsBar, FormSection, DetailDrawer,
 // Panel, Skeleton, Toaster.
