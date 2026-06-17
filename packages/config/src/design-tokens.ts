@@ -42,3 +42,15 @@ export const zIndex = { base: 0, sticky: 30, header: 40, drawer: 50, modal: 60, 
 
 export const tokens = { color, spacing, radius, shadow, fontSize, fontWeight, zIndex } as const;
 export default tokens;
+
+
+/** SAP Fiori Horizon Night — dark theme palette. Same semantic keys as `color`,
+ * so a ThemePort can swap palettes without touching any component. AA-contrast. */
+export const colorDark = {
+  brand: { primary: "#4a9eff", primaryHover: "#6cb2ff", primaryTint: "#16243b" },
+  shell: { bar: "#0b1220", alt: "#111a2b" },
+  surface: { page: "#0b1220", card: "#141d2e", sunken: "#1b2740" },
+  line: { DEFAULT: "#27324a", strong: "#384a66" },
+  ink: { DEFAULT: "#e7edf6", mid: "#aebccf", soft: "#7e8ea4", onPrimary: "#0b1220" },
+  status: { positive: "#46c560", critical: "#f0944a", negative: "#ff6b6b", info: "#4a9eff" },
+} as const;
