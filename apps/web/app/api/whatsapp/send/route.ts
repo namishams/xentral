@@ -1,4 +1,5 @@
 import "server-only";
+import "../../../../lib/session"; // side-effect: register SessionPort resolver into the shared app kernel instance
 import { NextResponse } from "next/server";
 import { randomUUID } from "crypto";
 import { Pool } from "pg";
