@@ -13,7 +13,8 @@ import { color, zIndex } from "@xentral/config";
 const ACCENT = "#6b4ed9";       // Xentral AI purple — the AI identity accent
 const ACCENT_SOFT = "#f3f1fe";
 
-type Msg = { role: "user" | "assistant"; content: string };
+type Action = { type: string; label: string; href?: string };
+type Msg = { role: "user" | "assistant"; content: string; actions?: Action[] };
 
 export function AiLauncher() {
   const [open, setOpen] = React.useState(false);
@@ -26,12 +27,12 @@ export function AiLauncher() {
   const send = React.useCallback(async (text: string) => {
     const q = text.trim();
     if (!q || busy) return;
-    const next: Msg[] = [...msgsRef.current, { role: "user", content: q }];
-    setMsgs(next); setInput(""); setBusy(true);
+    const history = msgsRef.current.map((m) => ({ role: m.role, content: m.content }));
+    setMsgs((m) => [...m, { role: "user", content: q }]); setInput(""); setBusy(true);
     try {
-      const res = await fetch("/api/ai/chat", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ messages: next }) });
+      const res = await fetch("/api/ai/command", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ prompt: q, history }) });
       const d = await res.json().catch(() => ({}));
-      setMsgs((m) => [...m, { role: "assistant", content: d.reply || d.error || "Sorry, I couldn't respond just now." }]);
+      setMsgs((m) => [...m, { role: "assistant", content: d.answer || d.error || "Sorry, I couldn't respond just now.", actions: Array.isArray(d.actions) ? d.actions : undefined }]);
     } catch {
       setMsgs((m) => [...m, { role: "assistant", content: "Network error — please try again." }]);
     } finally { setBusy(false); }
@@ -53,7 +54,7 @@ export function AiLauncher() {
 
   React.useEffect(() => { if (scroller.current) scroller.current.scrollTop = scroller.current.scrollHeight; }, [msgs, busy]);
 
-  const suggestions = ["Summarise my outstanding invoices", "Draft a follow-up email to a customer", "What's the UAE VAT rate?"];
+  const suggestions = ["Create a contact: Ali Hassan, Acme Trading, ali@acme.ae", "Add a company: Gulf Logistics, Dubai, logistics", "Draft a follow-up email to a customer"];
 
   return (
     <>
@@ -98,11 +99,20 @@ export function AiLauncher() {
                   </div>
                 </div>
               ) : msgs.map((m, i) => (
-                <div key={i} style={{ display: "flex", justifyContent: m.role === "user" ? "flex-end" : "flex-start" }}>
+                <div key={i} style={{ display: "flex", flexDirection: "column", alignItems: m.role === "user" ? "flex-end" : "flex-start", gap: 6 }}>
                   <div style={{ maxWidth: "85%", fontSize: 13, lineHeight: 1.55, whiteSpace: "pre-wrap", padding: "9px 12px", borderRadius: 12,
                     background: m.role === "user" ? color.brand.primary : ACCENT_SOFT,
                     color: m.role === "user" ? "#fff" : color.ink.DEFAULT,
                     border: m.role === "user" ? "0" : `1px solid #e6e1fb` }}>{m.content}</div>
+                  {m.actions && m.actions.length > 0 && (
+                    <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
+                      {m.actions.map((act, j) => act.href ? (
+                        <a key={j} href={act.href} style={{ display: "inline-flex", alignItems: "center", gap: 5, fontSize: 12, fontWeight: 600, color: color.status.positive, background: "#eaf6ee", border: "1px solid #cfead6", borderRadius: 8, padding: "5px 10px", textDecoration: "none" }}>✓ {act.label}</a>
+                      ) : (
+                        <span key={j} style={{ display: "inline-flex", alignItems: "center", gap: 5, fontSize: 12, fontWeight: 600, color: color.status.positive, background: "#eaf6ee", border: "1px solid #cfead6", borderRadius: 8, padding: "5px 10px" }}>✓ {act.label}</span>
+                      ))}
+                    </div>
+                  )}
                 </div>
               ))}
               {busy && <div style={{ fontSize: 12.5, color: ACCENT, fontWeight: 600 }}>Xentral AI is thinking…</div>}
