@@ -90,6 +90,16 @@ const NAV: NavGroup[] = [
     ],
   },
   {
+    group: "Workspace",
+    items: [
+      { id: "people", label: "People", href: "/people", glyph: "◍" },
+      { id: "documents", label: "Documents", href: "/documents", glyph: "▦" },
+      { id: "scheduling", label: "Scheduling", href: "/scheduling", glyph: "▦" },
+      { id: "service-desk", label: "Service Desk", href: "/service-desk", glyph: "☎" },
+      { id: "developer", label: "Developer", href: "/developer", glyph: "⌘" },
+    ],
+  },
+  {
     group: "Administration",
     items: [
       { id: "admin", label: "Admin Portal", href: "/admin", glyph: "⌂" },
