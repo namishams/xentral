@@ -4,26 +4,30 @@ import { createHmac, timingSafeEqual } from "crypto";
 import { setSessionResolver, type Session } from "@xentral/kernel";
 
 /**
- * Session resolver boot — registers the kernel SessionPort resolver.
+ * Session resolver boot + cookie signer for the kernel SessionPort.
  *
- * DORMANT by default. It only registers when XENTRAL_LIVE_DATA=1 (the same gate
- * that arms live data). Until then no resolver is registered, so currentScope()
- * returns undefined and every page falls back to safe seed data — the public
- * preview never sees a tenant.
+ * DORMANT by default. The resolver registers only when XENTRAL_LIVE_DATA=1 (the
+ * same gate that arms live data). Until then no resolver is registered, so
+ * currentScope() returns undefined and every page falls back to safe seed data —
+ * the public preview never sees a tenant.
  *
- * When armed, the resolver reads an HMAC-signed cookie ("xentral_session") of the
- * form  base64url(payloadJson) "." base64url(hmacSHA256(payloadJson, SECRET)).
- * It verifies the signature with XENTRAL_SESSION_SECRET (set only on the private
- * host). No secret, no cookie, or a bad signature → null (unauthenticated). The
- * payload carries { userId, companyId, role }; companyId is the tenant scope.
- *
- * This is the seam the existing Xentral auth plugs into at go-live: whatever
- * issues the cookie (the current login) just needs to sign it with the shared
- * secret. Nothing here trusts unsigned input, so it is safe to ship dormant.
+ * Cookie format ("xentral_session"):
+ *   base64url(payloadJson) "." base64url(hmacSHA256(payload, XENTRAL_SESSION_SECRET))
+ * Signed and verified with XENTRAL_SESSION_SECRET (set only on the private host).
+ * No secret, no cookie, or a bad signature → null (unauthenticated). Payload:
+ * { userId, companyId, role }; companyId is the tenant scope.
  */
 
-const COOKIE = "xentral_session";
+export const SESSION_COOKIE = "xentral_session";
 const b64urlToBuf = (s: string) => Buffer.from(s.replace(/-/g, "+").replace(/_/g, "/"), "base64");
+const bufToB64url = (b: Buffer) => b.toString("base64").replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
+
+/** Produce a signed session cookie value. Only the host that holds the secret can mint one. */
+export function signSession(payload: Session, secret: string): string {
+  const p = bufToB64url(Buffer.from(JSON.stringify(payload), "utf8"));
+  const sig = bufToB64url(createHmac("sha256", secret).update(p).digest());
+  return `${p}.${sig}`;
+}
 
 function verify(token: string, secret: string): Session | null {
   const dot = token.lastIndexOf(".");
@@ -51,7 +55,7 @@ export function ensureSessionResolver(): void {
   if (!secret) return;
   setSessionResolver((): Session | null => {
     try {
-      const token = cookies().get(COOKIE)?.value;
+      const token = cookies().get(SESSION_COOKIE)?.value;
       return token ? verify(token, secret) : null;
     } catch {
       return null;

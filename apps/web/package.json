@@ -23,13 +23,15 @@
     "react-dom": "^18.3.1",
     "@xentral/module-platform": "workspace:*",
     "@xentral/data-pack": "workspace:*",
-    "pg": "^8.13.1"
+    "pg": "^8.13.1",
+    "bcryptjs": "^2.4.3"
   },
   "devDependencies": {
     "@types/pg": "^8.11.10",
     "@types/node": "^20",
     "@types/react": "^18",
     "@types/react-dom": "^18",
-    "typescript": "^5.6.2"
+    "typescript": "^5.6.2",
+    "@types/bcryptjs": "^2.4.6"
   }
 }

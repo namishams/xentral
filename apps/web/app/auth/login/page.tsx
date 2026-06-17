@@ -24,11 +24,21 @@ export default function LoginPage() {
   const [notice, setNotice] = React.useState("");
   const [busy, setBusy] = React.useState(false);
 
-  const submit = (e: React.FormEvent) => {
+  const submit = async (e: React.FormEvent) => {
     e.preventDefault();
     setBusy(true);
-    // Seam: real session backend activates at go-live. Preview shows a notice.
-    setTimeout(() => { setBusy(false); setNotice("Sign-in activates when this workspace goes live. On the public preview the app runs on safe seed data."); }, 350);
+    setNotice("");
+    try {
+      const r = await fetch("/api/auth/login", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ email, password: pw }) });
+      if (r.ok) { window.location.href = "/dashboard"; return; }
+      if (r.status === 503) { setNotice("Sign-in activates when this workspace goes live. On the public preview the app runs on safe seed data."); }
+      else if (r.status === 401) { setNotice("Email or password is incorrect."); }
+      else { setNotice("Sign-in is temporarily unavailable. Please try again."); }
+    } catch {
+      setNotice("Network error — please try again.");
+    } finally {
+      setBusy(false);
+    }
   };
 
   return (
