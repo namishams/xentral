@@ -2,63 +2,45 @@
 
 import * as React from "react";
 import { color } from "@xentral/config";
-import { AppShell, PageTitleRow, KPICard, Button, DataTable, StatusBadge, type Column } from "@xentral/ui";
+import { AppShell, PageTitleRow, KPICard, Input, Button, DataTable, StatusBadge, EmptyState, type Column } from "@xentral/ui";
 
-const aed = (n: number) => `AED ${n.toLocaleString()}`;
-
-type Account = { code: string; name: string; type: "Asset" | "Liability" | "Equity" | "Income" | "Expense"; balance: number };
-const ACCOUNTS: Account[] = [
-  { code: "1000", name: "Cash & bank", type: "Asset", balance: 664500 },
-  { code: "1100", name: "Accounts receivable", type: "Asset", balance: 53300 },
-  { code: "1300", name: "Inventory", type: "Asset", balance: 41000 },
-  { code: "2000", name: "Accounts payable", type: "Liability", balance: 38600 },
-  { code: "2100", name: "VAT payable", type: "Liability", balance: 13180 },
-  { code: "3000", name: "Owner's equity", type: "Equity", balance: 500000 },
-  { code: "4000", name: "Sales revenue", type: "Income", balance: 682320 },
-  { code: "5000", name: "Cost of sales", type: "Expense", balance: 222790 },
-];
-const TYPE_TONE = { Asset: "info", Liability: "warning", Equity: "neutral", Income: "positive", Expense: "critical" } as const;
-
-type Entry = { id: string; date: string; ref: string; memo: string; debit: number; credit: number };
-const ENTRIES: Entry[] = [
-  { id: "j1", date: "17 Jun", ref: "INV-1043", memo: "Sales invoice — Al Noor", debit: 15225, credit: 0 },
-  { id: "j2", date: "17 Jun", ref: "INV-1043", memo: "VAT output", debit: 0, credit: 725 },
-  { id: "j3", date: "16 Jun", ref: "PAY-5521", memo: "Payment received — Skyline", debit: 32000, credit: 0 },
-  { id: "j4", date: "15 Jun", ref: "BILL-771", memo: "Supplier bill — Emirates Steel", debit: 0, credit: 22000 },
-];
-
-const ACCT_COLS: Column<Account>[] = [
-  { key: "code", header: "Code", width: 80, render: (r) => <span style={{ color: color.ink.soft }}>{r.code}</span> },
-  { key: "name", header: "Account", render: (r) => <span style={{ fontWeight: 600, color: color.ink.DEFAULT }}>{r.name}</span> },
-  { key: "type", header: "Type", width: 120, render: (r) => <StatusBadge tone={TYPE_TONE[r.type]} label={r.type} /> },
-  { key: "balance", header: "Balance", width: 150, align: "right", render: (r) => <span style={{ fontWeight: 600 }}>{aed(r.balance)}</span> },
-];
-const ENTRY_COLS: Column<Entry>[] = [
-  { key: "date", header: "Date", width: 80, render: (r) => <span style={{ color: color.ink.soft }}>{r.date}</span> },
-  { key: "ref", header: "Ref", width: 110, render: (r) => <span style={{ fontWeight: 600, color: color.ink.DEFAULT }}>{r.ref}</span> },
-  { key: "memo", header: "Memo", render: (r) => <span style={{ color: color.ink.mid }}>{r.memo}</span> },
-  { key: "debit", header: "Debit", width: 110, align: "right", render: (r) => <span style={{ color: color.ink.mid }}>{r.debit ? aed(r.debit) : "—"}</span> },
-  { key: "credit", header: "Credit", width: 110, align: "right", render: (r) => <span style={{ color: color.ink.mid }}>{r.credit ? aed(r.credit) : "—"}</span> },
-];
+type Row = { id: string; date: string; memo: string; source: string; status: string; amount: number };
+const aed = (n: number) => `AED ${(Number(n) || 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+const aedShort = (n: number) => n >= 1000 ? `AED ${(n / 1000).toFixed(n >= 10000 ? 0 : 1)}k` : `AED ${Math.round(n)}`;
 
 export default function LedgerPage() {
-  const assets = ACCOUNTS.filter((a) => a.type === "Asset").reduce((s, a) => s + a.balance, 0);
-  const income = ACCOUNTS.filter((a) => a.type === "Income").reduce((s, a) => s + a.balance, 0);
-  const expense = ACCOUNTS.filter((a) => a.type === "Expense").reduce((s, a) => s + a.balance, 0);
+  const [all, setAll] = React.useState<Row[]>([]);
+  const [loading, setLoading] = React.useState(true);
+  const [q, setQ] = React.useState("");
+  React.useEffect(() => { fetch("/api/erp/ledger").then((r) => r.json()).then((d) => { setAll(d.rows ?? []); setLoading(false); }).catch(() => setLoading(false)); }, []);
+  const rows = all.filter((r) => ((r.memo || "") + (r.source || "")).toLowerCase().includes(q.toLowerCase()));
+  const posted = all.filter((r) => (r.status || "").toLowerCase() === "posted").length;
+  const totalDebit = all.reduce((s, r) => s + (Number(r.amount) || 0), 0);
+
+  const COLS: Column<Row>[] = [
+    { key: "date", header: "Date", width: 130, render: (r) => <span style={{ color: color.ink.mid, fontVariantNumeric: "tabular-nums" }}>{r.date || "—"}</span> },
+    { key: "memo", header: "Memo", render: (r) => <span style={{ color: color.ink.DEFAULT }}>{r.memo || "—"}</span> },
+    { key: "source", header: "Source", width: 130, render: (r) => <span style={{ color: color.ink.mid }}>{r.source || "manual"}</span> },
+    { key: "status", header: "Status", width: 110, render: (r) => <StatusBadge tone={(r.status || "").toLowerCase() === "posted" ? "positive" : "neutral"} label={(r.status || "").toLowerCase() || "—"} /> },
+    { key: "amount", header: "Amount", width: 140, align: "right", render: (r) => <span style={{ fontWeight: 600, fontVariantNumeric: "tabular-nums" }}>{aed(r.amount)}</span> },
+  ];
+
   return (
     <AppShell active="ledger">
-      <PageTitleRow title="General Ledger" subtitle="Chart of accounts and journal — double-entry, IFRS-aligned" actions={<Button variant="primary">New journal</Button>} />
-      <div style={{ display: "flex", gap: 12, marginBottom: 18, flexWrap: "wrap" }}>
-        <KPICard label="Total assets" value={aed(assets)} note="on balance sheet" noteTone={color.ink.soft} />
-        <KPICard label="Revenue (YTD)" value={aed(income)} note="recognised" noteTone={color.status.positive} />
-        <KPICard label="Expenses (YTD)" value={aed(expense)} note="cost of sales" noteTone={color.status.critical} />
-        <KPICard label="Net profit" value={aed(income - expense)} note="before tax" noteTone={color.status.positive} />
+      <PageTitleRow title="Ledger" subtitle={`${all.length} journal entries`} actions={<Button variant="primary">+ New entry</Button>} />
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(150px, 1fr))", gap: 10, marginBottom: 16 }}>
+        <KPICard label="Entries" value={String(all.length)} note="journal entries" noteTone={color.brand.primary} />
+        <KPICard label="Posted" value={String(posted)} note="finalised" noteTone={color.status.positive} />
+        <KPICard label="Draft" value={String(all.length - posted)} note="unposted" noteTone={color.ink.soft} />
+        <KPICard label="Total debits" value={aedShort(totalDebit)} note="booked" noteTone={color.ink.soft} />
       </div>
-      <div style={{ fontSize: 13, fontWeight: 600, color: color.ink.mid, marginBottom: 8 }}>Chart of accounts</div>
-      <DataTable columns={ACCT_COLS} rows={ACCOUNTS} getKey={(r) => r.code} />
-      <div style={{ fontSize: 13, fontWeight: 600, color: color.ink.mid, margin: "20px 0 8px" }}>Recent journal entries</div>
-      <DataTable columns={ENTRY_COLS} rows={ENTRIES} getKey={(r) => r.id} />
-      <p style={{ fontSize: 11, color: color.ink.soft, textAlign: "center", marginTop: 18 }}>General Ledger · locked KPICard + DataTable · tokens-only, theme-aware</p>
+      <div style={{ display: "flex", gap: 10, alignItems: "center", flexWrap: "wrap", marginBottom: 14 }}>
+        <Input placeholder="Search memo or source…" value={q} onChange={(e) => setQ(e.target.value)} style={{ width: 300 }} />
+      </div>
+      {loading ? <div style={{ padding: 30, textAlign: "center", color: color.ink.soft, fontSize: 13 }}>Loading…</div>
+        : rows.length === 0 ? <EmptyState title="No journal entries" hint="General-ledger entries appear here as you post invoices, payments and bills." action={<Button variant="primary" onClick={() => setQ("")}>Clear search</Button>} />
+          : <DataTable columns={COLS} rows={rows} getKey={(r) => r.id} />}
+      <p style={{ fontSize: 11, color: color.ink.soft, textAlign: "center", marginTop: 18 }}>Ledger · live via API · tenant-scoped</p>
     </AppShell>
   );
 }
