@@ -33,10 +33,23 @@ export type RawCompany = {
   owner?: string;
 };
 
+/** Raw lead as read from a data source. */
+export type RawLead = {
+  id: string;
+  firstName: string;
+  lastName?: string;
+  company?: string;
+  source?: string;
+  score?: number;
+  stage?: string;
+  owner?: string;
+};
+
 /** The port every data adapter implements. Grows one method per migrated area. */
 export interface DataSource {
   listContacts(scope: TenantScope): Promise<RawContact[]>;
   listCompanies(scope: TenantScope): Promise<RawCompany[]>;
+  listLeads(scope: TenantScope): Promise<RawLead[]>;
 }
 
 let _ds: DataSource | null = null;

@@ -54,4 +54,28 @@ describe("data-pack live adapter", () => {
     expect(second?.openDeals).toBe(0);
     expect(second?.industry).toBeUndefined();
   });
+
+  it("listLeads is tenant-scoped and maps probability → score", async () => {
+    let capturedSql = "";
+    let capturedParams: unknown[] = [];
+    const fakeQuery: QueryFn = async (sql, params) => {
+      capturedSql = sql;
+      capturedParams = params;
+      return {
+        rows: [
+          { id: "l1", firstName: "Hassan", lastName: "Ali", company: "Bright Interiors", source: "WHATSAPP", status: "QUALIFIED", probability: 82, owner: "Nami" },
+          { id: "l2", firstName: "Priya", lastName: null, company: null, source: null, status: null, probability: null, owner: null },
+        ],
+      };
+    };
+    const ds = createLiveDataSource(fakeQuery);
+    const out = await ds.listLeads({ companyId: "T-5" });
+
+    expect(capturedParams).toEqual(["T-5"]);
+    expect(capturedSql).toContain('l."companyId" = $1');
+    const [first, second] = out;
+    expect(first).toMatchObject({ id: "l1", firstName: "Hassan", company: "Bright Interiors", source: "WHATSAPP", score: 82 });
+    expect(second?.score).toBe(0);
+    expect(second?.company).toBeUndefined();
+  });
 });

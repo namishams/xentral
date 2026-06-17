@@ -131,7 +131,30 @@ export type LeadRow = {
   owner: string;
 };
 
-/** List leads for the workspace. */
+const LEAD_STAGES: LeadStage[] = ["new", "working", "qualified", "unqualified"];
+function normalizeStage(raw?: string): LeadStage {
+  const s = (raw ?? "").toLowerCase();
+  return (LEAD_STAGES as string[]).includes(s) ? (s as LeadStage) : "new";
+}
+
+/** Load leads for a workspace via the DataPort; seed fallback on preview. */
+export async function loadLeads(scope?: TenantScope): Promise<LeadRow[]> {
+  if (scope && hasDataSource()) {
+    const raw = await getDataSource()!.listLeads(scope);
+    return raw.map((r) => ({
+      id: r.id,
+      name: [r.firstName, r.lastName].filter(Boolean).join(" ").trim() || r.firstName,
+      company: r.company ?? "",
+      source: r.source ?? "",
+      score: Math.max(0, Math.min(100, r.score ?? 0)),
+      stage: normalizeStage(r.stage),
+      owner: r.owner ?? "",
+    }));
+  }
+  return listLeads();
+}
+
+/** Seed lead directory for the workspace. */
 export function listLeads(): LeadRow[] {
   return [
     { id: "l1", name: "Hassan Ali", company: "Bright Interiors", source: "WhatsApp", score: 82, stage: "qualified", owner: "Nami" },
