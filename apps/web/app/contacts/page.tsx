@@ -1,16 +1,17 @@
 import * as React from "react";
 import { color } from "@xentral/config";
+import { currentScope } from "@xentral/kernel";
 import { AppShell, PageTitleRow, Button } from "@xentral/ui";
 import { loadContacts } from "@xentral/module-crm";
 import { ContactsTable } from "./contacts-table";
 
-// Server-rendered per request: when a live DataSource + auth are wired, this is
-// where the tenant scope is passed. On the public preview no source is
-// registered, so loadContacts() returns the safe seed directory (no PII).
+// Server-rendered per request. currentScope() resolves the authenticated tenant
+// via the kernel SessionPort; on the public preview no resolver is registered,
+// so the scope is undefined and loadContacts returns the safe seed list.
 export const dynamic = "force-dynamic";
 
 export default async function ContactsPage() {
-  const rows = await loadContacts(/* live host: loadContacts({ companyId }) */);
+  const rows = await loadContacts(await currentScope());
 
   return (
     <AppShell active="contacts">

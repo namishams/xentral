@@ -23,3 +23,10 @@ Reason: Strangler-Fig migration of Contacts (Roadmap Phase 1) - proves seed->liv
 Kernel: DataSource port gains listCompanies(scope) + RawCompany type (additive).
 data-pack: listCompanies reads accounts (tenant-scoped by companyId, openDeals = lead count).
 module-crm: async loadCompanies(scope?) via port, seed fallback. /companies -> server component.
+
+
+## 2026-06-17 - Kernel SessionPort (auth seam, owner-approved)
+Added packages/kernel/src/auth.ts: setSessionResolver/resolveSession/currentScope +
+SessionResolver type. currentScope() derives TenantScope from the resolved Session
+(reusing tenancy.requireCompany). No resolver -> undefined scope -> seed (preview-safe).
+Contacts & Companies pages now flow session->scope->data. Identity provider TBD.

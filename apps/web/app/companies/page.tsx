@@ -1,15 +1,17 @@
 import * as React from "react";
 import { color } from "@xentral/config";
+import { currentScope } from "@xentral/kernel";
 import { AppShell, PageTitleRow, Button } from "@xentral/ui";
 import { loadCompanies } from "@xentral/module-crm";
 import { CompaniesTable } from "./companies-table";
 
-// Server-rendered per request. Tenant scope is passed here once auth lands; on
-// the public preview no DataSource is registered, so the safe seed list is used.
+// Server-rendered per request. currentScope() resolves the authenticated tenant
+// via the kernel SessionPort; on the public preview no resolver is registered,
+// so the scope is undefined and loadCompanies returns the safe seed list.
 export const dynamic = "force-dynamic";
 
 export default async function CompaniesPage() {
-  const rows = await loadCompanies(/* live host: loadCompanies({ companyId }) */);
+  const rows = await loadCompanies(await currentScope());
 
   return (
     <AppShell active="companies">
