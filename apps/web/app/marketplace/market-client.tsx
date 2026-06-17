@@ -21,7 +21,7 @@ function Chip({ label, on }: { label: string; on: boolean }) {
   );
 }
 
-function Card({ l, onBuy, busy }: { l: MarketLead; onBuy: (id: string) => void; busy: boolean }) {
+function Card({ l, onBuy, busy, watched, onWatch, onBid }: { l: MarketLead; onBuy: (id: string) => void; busy: boolean; watched: boolean; onWatch: (id: string) => void; onBid: (id: string) => void }) {
   const q = QUALITY[l.quality];
   const off = Math.round((1 - l.price / l.basePrice) * 100);
   return (
@@ -59,8 +59,8 @@ function Card({ l, onBuy, busy }: { l: MarketLead; onBuy: (id: string) => void; 
           <span style={{ textAlign: "right", fontSize: 12, color: color.ink.soft }}>−{aed(l.dropAmount)} in<br /><span style={{ fontWeight: 700, color: color.ink.DEFAULT }}>⏱ {l.dropInLabel}</span><br />at {l.dropAtLabel}</span>
         </div>
         <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-          <span style={{ width: 34, height: 34, borderRadius: 8, border: `1px solid ${color.line.strong}`, display: "flex", alignItems: "center", justifyContent: "center", color: color.ink.soft, cursor: "pointer" }}>♡</span>
-          <span style={{ flex: 1, height: 34, borderRadius: 8, border: `1px solid ${color.line.strong}`, display: "flex", alignItems: "center", justifyContent: "center", color: color.ink.mid, fontSize: 13, cursor: "pointer" }}>💬 Ask ▾</span>
+          <button onClick={() => onWatch(l.id)} aria-label="Watch" title={watched ? "Watching" : "Add to watchlist"} style={{ width: 36, height: 36, borderRadius: 8, border: `1px solid ${watched ? color.status.negative : color.line.strong}`, background: watched ? "#fdecea" : color.surface.card, display: "flex", alignItems: "center", justifyContent: "center", color: watched ? color.status.negative : color.ink.soft, cursor: "pointer", fontSize: 15 }}>{watched ? "♥" : "♡"}</button>
+          <button onClick={() => onBid(l.id)} style={{ flex: 1, height: 36, borderRadius: 8, border: `1px solid ${color.line.strong}`, background: color.surface.card, color: color.ink.mid, fontSize: 13, fontWeight: 600, cursor: "pointer" }}>💬 Make offer</button>
         </div>
         <button onClick={() => onBuy(l.id)} disabled={busy} style={{ height: 46, borderRadius: 9, border: 0, background: busy ? color.line.strong : color.brand.primary, color: color.ink.onPrimary, fontSize: 15, fontWeight: 700, cursor: busy ? "default" : "pointer" }}>{busy ? "Processing…" : `Buy — ${aed(l.price)}`}</button>
       </div>
@@ -69,12 +69,25 @@ function Card({ l, onBuy, busy }: { l: MarketLead; onBuy: (id: string) => void; 
 }
 
 const FILTERS: [string, string][] = [["all", "All"], ["hot", "🔥 Hot"], ["warm", "⚡ Warm"], ["standard", "Standard"]];
+type Saved = { id: string; name: string; category: string; region: string; quality: string; sort: string };
 
 export function MarketplaceClient({ initialRows }: { initialRows: MarketLead[] }) {
   const ALL = initialRows;
   const [busyId, setBusyId] = React.useState("");
   const [bought, setBought] = React.useState<Set<string>>(new Set());
+  const [watched, setWatched] = React.useState<Set<string>>(new Set());
+  const [saved, setSaved] = React.useState<Saved[]>([]);
   const [msg, setMsg] = React.useState("");
+  const [q, setQ] = React.useState("");
+  const [cat, setCat] = React.useState("all");
+  const [seg, setSeg] = React.useState("all");
+  const [onlyWatched, setOnlyWatched] = React.useState(false);
+
+  React.useEffect(() => {
+    fetch("/api/marketplace/watchlist").then((r) => r.json()).then((d) => setWatched(new Set(Array.isArray(d.ids) ? d.ids : []))).catch(() => {});
+    fetch("/api/marketplace/saved-searches").then((r) => r.json()).then((d) => setSaved(Array.isArray(d.rows) ? d.rows : [])).catch(() => {});
+  }, []);
+
   async function buy(id: string) {
     setBusyId(id); setMsg("");
     try {
@@ -85,11 +98,33 @@ export function MarketplaceClient({ initialRows }: { initialRows: MarketLead[] }
       else setMsg(d.message || d.error || "Could not purchase.");
     } catch { setMsg("Network error — please try again."); } finally { setBusyId(""); }
   }
+  async function toggleWatch(id: string) {
+    setWatched((w) => { const n = new Set(w); if (n.has(id)) n.delete(id); else n.add(id); return n; }); // optimistic
+    try { const r = await fetch(`/api/marketplace/${id}/watch`, { method: "POST" }); const d = await r.json(); if (typeof d.watched === "boolean") setWatched((w) => { const n = new Set(w); if (d.watched) n.add(id); else n.delete(id); return n; }); } catch { /* revert silently */ }
+  }
+  async function makeOffer(id: string) {
+    const v = window.prompt("Your offer (AED) for this lead:");
+    if (!v) return;
+    const amount = Number(v.replace(/[^\d.]/g, ""));
+    if (!amount) { setMsg("Enter a valid amount."); return; }
+    try { const r = await fetch(`/api/marketplace/${id}/bid`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ amount }) }); const d = await r.json(); setMsg(r.ok ? `✓ Offer of AED ${amount.toLocaleString()} submitted.` : (d.error || "Could not submit offer.")); } catch { setMsg("Network error."); }
+  }
+  async function saveSearch() {
+    const name = window.prompt("Name this saved search:", [cat !== "all" ? cat : null, seg !== "all" ? seg : null].filter(Boolean).join(" · ") || "All leads");
+    if (name === null) return;
+    try {
+      const r = await fetch("/api/marketplace/saved-searches", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ name, category: cat === "all" ? "" : cat, quality: seg === "all" ? "" : seg }) });
+      if (r.ok) { const d = await fetch("/api/marketplace/saved-searches").then((x) => x.json()); setSaved(d.rows || []); setMsg("✓ Search saved."); }
+    } catch { setMsg("Could not save search."); }
+  }
+  function applySaved(s: Saved) { setCat(s.category || "all"); setSeg(s.quality || "all"); setOnlyWatched(false); }
+  async function deleteSaved(id: string) {
+    setSaved((l) => l.filter((s) => s.id !== id));
+    await fetch(`/api/marketplace/saved-searches/${id}`, { method: "DELETE" }).catch(() => {});
+  }
+
   const cats = getMarketCategories();
-  const [q, setQ] = React.useState("");
-  const [cat, setCat] = React.useState("all");
-  const [seg, setSeg] = React.useState("all");
-  const rows = ALL.filter((l) => (cat === "all" || l.category === cat) && (seg === "all" || l.quality === seg) && (l.title + l.categoryLabel + l.city).toLowerCase().includes(q.toLowerCase()));
+  const rows = ALL.filter((l) => (cat === "all" || l.category === cat) && (seg === "all" || l.quality === seg) && (!onlyWatched || watched.has(l.id)) && (l.title + l.categoryLabel + l.city).toLowerCase().includes(q.toLowerCase()));
   const hot = ALL.filter((l) => l.quality === "hot").length;
   const avg = Math.round(ALL.reduce((s, l) => s + l.price, 0) / ALL.length);
 
@@ -105,8 +140,8 @@ export function MarketplaceClient({ initialRows }: { initialRows: MarketLead[] }
           <div style={{ display: "flex", alignItems: "center", gap: 12, flexWrap: "wrap" }}>
             <h1 style={{ fontSize: 22, fontWeight: 700, color: color.ink.DEFAULT, margin: 0 }}>🏪 Lead Marketplace</h1>
             <span style={{ fontSize: 12.5, color: color.status.negative, fontWeight: 600 }}>🔥 {hot} hot</span>
-            <span style={{ fontSize: 12.5, color: color.brand.primary, fontWeight: 600 }}>↘ 72 dropping</span>
-            <span style={{ fontSize: 12.5, color: color.ink.soft }}>{ALL.length + 72} leads</span>
+            <span style={{ fontSize: 12.5, color: color.ink.soft }}>{ALL.length} leads</span>
+            {watched.size > 0 ? <span style={{ fontSize: 12.5, color: color.status.negative, fontWeight: 600 }}>♥ {watched.size} watched</span> : null}
           </div>
           <div style={{ fontSize: 13, color: color.ink.mid, marginTop: 3 }}>Verified leads · Prices drop automatically</div>
         </div>
@@ -116,19 +151,17 @@ export function MarketplaceClient({ initialRows }: { initialRows: MarketLead[] }
         </div>
       </div>
 
-      <div style={{ background: color.surface.card, border: `1px solid ${color.line.DEFAULT}`, borderRadius: 10, padding: "12px 16px", marginBottom: 16, boxShadow: "0 1px 2px rgba(16,24,40,0.04)" }}>
-        <div style={{ display: "flex", gap: 22, flexWrap: "wrap", fontSize: 12.5, color: color.ink.DEFAULT }}>
-          <span>🛡 Contact details verified before listing</span>
-          <span>⏱ 24-hour dispute protection on every purchase</span>
-          <span>✓ Invalid contacts refunded as credits</span>
+      {saved.length > 0 ? (
+        <div style={{ display: "flex", gap: 7, flexWrap: "wrap", marginBottom: 12, alignItems: "center" }}>
+          <span style={{ fontSize: 11, fontWeight: 700, color: color.ink.soft, textTransform: "uppercase", letterSpacing: 0.4 }}>Saved:</span>
+          {saved.map((s) => (
+            <span key={s.id} style={{ display: "inline-flex", alignItems: "center", gap: 6, fontSize: 12, fontWeight: 600, color: color.ink.mid, background: color.surface.card, border: `1px solid ${color.line.strong}`, borderRadius: 999, padding: "4px 6px 4px 11px" }}>
+              <button onClick={() => applySaved(s)} style={{ border: 0, background: "transparent", color: color.brand.primary, cursor: "pointer", fontWeight: 600, padding: 0 }}>{s.name}</button>
+              <button onClick={() => deleteSaved(s.id)} aria-label="Delete saved search" style={{ border: 0, background: "transparent", color: color.ink.soft, cursor: "pointer", fontSize: 14, lineHeight: 1 }}>×</button>
+            </span>
+          ))}
         </div>
-        <div style={{ display: "flex", gap: 20, flexWrap: "wrap", marginTop: 9, fontSize: 12, color: color.ink.soft }}>
-          <span><b style={{ color: color.ink.DEFAULT }}>2</b> listed today</span>
-          <span><b style={{ color: color.ink.DEFAULT }}>72</b> dropping in price</span>
-          <span>avg <b style={{ color: color.ink.DEFAULT }}>{aed(avg)}</b></span>
-          <span>most listed: <b style={{ color: color.ink.DEFAULT }}>DHA Licensing</b></span>
-        </div>
-      </div>
+      ) : null}
 
       <div style={{ display: "flex", gap: 10, alignItems: "center", marginBottom: 16, flexWrap: "wrap" }}>
         <Input placeholder="Search specialty, category, country…" value={q} onChange={(e) => setQ(e.target.value)} style={{ width: 280 }} />
@@ -138,16 +171,17 @@ export function MarketplaceClient({ initialRows }: { initialRows: MarketLead[] }
         <span style={{ display: "inline-flex", border: `1px solid ${color.line.strong}`, borderRadius: 8, overflow: "hidden" }}>
           {FILTERS.map(([id, lab]) => <button key={id} onClick={() => setSeg(id)} style={{ border: 0, background: seg === id ? color.brand.primaryTint : color.surface.card, color: seg === id ? color.brand.primary : color.ink.mid, fontSize: 12.5, fontWeight: 600, padding: "6px 12px", cursor: "pointer" }}>{lab}</button>)}
         </span>
-        <Button>☆ Watchlist</Button>
+        <button onClick={() => setOnlyWatched((v) => !v)} style={{ height: 32, borderRadius: 8, border: `1px solid ${onlyWatched ? color.status.negative : color.line.strong}`, background: onlyWatched ? "#fdecea" : color.surface.card, color: onlyWatched ? color.status.negative : color.ink.mid, fontSize: 12.5, fontWeight: 600, padding: "0 12px", cursor: "pointer" }}>{onlyWatched ? "♥ Watchlist" : "♡ Watchlist"}</button>
         <span style={{ flex: 1 }} />
-        <Button>Save search</Button>
+        <Button onClick={saveSearch}>Save search</Button>
       </div>
 
       <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(320px, 1fr))", gap: 16 }}>
         {msg ? <div style={{ gridColumn: "1 / -1", background: color.brand.primaryTint, border: `1px solid ${color.brand.primary}`, color: color.brand.primary, borderRadius: 10, padding: "10px 14px", fontSize: 13, fontWeight: 600 }}>{msg}</div> : null}
-        {rows.filter((l) => !bought.has(l.id)).map((l) => <Card key={l.id} l={l} onBuy={buy} busy={busyId === l.id} />)}
+        {rows.filter((l) => !bought.has(l.id)).length === 0 ? <div style={{ gridColumn: "1 / -1", textAlign: "center", color: color.ink.soft, fontSize: 13, padding: 30 }}>{onlyWatched ? "No watched leads yet — tap ♡ on a lead to follow it." : "No leads match your filters."}</div> : null}
+        {rows.filter((l) => !bought.has(l.id)).map((l) => <Card key={l.id} l={l} onBuy={buy} busy={busyId === l.id} watched={watched.has(l.id)} onWatch={toggleWatch} onBid={makeOffer} />)}
       </div>
-      <p style={{ fontSize: 11, color: color.ink.soft, textAlign: "center", marginTop: 18 }}>Lead marketplace · masked preview, channel unlock, price-drop auction · seeded (no real PII) · tokens-only, theme-aware</p>
+      <p style={{ fontSize: 11, color: color.ink.soft, textAlign: "center", marginTop: 18 }}>Lead marketplace · masked preview · watchlist, saved searches, offers & price-drop · tenant-scoped</p>
     </AppShell>
   );
 }
