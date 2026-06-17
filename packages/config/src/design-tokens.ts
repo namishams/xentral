@@ -65,4 +65,6 @@ export const pipeline = {
   negotiation: { bg: "#C4B5FD", fg: "#4C1D95" },
   won:         { bg: "#86EFAC", fg: "#14532D" },
   lost:        { bg: "#FCA5A5", fg: "#7F1D1D" },
+  working:     { bg: "#FDE68A", fg: "#854D0E" },
+  unqualified: { bg: "#E2E8F0", fg: "#475569" },
 } as const;
