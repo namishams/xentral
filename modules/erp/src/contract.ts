@@ -75,3 +75,63 @@ export function listSuppliers(): SupplierRow[] {
     { id: "v5", name: "Falcon Logistics", category: "Services", country: "UAE", openOrders: 1 },
   ];
 }
+
+export type BillStatus = "open" | "approved" | "overdue" | "paid";
+export type BillRow = {
+  id: string;
+  number: string;
+  supplier: string;
+  status: BillStatus;
+  amount: number;
+  currency: string;
+  dueDate: string;
+};
+
+/** List supplier bills (accounts payable). Seeded now; a real adapter replaces the body later. */
+export function listBills(): BillRow[] {
+  return [
+    { id: "b1", number: "BILL-771", supplier: "Emirates Steel", status: "approved", amount: 22000, currency: "AED", dueDate: "22 Jun" },
+    { id: "b2", number: "BILL-772", supplier: "Shenzhen Locks Ltd", status: "overdue", amount: 8400, currency: "AED", dueDate: "10 Jun" },
+    { id: "b3", number: "BILL-773", supplier: "Gulf Print House", status: "open", amount: 1500, currency: "AED", dueDate: "28 Jun" },
+    { id: "b4", number: "BILL-770", supplier: "Falcon Logistics", status: "paid", amount: 3200, currency: "AED", dueDate: "08 Jun" },
+  ];
+}
+
+export type PurchaseStatus = "draft" | "sent" | "received" | "cancelled";
+export type PurchaseRow = {
+  id: string;
+  number: string;
+  supplier: string;
+  status: PurchaseStatus;
+  items: number;
+  total: number;
+  currency: string;
+  date: string;
+};
+
+/** List purchase orders (procurement). Seeded now; a real adapter replaces the body later. */
+export function listPurchases(): PurchaseRow[] {
+  return [
+    { id: "po1", number: "PO-902", supplier: "Emirates Steel", status: "sent", items: 3, total: 22000, currency: "AED", date: "16 Jun" },
+    { id: "po2", number: "PO-901", supplier: "Dubai Hardware Co", status: "received", items: 5, total: 6400, currency: "AED", date: "12 Jun" },
+    { id: "po3", number: "PO-903", supplier: "Shenzhen Locks Ltd", status: "draft", items: 2, total: 9000, currency: "AED", date: "17 Jun" },
+    { id: "po4", number: "PO-900", supplier: "Gulf Print House", status: "cancelled", items: 1, total: 1500, currency: "AED", date: "09 Jun" },
+  ];
+}
+
+export type WarehouseRow = {
+  id: string;
+  name: string;
+  location: string;
+  items: number;
+  capacityPct: number;
+};
+
+/** List warehouses / storage locations. Seeded now; a real adapter replaces the body later. */
+export function listWarehouses(): WarehouseRow[] {
+  return [
+    { id: "w1", name: "Dubai Main DC", location: "Al Quoz, Dubai", items: 1240, capacityPct: 72 },
+    { id: "w2", name: "Sharjah Store", location: "Industrial 3, Sharjah", items: 430, capacityPct: 38 },
+    { id: "w3", name: "Abu Dhabi Hub", location: "Mussafah, Abu Dhabi", items: 880, capacityPct: 91 },
+  ];
+}
