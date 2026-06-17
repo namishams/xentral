@@ -5,6 +5,7 @@ import { NavIcon } from "./nav-icons";
 import { ThemeToggle } from "./theme-toggle";
 import { color, uiConstants } from "@xentral/config";
 import { PageContainer } from "./page-container";
+import { AiLauncher } from "./ai-launcher";
 
 /**
  * NAV — the locked navigation map, ordered by the BUSINESS LIFECYCLE, not by
@@ -200,6 +201,7 @@ export function AppShell({ children, active, fullBleed, headerRight }: { childre
           </main>
         )}
       </div>
+      <AiLauncher />
     </div>
   );
 }
