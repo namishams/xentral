@@ -1,5 +1,5 @@
 import { XentralMark } from "./xentral-mark";
-import { HeaderSearch, HeaderAvatar } from "./header-menu";
+import { HeaderSearch, HeaderTools, HeaderAvatar } from "./header-menu";
 import * as React from "react";
 import { ThemeToggle } from "./theme-toggle";
 import { color, uiConstants } from "@xentral/config";
@@ -133,13 +133,7 @@ export function GlobalHeader({ right }: { right?: React.ReactNode }) {
     <header style={{ height: uiConstants.header.heightDesktop, flexShrink: 0, background: color.surface.card, borderBottom: `1px solid ${color.line.DEFAULT}`, display: "flex", alignItems: "center", gap: 8, padding: "0 16px", position: "sticky", top: 0, zIndex: 40 }}>
       <span style={{ flex: 1 }} />
       <HeaderSearch />
-      <span style={pill}>العربية</span>
-      <span style={pill}>＄ Growth</span>
-      <span style={pill}>◳ AED 999</span>
-      <span style={pill}>⌖ All locations ▾</span>
-      <span style={iconBtn} aria-label="Notifications">♪<span style={{ position: "absolute", top: -5, right: -5, minWidth: 15, height: 15, borderRadius: 8, background: color.status.negative, color: "#fff", fontSize: 9, fontWeight: 700, display: "flex", alignItems: "center", justifyContent: "center", padding: "0 3px" }}>4</span></span>
-      <span style={iconBtn} aria-label="New">＋</span>
-      <span style={iconBtn} aria-label="Refresh">⟳</span>
+      <HeaderTools />
       <ThemeToggle />
       {right ?? (
         <HeaderAvatar />
