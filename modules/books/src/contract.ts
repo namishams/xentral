@@ -58,3 +58,26 @@ export function listQuotes(): QuoteRow[] {
     { id: "Q-3007", number: "Q-3007", customer: "Bright Interiors", status: "rejected", total: 12000, currency: "AED", validUntil: "05 Jun" },
   ];
 }
+
+export type PaymentStatus = "received" | "pending" | "failed";
+export type PaymentRow = {
+  id: string;
+  ref: string;
+  customer: string;
+  method: string;
+  amount: number;
+  currency: string;
+  status: PaymentStatus;
+  date: string;
+};
+
+/** List payments for the workspace. Seeded now; a real adapter replaces the body later. */
+export function listPayments(): PaymentRow[] {
+  return [
+    { id: "pay1", ref: "PAY-5521", customer: "Skyline Developers", method: "Bank transfer", amount: 32000, currency: "AED", status: "received", date: "12 Jun" },
+    { id: "pay2", ref: "PAY-5522", customer: "Al Noor Real Estate", method: "Telr", amount: 5725, currency: "AED", status: "received", date: "13 Jun" },
+    { id: "pay3", ref: "PAY-5523", customer: "Gulf Trading", method: "Stripe", amount: 8400, currency: "AED", status: "pending", date: "18 Jun" },
+    { id: "pay4", ref: "PAY-5524", customer: "Damac Properties", method: "Card", amount: 9900, currency: "AED", status: "received", date: "15 Jun" },
+    { id: "pay5", ref: "PAY-5525", customer: "Emaar Group", method: "Card", amount: 5600, currency: "AED", status: "failed", date: "16 Jun" },
+  ];
+}
