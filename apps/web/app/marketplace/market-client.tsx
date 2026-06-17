@@ -21,7 +21,7 @@ function Chip({ label, on }: { label: string; on: boolean }) {
   );
 }
 
-function Card({ l }: { l: MarketLead }) {
+function Card({ l, onBuy, busy }: { l: MarketLead; onBuy: (id: string) => void; busy: boolean }) {
   const q = QUALITY[l.quality];
   const off = Math.round((1 - l.price / l.basePrice) * 100);
   return (
@@ -62,7 +62,7 @@ function Card({ l }: { l: MarketLead }) {
           <span style={{ width: 34, height: 34, borderRadius: 8, border: `1px solid ${color.line.strong}`, display: "flex", alignItems: "center", justifyContent: "center", color: color.ink.soft, cursor: "pointer" }}>♡</span>
           <span style={{ flex: 1, height: 34, borderRadius: 8, border: `1px solid ${color.line.strong}`, display: "flex", alignItems: "center", justifyContent: "center", color: color.ink.mid, fontSize: 13, cursor: "pointer" }}>💬 Ask ▾</span>
         </div>
-        <button style={{ height: 46, borderRadius: 9, border: 0, background: color.brand.primary, color: color.ink.onPrimary, fontSize: 15, fontWeight: 700, cursor: "pointer" }}>Buy — {aed(l.price)}</button>
+        <button onClick={() => onBuy(l.id)} disabled={busy} style={{ height: 46, borderRadius: 9, border: 0, background: busy ? color.line.strong : color.brand.primary, color: color.ink.onPrimary, fontSize: 15, fontWeight: 700, cursor: busy ? "default" : "pointer" }}>{busy ? "Processing…" : `Buy — ${aed(l.price)}`}</button>
       </div>
     </div>
   );
@@ -72,6 +72,19 @@ const FILTERS: [string, string][] = [["all", "All"], ["hot", "🔥 Hot"], ["warm
 
 export function MarketplaceClient({ initialRows }: { initialRows: MarketLead[] }) {
   const ALL = initialRows;
+  const [busyId, setBusyId] = React.useState("");
+  const [bought, setBought] = React.useState<Set<string>>(new Set());
+  const [msg, setMsg] = React.useState("");
+  async function buy(id: string) {
+    setBusyId(id); setMsg("");
+    try {
+      const res = await fetch(`/api/marketplace/${id}/buy`, { method: "POST" });
+      const d = await res.json();
+      if (res.ok) { setBought((b) => { const n = new Set(b); n.add(id); return n; }); setMsg(`Lead purchased for AED ${d.price} · ${d.balanceAfter} credits left.`); }
+      else if (d.error === "insufficient_credits") setMsg(`Not enough credits — this lead needs AED ${d.required}.`);
+      else setMsg(d.message || d.error || "Could not purchase.");
+    } catch { setMsg("Network error — please try again."); } finally { setBusyId(""); }
+  }
   const cats = getMarketCategories();
   const [q, setQ] = React.useState("");
   const [cat, setCat] = React.useState("all");
@@ -131,7 +144,8 @@ export function MarketplaceClient({ initialRows }: { initialRows: MarketLead[] }
       </div>
 
       <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(320px, 1fr))", gap: 16 }}>
-        {rows.map((l) => <Card key={l.id} l={l} />)}
+        {msg ? <div style={{ gridColumn: "1 / -1", background: color.brand.primaryTint, border: `1px solid ${color.brand.primary}`, color: color.brand.primary, borderRadius: 10, padding: "10px 14px", fontSize: 13, fontWeight: 600 }}>{msg}</div> : null}
+        {rows.filter((l) => !bought.has(l.id)).map((l) => <Card key={l.id} l={l} onBuy={buy} busy={busyId === l.id} />)}
       </div>
       <p style={{ fontSize: 11, color: color.ink.soft, textAlign: "center", marginTop: 18 }}>Lead marketplace · masked preview, channel unlock, price-drop auction · seeded (no real PII) · tokens-only, theme-aware</p>
     </AppShell>
