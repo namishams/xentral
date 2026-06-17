@@ -32,3 +32,27 @@ export function listProducts(): Product[] {
     { id: "p5", sku: "BRO-PACK", name: "Brochure pack", category: "Marketing", price: 45, currency: "AED", stock: 240 },
   ];
 }
+
+export type OrderStatus = "open" | "processing" | "fulfilled" | "cancelled";
+export type OrderRow = {
+  id: string;
+  number: string;
+  customer: string;
+  status: OrderStatus;
+  items: number;
+  total: number;
+  currency: string;
+  date: string;
+};
+
+/** List sales orders for the workspace. Seeded now; a real adapter replaces the body later. */
+export function listOrders(): OrderRow[] {
+  return [
+    { id: "SO-2051", number: "SO-2051", customer: "Skyline Developers", status: "processing", items: 4, total: 48000, currency: "AED", date: "17 Jun" },
+    { id: "SO-2050", number: "SO-2050", customer: "Gulf Trading", status: "open", items: 2, total: 12000, currency: "AED", date: "16 Jun" },
+    { id: "SO-2049", number: "SO-2049", customer: "Al Noor Real Estate", status: "fulfilled", items: 7, total: 31500, currency: "AED", date: "14 Jun" },
+    { id: "SO-2048", number: "SO-2048", customer: "Damac Properties", status: "processing", items: 1, total: 25000, currency: "AED", date: "13 Jun" },
+    { id: "SO-2047", number: "SO-2047", customer: "Emaar Group", status: "cancelled", items: 3, total: 9000, currency: "AED", date: "11 Jun" },
+    { id: "SO-2046", number: "SO-2046", customer: "Bright Interiors", status: "fulfilled", items: 5, total: 18600, currency: "AED", date: "10 Jun" },
+  ];
+}
