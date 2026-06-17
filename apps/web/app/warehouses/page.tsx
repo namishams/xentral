@@ -36,7 +36,7 @@ export default function WarehousesPage() {
         <EmptyState title="No warehouses" hint="Try a different search." action={<Button variant="primary" onClick={() => setQ("")}>Clear search</Button>} />
       ) : (
         <div style={{ marginTop: 8 }}>
-          <DataTable columns={COLUMNS} rows={rows} getKey={(r) => r.id} />
+          <DataTable columns={COLUMNS} rows={rows} getKey={(r) => r.id} rowHref={(r) => `/warehouses/${r.id}`} />
         </div>
       )}
       <p style={{ fontSize: 11, color: color.ink.soft, textAlign: "center", marginTop: 18 }}>Storage locations · @xentral/module-erp · locked DataTable + StatusBadge</p>

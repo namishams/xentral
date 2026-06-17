@@ -28,7 +28,7 @@ export default function RolesPage() {
         <EmptyState title="No roles" hint="Try a different search." action={<Button variant="primary" onClick={() => setQ("")}>Clear search</Button>} />
       ) : (
         <div style={{ marginTop: 8 }}>
-          <DataTable columns={COLUMNS} rows={rows} getKey={(r) => r.id} />
+          <DataTable columns={COLUMNS} rows={rows} getKey={(r) => r.id} rowHref={(r) => `/roles/${r.id}`} />
         </div>
       )}
       <p style={{ fontSize: 11, color: color.ink.soft, textAlign: "center", marginTop: 18 }}>Role-based access · @xentral/module-platform · locked DataTable + StatusBadge</p>
