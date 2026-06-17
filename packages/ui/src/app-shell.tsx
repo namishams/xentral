@@ -73,6 +73,10 @@ const NAV: NavGroup[] = [
       { id: "payables", label: "Payables", href: "/payables", glyph: "▥" },
       { id: "vat", label: "VAT", href: "/vat", glyph: "％" },
       { id: "reports", label: "Reports", href: "/reports", glyph: "▦" },
+      { id: "banking", label: "Banking", href: "/banking", glyph: "▤" },
+      { id: "ledger", label: "Ledger", href: "/ledger", glyph: "≣" },
+      { id: "payroll", label: "Payroll", href: "/payroll", glyph: "◰" },
+      { id: "price-lists", label: "Price Lists", href: "/price-lists", glyph: "▦" },
     ],
   },
   {
