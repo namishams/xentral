@@ -28,8 +28,10 @@ export default function CompanyDetailPage({ params }: { params: { id: string } }
   const [busy, setBusy] = React.useState(false);
   const [saved, setSaved] = React.useState(false);
   const [note, setNote] = React.useState("");
-  const [adding, setAdding] = React.useState(false);
+  const [mode, setMode] = React.useState<"none" | "link" | "new">("none");
   const [nc, setNc] = React.useState({ first: "", last: "", email: "", title: "" });
+  const [allContacts, setAllContacts] = React.useState<{ id: string; name: string; email: string; accountId: string | null }[]>([]);
+  const [linkId, setLinkId] = React.useState("");
 
   const load = React.useCallback(() => {
     fetch(`/api/crm/account/${params.id}`).then((r) => r.json()).then((j) => {
@@ -46,7 +48,13 @@ export default function CompanyDetailPage({ params }: { params: { id: string } }
   async function patch(body: Record<string, unknown>) { setBusy(true); try { const r = await fetch(`/api/crm/account/${params.id}`, { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) }); if (r.ok) load(); return r.ok; } finally { setBusy(false); } }
   async function saveForm() { if (!form) return; const ok = await patch(form); if (ok) { setClean(form); setSaved(true); setTimeout(() => setSaved(false), 2000); } }
   async function addNote() { const t = note.trim(); if (!t) return; const ok = await patch({ note: t }); if (ok) setNote(""); }
-  async function submitContact() { if (!nc.first.trim()) return; const ok = await patch({ contactFirstName: nc.first.trim(), contactLastName: nc.last.trim(), contactEmail: nc.email.trim(), contactTitle: nc.title.trim() }); if (ok) { setNc({ first: "", last: "", email: "", title: "" }); setAdding(false); } }
+  async function submitContact() { if (!nc.first.trim()) return; const ok = await patch({ contactFirstName: nc.first.trim(), contactLastName: nc.last.trim(), contactEmail: nc.email.trim(), contactTitle: nc.title.trim() }); if (ok) { setNc({ first: "", last: "", email: "", title: "" }); setMode("none"); } }
+  React.useEffect(() => { if (mode !== "link") return; fetch("/api/crm/contacts").then((r) => r.json()).then((j) => setAllContacts(Array.isArray(j.rows) ? j.rows : [])).catch(() => {}); }, [mode]);
+  async function linkContact() {
+    if (!linkId) return; setBusy(true);
+    try { const r = await fetch(`/api/crm/contact/${linkId}`, { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ accountId: params.id }) }); if (r.ok) { setLinkId(""); setMode("none"); load(); } }
+    finally { setBusy(false); }
+  }
 
   const fieldS: React.CSSProperties = { width: "100%", boxSizing: "border-box", height: 34, border: `1px solid ${color.line.strong}`, borderRadius: 8, padding: "0 10px", fontSize: 13, color: color.ink.DEFAULT, background: color.surface.card, outline: "none" };
   const labelS: React.CSSProperties = { display: "block", fontSize: 10.5, fontWeight: 700, letterSpacing: 0.3, color: color.ink.soft, textTransform: "uppercase", marginBottom: 4 };
@@ -131,9 +139,28 @@ export default function CompanyDetailPage({ params }: { params: { id: string } }
           </Panel>
 
           <Panel>
-            <PanelHeader title="Contacts" subtitle={`${d.contacts.length}`} actions={<Button onClick={() => setAdding((v) => !v)}>{adding ? "Close" : "+ Add"}</Button>} />
+            <PanelHeader title="Contacts" subtitle={`${d.contacts.length} linked`} actions={
+              <span style={{ display: "inline-flex", gap: 6 }}>
+                <Button onClick={() => setMode(mode === "link" ? "none" : "link")}>{mode === "link" ? "Close" : "Link"}</Button>
+                <Button variant="primary" onClick={() => setMode(mode === "new" ? "none" : "new")}>{mode === "new" ? "Close" : "+ New"}</Button>
+              </span>} />
             <PanelBody flush>
-              {adding ? (
+              {mode === "link" ? (
+                <div style={{ padding: "12px 16px", borderBottom: `1px solid ${color.line.DEFAULT}`, background: color.surface.page, display: "flex", flexDirection: "column", gap: 8 }}>
+                  <span style={{ fontSize: 11, fontWeight: 600, color: color.ink.soft, textTransform: "uppercase", letterSpacing: 0.3 }}>Link an existing contact</span>
+                  <select autoFocus value={linkId} onChange={(e) => setLinkId(e.target.value)} style={{ ...fieldS, height: 34, fontSize: 12.5 }}>
+                    <option value="">Select a contact…</option>
+                    {allContacts.filter((x) => x.accountId !== params.id && x.name.trim()).map((x) => (
+                      <option key={x.id} value={x.id}>{x.name}{x.email ? ` · ${x.email}` : ""}{x.accountId ? " (linked elsewhere)" : ""}</option>
+                    ))}
+                  </select>
+                  <div style={{ display: "flex", justifyContent: "flex-end", gap: 8 }}>
+                    <Button onClick={() => { setMode("none"); setLinkId(""); }} disabled={busy}>Cancel</Button>
+                    <Button variant="primary" onClick={linkContact} disabled={busy || !linkId}>{busy ? "Linking…" : "Link contact"}</Button>
+                  </div>
+                </div>
+              ) : null}
+              {mode === "new" ? (
                 <div style={{ padding: "12px 16px", borderBottom: `1px solid ${color.line.DEFAULT}`, background: color.surface.page, display: "flex", flexDirection: "column", gap: 8 }}>
                   <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
                     <input autoFocus value={nc.first} onChange={(e) => setNc({ ...nc, first: e.target.value })} placeholder="First name *" style={{ ...fieldS, height: 32, fontSize: 12.5 }} />
@@ -142,12 +169,12 @@ export default function CompanyDetailPage({ params }: { params: { id: string } }
                   <input value={nc.title} onChange={(e) => setNc({ ...nc, title: e.target.value })} placeholder="Title (optional)" style={{ ...fieldS, height: 32, fontSize: 12.5 }} />
                   <input value={nc.email} onChange={(e) => setNc({ ...nc, email: e.target.value })} onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); submitContact(); } }} placeholder="Email (optional)" style={{ ...fieldS, height: 32, fontSize: 12.5 }} />
                   <div style={{ display: "flex", justifyContent: "flex-end", gap: 8 }}>
-                    <Button onClick={() => setAdding(false)} disabled={busy}>Cancel</Button>
+                    <Button onClick={() => setMode("none")} disabled={busy}>Cancel</Button>
                     <Button variant="primary" onClick={submitContact} disabled={busy || !nc.first.trim()}>{busy ? "Saving…" : "Add contact"}</Button>
                   </div>
                 </div>
               ) : null}
-              {d.contacts.length === 0 && !adding ? <div style={{ padding: 16, textAlign: "center", fontSize: 12.5, color: color.ink.soft }}>No contacts yet. Use “+ Add” to create one.</div>
+              {d.contacts.length === 0 && mode === "none" ? <div style={{ padding: 16, textAlign: "center", fontSize: 12.5, color: color.ink.soft }}>No contacts yet. Use “Link” or “+ New”.</div>
                 : d.contacts.map((p) => (
                   <a key={p.id} href={`/contacts/${p.id}`} className="xui-row-link" style={linkRow}>
                     <span style={{ width: 28, height: 28, borderRadius: "50%", background: color.brand.primaryTint, color: color.brand.primary, fontSize: 11, fontWeight: 700, display: "inline-flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>{initials(p.name)}</span>
