@@ -115,6 +115,8 @@ export default function CalendarPage() {
         </div>
       </div>
 
+      <div style={{ display: "grid", gridTemplateColumns: "minmax(0, 1fr) 300px", gap: 16, alignItems: "start" }}>
+        <div style={{ minWidth: 0 }}>
       {view === "month" ? (
         <div style={{ border: `1px solid ${color.line.DEFAULT}`, borderRadius: 12, overflow: "hidden", background: color.surface.card }}>
           <div style={{ display: "grid", gridTemplateColumns: "repeat(7, 1fr)", borderBottom: `1px solid ${color.line.DEFAULT}` }}>
@@ -166,6 +168,39 @@ export default function CalendarPage() {
           })()}
         </div>
       )}
+        </div>
+        <aside style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+          <div style={{ border: `1px solid ${color.line.DEFAULT}`, borderRadius: 12, background: color.surface.card, padding: 12 }}>
+            <div style={{ fontSize: 12.5, fontWeight: 700, color: color.ink.DEFAULT, marginBottom: 8 }}>{MONTHS[cursor.getMonth()]} {cursor.getFullYear()}</div>
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(7, 1fr)", gap: 2 }}>
+              {["M", "T", "W", "T", "F", "S", "S"].map((w, i) => <div key={i} style={{ fontSize: 9.5, fontWeight: 700, color: color.ink.soft, textAlign: "center", paddingBottom: 2 }}>{w}</div>)}
+              {grid.map((d, idx) => { const key = ymd(d); const inM = d.getMonth() === cursor.getMonth(); const isT = key === todayKey; const has = (byDay.get(key) ?? []).length > 0; return (
+                <button key={idx} onClick={() => openNew(key)} title={key} style={{ position: "relative", height: 28, border: 0, borderRadius: 7, cursor: "pointer", fontSize: 11.5, fontWeight: isT ? 700 : 500, background: isT ? color.brand.primary : "transparent", color: isT ? color.ink.onPrimary : inM ? color.ink.mid : color.ink.soft }}>{d.getDate()}{has && !isT ? <span style={{ position: "absolute", bottom: 4, left: "50%", transform: "translateX(-50%)", width: 4, height: 4, borderRadius: "50%", background: color.brand.primary }} /> : null}</button>
+              ); })}
+            </div>
+          </div>
+          <div style={{ border: `1px solid ${color.line.DEFAULT}`, borderRadius: 12, background: color.surface.card, overflow: "hidden" }}>
+            <div style={{ padding: "10px 14px", borderBottom: `1px solid ${color.line.DEFAULT}`, fontSize: 13, fontWeight: 700, color: color.ink.DEFAULT }}>Today&rsquo;s agenda</div>
+            {(byDay.get(todayKey) ?? []).length === 0 ? <div style={{ padding: 14, fontSize: 12.5, color: color.ink.soft, textAlign: "center" }}>Nothing scheduled today.</div>
+              : (byDay.get(todayKey) ?? []).map((m) => (
+                <button key={m.id} onClick={() => openEdit(m)} style={{ width: "100%", textAlign: "left", display: "flex", alignItems: "center", gap: 9, padding: "9px 14px", border: 0, borderTop: `1px solid ${color.line.DEFAULT}`, background: color.surface.card, cursor: "pointer" }}>
+                  <span style={{ width: 4, height: 26, borderRadius: 3, background: typeColor(m.type), flexShrink: 0 }} />
+                  <span style={{ minWidth: 0, flex: 1 }}><span style={{ display: "block", fontSize: 12.5, fontWeight: 600, color: color.ink.DEFAULT, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{m.title}</span><span style={{ fontSize: 11, color: color.ink.soft }}>{m.allDay ? "All day" : timeOf(m.startsAt)}</span></span>
+                </button>
+              ))}
+          </div>
+          <div style={{ border: `1px solid ${color.line.DEFAULT}`, borderRadius: 12, background: color.surface.card, overflow: "hidden" }}>
+            <div style={{ padding: "10px 14px", borderBottom: `1px solid ${color.line.DEFAULT}`, fontSize: 13, fontWeight: 700, color: color.ink.DEFAULT }}>Upcoming</div>
+            {(() => { const up = meetings.filter((m) => +new Date(m.startsAt) > now && ymd(new Date(m.startsAt)) !== todayKey).sort((a, b) => +new Date(a.startsAt) - +new Date(b.startsAt)).slice(0, 6); return up.length === 0 ? <div style={{ padding: 14, fontSize: 12.5, color: color.ink.soft, textAlign: "center" }}>No upcoming meetings.</div>
+              : up.map((m) => (
+                <button key={m.id} onClick={() => openEdit(m)} style={{ width: "100%", textAlign: "left", display: "flex", alignItems: "center", gap: 9, padding: "9px 14px", border: 0, borderTop: `1px solid ${color.line.DEFAULT}`, background: color.surface.card, cursor: "pointer" }}>
+                  <span style={{ width: 4, height: 26, borderRadius: 3, background: typeColor(m.type), flexShrink: 0 }} />
+                  <span style={{ minWidth: 0, flex: 1 }}><span style={{ display: "block", fontSize: 12.5, fontWeight: 600, color: color.ink.DEFAULT, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{m.title}</span><span style={{ fontSize: 11, color: color.ink.soft }}>{new Date(m.startsAt).toLocaleDateString(undefined, { day: "2-digit", month: "short" })}{m.allDay ? "" : " \u00b7 " + timeOf(m.startsAt)}</span></span>
+                </button>
+              )); })()}
+          </div>
+        </aside>
+      </div>
 
       {draft ? (
         <div onClick={() => !saving && setDraft(null)} style={{ position: "fixed", inset: 0, background: "rgba(20,28,38,0.45)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 100, padding: 16 }}>
