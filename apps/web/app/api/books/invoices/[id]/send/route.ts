@@ -4,6 +4,8 @@ import { NextResponse } from "next/server";
 import { Pool } from "pg";
 import nodemailer from "nodemailer";
 import { resolveSession } from "@xentral/kernel";
+import { generateDocumentPdf } from "../../../../../../lib/books-pdf";
+import { buildInvoicePdfData } from "../../../../../../lib/books-doc";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -40,14 +42,18 @@ export async function POST(req: Request, { params }: { params: { id: string } })
   const payUrl = `${proto}://${host}/pay/${params.id}`;
 
   const p = pool(url);
-  let inv, settings;
+  let inv, settings, company;
   try {
     const r = await p.query(
-      `select i.number, i.status::text as status, i.total, i.currency, to_char(i."dueDate",'DD Mon YYYY') as due, bc.name as customer, bc.email as email
+      `select i.number, i.status::text as status, i."issueDate" as "issueDate", i."dueDate" as "dueDate",
+              i.subtotal, i."discountTotal" as "discountTotal", i."vatTotal" as "vatTotal", i.total, i."amountPaid" as "amountPaid", i.currency, i.notes, i.terms,
+              to_char(i."dueDate",'DD Mon YYYY') as due,
+              bc.name as customer, bc."legalName" as "clegalName", bc.email as email, bc.phone as "cphone",
+              bc."addressLine1" as "caddr1", bc."addressLine2" as "caddr2", bc.city as "ccity", bc.country as "ccountry", bc."vatNumber" as "cvat"
          from "invoices" i left join "billing_customers" bc on bc.id = i."customerId" where i.id = $1 and i."companyId" = $2`, [params.id, session.companyId]);
     inv = r.rows[0];
-    const s = await p.query(`select "legalName","logoUrl","templateConfig","footerNotes" from "billing_settings" where "companyId" = $1`, [session.companyId]);
-    settings = s.rows[0] || {};
+    settings = (await p.query(`select * from "billing_settings" where "companyId" = $1`, [session.companyId])).rows[0] || {};
+    company = (await p.query(`select name from "companies" where id = $1 limit 1`, [session.companyId])).rows[0] || { name: "Xentral" };
   } catch { return NextResponse.json({ error: "Lookup failed" }, { status: 500 }); }
   if (!inv) return NextResponse.json({ error: "Invoice not found" }, { status: 404 });
   if (!inv.email || !/.+@.+\..+/.test(inv.email)) return NextResponse.json({ error: "Customer has no email address. Add one on the customer first." }, { status: 400 });
@@ -55,14 +61,14 @@ export async function POST(req: Request, { params }: { params: { id: string } })
   const cfg = await smtp(p, session.companyId);
   if (!cfg) return NextResponse.json({ error: "No mailbox configured (Settings → Email)." }, { status: 400 });
 
-  const accent = (settings.templateConfig && settings.templateConfig.accent) || "#0064d9";
+  const accent = (settings.templateConfig && (settings.templateConfig.accent || settings.templateConfig.accentColor)) || "#0064d9";
   const merchant = settings.legalName || cfg.fromName || "Xentral";
   const total = aed(inv.total, inv.currency);
   const subject = `Invoice ${inv.number} from ${merchant}`;
   const html = `<div style="font-family:Inter,Arial,sans-serif;max-width:520px;margin:0 auto;color:#1d2733">
     ${settings.logoUrl ? `<img src="${settings.logoUrl}" alt="${merchant}" style="height:38px;margin-bottom:12px"/>` : `<div style="font-size:20px;font-weight:800;color:${accent};margin-bottom:12px">${merchant}</div>`}
     <p style="font-size:15px">Dear ${inv.customer || "customer"},</p>
-    <p style="font-size:14px;color:#5b6b7b">Please find your invoice <b>${inv.number}</b>${inv.due ? ` due on ${inv.due}` : ""}.</p>
+    <p style="font-size:14px;color:#5b6b7b">Please find your invoice <b>${inv.number}</b>${inv.due ? ` due on ${inv.due}` : ""}. The PDF is attached.</p>
     <div style="background:#f6f9fb;border:1px solid #e4e9ef;border-radius:12px;padding:18px;margin:16px 0">
       <div style="font-size:13px;color:#5b6b7b">Amount due</div>
       <div style="font-size:30px;font-weight:800;color:${accent}">${total}</div>
@@ -72,10 +78,24 @@ export async function POST(req: Request, { params }: { params: { id: string } })
     ${settings.footerNotes ? `<p style="font-size:12px;color:#5b6b7b;border-top:1px solid #e4e9ef;padding-top:12px;margin-top:16px">${settings.footerNotes}</p>` : ""}
   </div>`;
 
+  // build the A4 PDF attachment (best-effort)
+  let attachments: { filename: string; content: Buffer }[] | undefined;
+  try {
+    const lines = (await p.query(`select name, description, qty, "unitPrice", "vatRate", "discountPct", "lineTotal" from "invoice_lines" where "invoiceId" = $1 order by position asc`, [params.id])).rows;
+    const data = buildInvoicePdfData({
+      number: inv.number, issueDate: inv.issueDate, dueDate: inv.dueDate, status: inv.status, currency: inv.currency || "AED",
+      subtotal: inv.subtotal, discountTotal: inv.discountTotal, vatTotal: inv.vatTotal, total: inv.total, amountPaid: inv.amountPaid, notes: inv.notes, terms: inv.terms,
+      customer: { name: inv.customer || "Customer", legalName: inv.clegalName, email: inv.email, phone: inv.cphone, addressLine1: inv.caddr1, addressLine2: inv.caddr2, city: inv.ccity, country: inv.ccountry, vatNumber: inv.cvat },
+      lines,
+    }, settings, company.name || "Xentral");
+    const pdf = await generateDocumentPdf(data);
+    attachments = [{ filename: `${inv.number}.pdf`, content: pdf }];
+  } catch { attachments = undefined; }
+
   let status = "SENT"; let error: string | null = null;
   try {
     const t = nodemailer.createTransport({ host: cfg.host, port: cfg.port, secure: cfg.secure, auth: { user: cfg.user, pass: cfg.pass } });
-    await t.sendMail({ from: cfg.fromName ? `${cfg.fromName} <${cfg.from}>` : cfg.from, to: inv.email, subject, html });
+    await t.sendMail({ from: cfg.fromName ? `${cfg.fromName} <${cfg.from}>` : cfg.from, to: inv.email, subject, html, attachments });
   } catch (e) { status = "FAILED"; error = e instanceof Error ? e.message.slice(0, 200) : "send error"; }
 
   try { await p.query(`insert into "email_messages" (id,"companyId",subject,body,"fromEmail","toEmail","toName",status,error,"sentAt","createdAt") values ($1,$2,$3,$4,$5,$6,$7,$8,$9,now(),now())`, [newId(), session.companyId, subject, html, cfg.from, inv.email, inv.customer || null, status, error]); } catch { /* best effort */ }

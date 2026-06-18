@@ -34,7 +34,7 @@ export default function InvoiceDetailPage({ params }: { params: { id: string } }
     } catch { setToast("Network error"); } finally { setBusy(false); }
   }
   function copyLink() { navigator.clipboard?.writeText(payUrl).then(() => setToast("Pay link copied")); }
-  function openPdf() { window.open(`/invoices/${params.id}/print`, "_blank"); }
+  function openPdf() { window.open(`/api/books/invoices/${params.id}/pdf`, "_blank"); }
   function openEdit() { if (inv) setEdit({ status: inv.status, dueDate: inv.dueDateRaw || "", notes: inv.notes || "" }); }
   async function saveEdit() {
     if (!edit) return;

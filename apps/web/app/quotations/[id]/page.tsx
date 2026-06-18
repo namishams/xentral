@@ -35,7 +35,7 @@ export default function QuoteDetailPage({ params }: { params: { id: string } }) 
     } catch { setToast("Network error"); } finally { setBusy(null); }
   }
   function copyLink() { navigator.clipboard?.writeText(viewUrl).then(() => setToast("Quote link copied")); }
-  function openPdf() { window.open(`/quotations/${params.id}/print`, "_blank"); }
+  function openPdf() { window.open(`/api/books/quotes/${params.id}/pdf`, "_blank"); }
   function openEdit() { if (q) setEdit({ status: q.status, validUntil: q.validRaw || "", notes: q.notes || "" }); }
   async function saveEdit() {
     if (!edit) return;
