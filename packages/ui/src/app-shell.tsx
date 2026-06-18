@@ -209,7 +209,7 @@ export function AppShell({ children, active, fullBleed, headerRight }: { childre
           </main>
         )}
       </div>
-      <AiLauncher />
+      {active !== "inbox" ? <AiLauncher /> : null}
     </div>
   );
 }
