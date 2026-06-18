@@ -52,6 +52,7 @@ export default function AdminPage() {
   const [f, setF] = React.useState<AddForm>(blank());
   const [imgs, setImgs] = React.useState<string[]>([]);
   const [aiMsg, setAiMsg] = React.useState("");
+  const fileRef = React.useRef<HTMLInputElement | null>(null);
 
   const load = React.useCallback(() => {
     setLoading(true);
@@ -112,6 +113,11 @@ export default function AdminPage() {
   const fieldS: React.CSSProperties = { width: "100%", boxSizing: "border-box", height: 38, border: `1px solid ${color.line.strong}`, borderRadius: 9, padding: "0 11px", fontSize: 13.5, background: color.surface.card, color: color.ink.DEFAULT, outline: "none" };
   const lbl: React.CSSProperties = { display: "block", fontSize: 11, fontWeight: 700, letterSpacing: 0.3, color: color.ink.soft, marginBottom: 5 };
   const sec: React.CSSProperties = { fontSize: 11, fontWeight: 700, letterSpacing: 0.5, textTransform: "uppercase", color: color.brand.primary, margin: "4px 0 2px" };
+  const ImgIcon = ({ s = 28 }: { s?: number }) => (
+    <svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke={color.ink.soft} strokeWidth={1.6} aria-hidden="true">
+      <rect x="3" y="3" width="18" height="18" rx="3" /><circle cx="8.5" cy="8.5" r="1.5" /><path d="M21 15l-5-5L5 21" />
+    </svg>
+  );
   const chk = (k: keyof AddForm, label: string) => (
     <label style={{ display: "inline-flex", alignItems: "center", gap: 7, fontSize: 13, color: color.ink.DEFAULT, cursor: "pointer" }}>
       <input type="checkbox" checked={!!f[k]} onChange={(e) => set(k, e.target.checked)} /> {label}
@@ -197,13 +203,45 @@ export default function AdminPage() {
           )}
 
           {tab === "AI Import" && (
-            <div style={{ ...cardS, padding: 22, maxWidth: 640 }}>
-              <div style={{ fontSize: 16, fontWeight: 700, color: color.ink.DEFAULT, marginBottom: 4 }}>AI Lead Import</div>
-              <div style={{ fontSize: 13, color: color.ink.mid, marginBottom: 16 }}>Upload up to 3 screenshots (WhatsApp, email, LinkedIn, CV) — GPT-4 Vision extracts the lead and drafts it into marketplace supply.</div>
-              <input type="file" accept="image/*" multiple onChange={onFiles} style={{ fontSize: 13, marginBottom: 12 }} />
-              {imgs.length > 0 && <div style={{ display: "flex", gap: 8, marginBottom: 12, flexWrap: "wrap" }}>{imgs.map((u, i) => <img key={i} src={u} alt="" style={{ width: 90, height: 90, objectFit: "cover", borderRadius: 8, border: `1px solid ${color.line.DEFAULT}` }} />)}</div>}
-              <div><Button variant="primary" onClick={runImport} disabled={busy || !imgs.length}>{busy ? "Analysing…" : "Analyse & import"}</Button></div>
-              {aiMsg && <div style={{ marginTop: 14, fontSize: 13, color: aiMsg.startsWith("✓") ? color.status.positive : color.ink.mid }}>{aiMsg}</div>}
+            <div style={{ maxWidth: 960 }}>
+              <input ref={fileRef} type="file" accept="image/*" multiple onChange={onFiles} style={{ display: "none" }} />
+              <div style={{ display: "flex", alignItems: "center", gap: 9, marginBottom: 4 }}>
+                <span style={{ width: 26, height: 26, borderRadius: 7, background: "linear-gradient(135deg,#0064d9,#22D3A6)", color: "#fff", display: "inline-flex", alignItems: "center", justifyContent: "center", fontSize: 14 }}>✦</span>
+                <span style={{ fontSize: 18, fontWeight: 700, color: color.ink.DEFAULT }}>AI Lead Import</span>
+              </div>
+              <div style={{ fontSize: 13.5, color: color.ink.mid, marginBottom: 18 }}>Upload up to 3 screenshots — GPT-4 Vision analyses them all together and extracts the lead data automatically.</div>
+
+              <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 16, marginBottom: 16 }}>
+                {[0, 1, 2].map((i) => (
+                  <button key={i} onClick={() => fileRef.current?.click()} style={{ height: 150, border: `1.5px dashed ${color.line.strong}`, borderRadius: 12, background: imgs[i] ? color.surface.card : color.surface.page, cursor: "pointer", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 8, overflow: "hidden", padding: 0 }}>
+                    {imgs[i]
+                      ? <img src={imgs[i]} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                      : <><ImgIcon s={30} /><span style={{ fontSize: 12.5, color: color.ink.soft }}>{i === 0 ? "Add screenshot" : `Screenshot ${i + 1}`}</span></>}
+                  </button>
+                ))}
+              </div>
+
+              <button onClick={() => fileRef.current?.click()} style={{ width: "100%", border: `1.5px dashed ${color.line.strong}`, borderRadius: 14, background: color.surface.page, padding: "34px 16px", cursor: "pointer", display: "flex", flexDirection: "column", alignItems: "center", gap: 9 }}>
+                <ImgIcon s={40} />
+                <span style={{ fontSize: 15, fontWeight: 700, color: color.ink.DEFAULT }}>Drop screenshots here or click to upload</span>
+                <span style={{ fontSize: 12.5, color: color.ink.soft }}>Upload up to 3 screenshots of the same lead for best results</span>
+                <span style={{ display: "inline-flex", alignItems: "center", gap: 7, marginTop: 8, height: 38, padding: "0 16px", borderRadius: 9, background: color.brand.primaryTint, color: color.brand.primary, fontWeight: 600, fontSize: 13 }}>⬆ Choose Screenshots</span>
+              </button>
+
+              {imgs.length > 0 && <div style={{ marginTop: 16 }}><Button variant="primary" onClick={runImport} disabled={busy}>{busy ? "Analysing…" : `Analyse & import ${imgs.length} screenshot${imgs.length > 1 ? "s" : ""}`}</Button> <button onClick={() => { setImgs([]); setAiMsg(""); }} style={{ marginLeft: 8, height: 32, padding: "0 12px", borderRadius: 8, border: `1px solid ${color.line.strong}`, background: color.surface.card, color: color.ink.mid, cursor: "pointer", fontSize: 12.5 }}>Clear</button></div>}
+              {aiMsg && <div style={{ marginTop: 14, fontSize: 13, color: aiMsg.startsWith("✓") ? color.status.positive : color.status.critical }}>{aiMsg}</div>}
+
+              <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 16, marginTop: 24 }}>
+                {[["📱", "WhatsApp Screenshot", "Capture the conversation showing contact info and their interest in UAE licensing."],
+                  ["📧", "Email Screenshot", "Screenshot an inquiry email — name, email address, and request visible."],
+                  ["💼", "LinkedIn Message", "Screenshot a DM from a professional seeking UAE licensing or career help."]].map(([icon, title, desc]) => (
+                  <div key={title} style={{ border: `1px solid ${color.line.DEFAULT}`, borderRadius: 12, background: color.surface.card, padding: 16 }}>
+                    <div style={{ fontSize: 22, marginBottom: 8 }}>{icon}</div>
+                    <div style={{ fontSize: 13.5, fontWeight: 700, color: color.ink.DEFAULT, marginBottom: 4 }}>{title}</div>
+                    <div style={{ fontSize: 12, color: color.ink.soft, lineHeight: 1.5 }}>{desc}</div>
+                  </div>
+                ))}
+              </div>
             </div>
           )}
 
