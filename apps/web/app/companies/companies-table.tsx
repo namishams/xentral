@@ -43,7 +43,7 @@ const COLUMNS: Column<CompanyRow>[] = [
       {r.country ? <span style={{ display: "block", fontSize: 11.5, color: color.ink.soft, lineHeight: "14px" }}>{r.country}</span> : null}
     </span>
   ) },
-  { key: "contacts", header: "Contacts", width: 130, align: "right", render: (r) => <span style={{ color: r.contacts > 0 ? color.ink.mid : color.ink.soft, fontVariantNumeric: "tabular-nums" }}>{r.contacts || 0}</span> },
+  { key: "contacts", header: "Contacts", width: 110, render: (r) => <span style={{ color: r.contacts > 0 ? color.ink.mid : color.ink.soft, fontVariantNumeric: "tabular-nums" }}>{r.contacts || 0}</span> },
   { key: "openDeals", header: "Open deals", width: 120, render: (r) => <StatusBadge tone={r.openDeals > 0 ? "positive" : "neutral"} label={String(r.openDeals)} /> },
   { key: "owner", header: "Owner", width: 120, render: (r) => (r.owner ? <StatusBadge tone="info" label={r.owner} /> : <span style={{ color: color.ink.soft }}>Unassigned</span>) },
 ];
