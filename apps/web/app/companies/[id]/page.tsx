@@ -41,6 +41,12 @@ export default function CompanyDetailPage({ params }: { params: { id: string } }
   async function patch(body: Record<string, unknown>) { setBusy(true); try { const r = await fetch(`/api/crm/account/${params.id}`, { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) }); if (r.ok) load(); return r.ok; } finally { setBusy(false); } }
   async function saveForm() { if (!form) return; const ok = await patch(form); if (ok) { setClean(form); setSaved(true); setTimeout(() => setSaved(false), 2000); } }
   async function addNote() { const t = note.trim(); if (!t) return; const ok = await patch({ note: t }); if (ok) setNote(""); }
+  async function addContact() {
+    const name = window.prompt("Contact name (First Last):"); if (!name || !name.trim()) return;
+    const parts = name.trim().split(/\s+/);
+    const email = window.prompt("Email (optional):") || "";
+    await patch({ contactFirstName: parts[0], contactLastName: parts.slice(1).join(" "), contactEmail: email });
+  }
   const fieldS: React.CSSProperties = { width: "100%", boxSizing: "border-box", height: 34, border: `1px solid var(--line-strong)`, borderRadius: 8, padding: "0 10px", fontSize: 13, color: "var(--ink)", background: "var(--surface-card)", outline: "none" };
   const labelS: React.CSSProperties = { display: "block", fontSize: 10.5, fontWeight: 700, letterSpacing: 0.3, color: "var(--ink-soft)", textTransform: "uppercase", marginBottom: 4 };
 
@@ -115,9 +121,9 @@ export default function CompanyDetailPage({ params }: { params: { id: string } }
             </PanelBody>
           </Panel>
           <Panel>
-            <PanelHeader title="Contacts" subtitle={`${d.contacts.length}`} />
+            <PanelHeader title="Contacts" subtitle={`${d.contacts.length}`} actions={<Button onClick={addContact} disabled={busy}>+ Add</Button>} />
             <PanelBody flush>
-              {d.contacts.length === 0 ? <div style={{ padding: 16, textAlign: "center", fontSize: 12.5, color: color.ink.soft }}>No contacts linked.</div>
+              {d.contacts.length === 0 ? <div style={{ padding: 16, textAlign: "center", fontSize: 12.5, color: color.ink.soft }}>No contacts linked. Use “+ Add” to create one.</div>
                 : d.contacts.map((p) => (
                   <a key={p.id} href={`/contacts/${p.id}`} className="xui-row-link" style={linkRow}>
                     <span style={{ width: 28, height: 28, borderRadius: "50%", background: color.brand.primaryTint, color: color.brand.primary, fontSize: 11, fontWeight: 700, display: "inline-flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>{initials(p.name)}</span>

@@ -14,6 +14,7 @@ function pool(url: string): Pool {
   _pool = m ? new Pool({ user: m[1], password: m[2], host: m[3], port: Number(m[4]), database: m[5], max: 4 }) : new Pool({ connectionString: url, max: 4 });
   return _pool;
 }
+// eslint-disable-next-line
 const safe = async (p: Promise<unknown>, d: unknown): Promise<{ rows: Record<string, unknown>[] }> => { try { return (await p) as { rows: Record<string, unknown>[] }; } catch { return d as { rows: Record<string, unknown>[] }; } };
 
 export async function GET(_req: Request, { params }: { params: { id: string } }) {
@@ -63,6 +64,13 @@ export async function PATCH(req: Request, { params }: { params: { id: string } }
       await p.query(`insert into "activities" (id,"companyId","accountId",type,subject,content,"userId","createdAt","updatedAt") values ($1,$2,$3,'NOTE'::"ActivityType",'Note',$4,$5,now(),now())`,
         [newId("ac"), cid, id, b.note.trim(), session.userId]);
       return NextResponse.json({ ok: true });
+    }
+    // create a contact attached to this company
+    if (typeof b.contactFirstName === "string" && b.contactFirstName.trim()) {
+      const ctId = newId("ct");
+      await p.query(`insert into "contacts" (id,"firstName","lastName",email,phone,title,"accountId","companyId","createdAt","updatedAt") values ($1,$2,$3,$4,$5,$6,$7,$8,now(),now())`,
+        [ctId, s(b.contactFirstName) || "Contact", s(b.contactLastName), s(b.contactEmail), s(b.contactPhone), s(b.contactTitle), id, cid]);
+      return NextResponse.json({ ok: true, contactId: ctId });
     }
     const sets: string[] = []; const vals: unknown[] = []; let i = 1;
     for (const f of ["name", "industry", "website", "phone", "email", "city", "country", "description"]) if (f in b) {
