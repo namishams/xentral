@@ -114,16 +114,14 @@ export default function ContactDetailPage({ params }: { params: { id: string } }
             </div>
           </div>
         </div>
-        <PanelBody>
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(130px, 1fr))", gap: 10 }}>
-            {metrics.map((m) => (
-              <div key={m.label} style={{ border: `1px solid ${color.line.DEFAULT}`, borderRadius: 10, background: color.surface.page, padding: "9px 12px" }}>
-                <div style={{ fontSize: 10, fontWeight: 700, letterSpacing: 0.4, textTransform: "uppercase", color: color.ink.soft }}>{m.label}</div>
-                <div style={{ fontSize: 14, fontWeight: 700, color: m.tone, marginTop: 3 }}>{m.value}</div>
-              </div>
-            ))}
-          </div>
-        </PanelBody>
+        <div style={{ display: "flex", flexWrap: "wrap", gap: "12px 36px", padding: "12px 18px", background: color.surface.page }}>
+          {metrics.map((m) => (
+            <div key={m.label} style={{ minWidth: 0 }}>
+              <div style={{ fontSize: 9.5, fontWeight: 700, letterSpacing: 0.4, textTransform: "uppercase", color: color.ink.soft }}>{m.label}</div>
+              <div style={{ fontSize: 15, fontWeight: 700, color: m.tone, marginTop: 2 }}>{m.value}</div>
+            </div>
+          ))}
+        </div>
       </Panel>
 
       <div style={{ display: "grid", gridTemplateColumns: "minmax(0, 340px) minmax(0, 1fr)", gap: 16, alignItems: "start" }}>
