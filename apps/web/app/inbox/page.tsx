@@ -8,6 +8,7 @@ type Conv = { id: string; name: string | null; phone: string; preview: string | 
 type Msg = { direction: string; body: string | null; type: string; isAi: boolean; timestamp: string; sentBy: string | null };
 
 const initials = (s: string) => s.split(" ").map((w) => w[0]).slice(0, 2).join("").toUpperCase();
+const normPhone = (p?: string | null) => (p || "").replace(/\D/g, "").slice(-9);
 const fmt = (s: string | null) => { if (!s) return ""; const d = new Date(s); return isNaN(+d) ? "" : d.toLocaleString(undefined, { day: "2-digit", month: "short", hour: "2-digit", minute: "2-digit" }); };
 
 export default function InboxPage() {
@@ -19,6 +20,7 @@ export default function InboxPage() {
   const [sending, setSending] = React.useState(false);
   const [q, setQ] = React.useState("");
   const [isOperator, setIsOperator] = React.useState(false);
+  const [leadStatus, setLeadStatus] = React.useState<Record<string, { status: string; soldPrice: number | null }>>({});
 
   const loadConvs = React.useCallback(() => {
     fetch("/api/whatsapp/conversations").then((r) => r.json()).then((d) => {
@@ -30,6 +32,16 @@ export default function InboxPage() {
   }, []);
   React.useEffect(() => { loadConvs(); }, [loadConvs]);
   React.useEffect(() => { fetch("/api/me").then((r) => r.json()).then((d) => setIsOperator(!!d.superAdmin)).catch(() => {}); }, []);
+  React.useEffect(() => {
+    fetch("/api/whatsapp/listed-leads").then((r) => r.json()).then((d) => {
+      const map: Record<string, { status: string; soldPrice: number | null }> = {};
+      (Array.isArray(d.leads) ? d.leads : []).forEach((l: { phone: string; status: string; soldPrice: number | null }) => {
+        const k = normPhone(l.phone); if (k) map[k] = { status: String(l.status || "").toUpperCase(), soldPrice: l.soldPrice != null ? Number(l.soldPrice) : null };
+      });
+      setLeadStatus(map);
+    }).catch(() => {});
+  }, []);
+  const statusFor = (phone: string) => leadStatus[normPhone(phone)];
 
   const loadMsgs = React.useCallback((id: string) => {
     fetch(`/api/whatsapp/conversations/${id}/messages`).then((r) => r.json()).then((d) => setMsgs(d.messages ?? [])).catch(() => setMsgs([]));
@@ -84,6 +96,8 @@ export default function InboxPage() {
                           {c.unread > 0 ? <span style={{ background: color.status.positive, color: "#fff", fontSize: 10, fontWeight: 700, borderRadius: 999, padding: "1px 6px" }}>{c.unread}</span> : null}
                         </span>
                         <span style={{ display: "block", fontSize: 12, color: color.ink.soft, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{c.preview || "—"}</span>
+                        {(() => { const st = statusFor(c.phone); if (!st) return null; const sold = st.status === "SOLD";
+                          return <span style={{ display: "inline-block", marginTop: 3, fontSize: 10, fontWeight: 700, borderRadius: 5, padding: "1px 6px", background: sold ? "rgba(34,211,166,0.14)" : color.brand.primaryTint, color: sold ? color.status.positive : color.brand.primary }}>{sold ? `✓ Sold${st.soldPrice ? " · AED " + Math.round(st.soldPrice) : ""}` : "● Listed"}</span>; })()}
                       </span>
                     </button>
                   );
@@ -105,8 +119,10 @@ export default function InboxPage() {
                   <span style={{ display: "block", fontWeight: 600, color: color.ink.DEFAULT }}>{active.name || active.phone}</span>
                   <span style={{ display: "block", fontSize: 12, color: color.ink.soft }}>{active.phone} · {active.mode === "AI" ? "AI mode" : "Manual"}</span>
                 </span>
-                {isOperator ? (
-                  <button onClick={listOnMarketplace} title="Turn this lead into a marketplace listing" style={{ height: 34, padding: "0 13px", borderRadius: 8, border: 0, background: color.brand.primary, color: color.ink.onPrimary, fontSize: 12.5, fontWeight: 700, cursor: "pointer", whiteSpace: "nowrap" }}>🏪 List on marketplace</button>
+                {(() => { const st = statusFor(active.phone); if (!st) return null; const sold = st.status === "SOLD";
+                  return <span style={{ fontSize: 11.5, fontWeight: 700, borderRadius: 6, padding: "4px 9px", background: sold ? "rgba(34,211,166,0.14)" : color.brand.primaryTint, color: sold ? color.status.positive : color.brand.primary, whiteSpace: "nowrap" }}>{sold ? `✓ Sold${st.soldPrice ? " · AED " + Math.round(st.soldPrice) : ""}` : "● Listed"}</span>; })()}
+                {isOperator && statusFor(active.phone)?.status !== "SOLD" ? (
+                  <button onClick={listOnMarketplace} title="Turn this lead into a marketplace listing" style={{ height: 34, padding: "0 13px", borderRadius: 8, border: 0, background: color.brand.primary, color: color.ink.onPrimary, fontSize: 12.5, fontWeight: 700, cursor: "pointer", whiteSpace: "nowrap" }}>{statusFor(active.phone) ? "🏪 Re-list" : "🏪 List on marketplace"}</button>
                 ) : null}
               </div>
               <div style={{ flex: 1, overflowY: "auto", padding: 16, background: color.surface.page, display: "flex", flexDirection: "column", gap: 8 }}>

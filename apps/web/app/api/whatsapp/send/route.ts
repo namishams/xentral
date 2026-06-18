@@ -10,10 +10,11 @@ export const dynamic = "force-dynamic";
 
 /**
  * WhatsApp send — outbound reply via the Meta Graph API. DORMANT until armed
- * (XENTRAL_LIVE_DATA=1 + DATABASE_URL + a session). Mirrors the existing app:
- * loads the conversation + account (tenant-checked), posts to graph.facebook.com
- * with the account's access token, stores the outbound message and bumps the
- * conversation. Internal notes skip the Meta call. 503 on the public preview.
+ * (XENTRAL_LIVE_DATA=1 + DATABASE_URL + a session). Loads the conversation +
+ * account (tenant-checked), posts to graph.facebook.com with the account's access
+ * token, stores the outbound message and bumps the conversation. The Xentral
+ * operator (SUPER_ADMIN) runs the lead-supply number, so they may reply to its
+ * conversations too. 503 on the public preview.
  */
 
 let _pool: Pool | null = null;
@@ -46,7 +47,8 @@ export async function POST(req: Request) {
     `select c.id, c."company_id" as "companyId", c."contact_phone" as "contactPhone", a."phone_number_id" as "phoneNumberId", a."access_token" as "accessToken"
        from "whatsapp_conversations" c join "whatsapp_accounts" a on a.id = c."account_id" where c.id = $1 limit 1`, [conversationId]);
   const conv = convRes.rows[0];
-  if (!conv || conv.companyId !== session.companyId) return NextResponse.json({ error: "Not found" }, { status: 404 });
+  if (!conv) return NextResponse.json({ error: "Not found" }, { status: 404 });
+  if (conv.companyId !== session.companyId && session.role !== "SUPER_ADMIN") return NextResponse.json({ error: "Not found" }, { status: 404 });
 
   if (isNote) {
     const id = randomUUID();
@@ -60,7 +62,7 @@ export async function POST(req: Request) {
     headers: { Authorization: `Bearer ${conv.accessToken}`, "Content-Type": "application/json" },
     body: JSON.stringify({ messaging_product: "whatsapp", to: conv.contactPhone, type: "text", text: { body: message, preview_url: false } }),
   });
-  const metaData: any = await metaRes.json().catch(() => ({}));
+  const metaData: { error?: { message?: string }; messages?: { id?: string }[] } = await metaRes.json().catch(() => ({}));
   if (!metaRes.ok) return NextResponse.json({ error: metaData?.error?.message ?? "Failed to send" }, { status: 500 });
 
   const waMessageId = metaData?.messages?.[0]?.id ?? null;
