@@ -15,7 +15,7 @@ function pool(url: string): Pool {
   return _pool;
 }
 const N = (v: unknown) => Number(v ?? 0);
-const TEXT = ["name", "legalName", "email", "phone", "addressLine1", "addressLine2", "city", "country", "vatNumber", "notes"] as const;
+const TEXT = ["name", "legalName", "email", "phone", "addressLine1", "addressLine2", "city", "country", "vatNumber", "notes", "accountId"] as const;
 
 export async function GET(_req: Request, { params }: { params: { id: string } }) {
   const url = process.env.DATABASE_URL;

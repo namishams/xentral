@@ -20,6 +20,12 @@ export default function CustomerDetailPage({ params }: { params: { id: string } 
   const [loading, setLoading] = React.useState(true);
   const [busy, setBusy] = React.useState(false);
   const [saved, setSaved] = React.useState(false);
+  const [accounts, setAccounts] = React.useState<{ id: string; name: string }[]>([]);
+  const [changeCompany, setChangeCompany] = React.useState(false);
+  const [pendCo, setPendCo] = React.useState("");
+  const [newCo, setNewCo] = React.useState("");
+  const [coId, setCoId] = React.useState("");
+  React.useEffect(() => { fetch("/api/crm/accounts").then((r) => r.json()).then((j) => setAccounts(Array.isArray(j.rows) ? j.rows : [])).catch(() => {}); }, []);
 
   const load = React.useCallback(() => {
     fetch(`/api/books/customers/${params.id}`).then((r) => r.json()).then((j) => {
@@ -39,6 +45,23 @@ export default function CustomerDetailPage({ params }: { params: { id: string } 
     finally { setBusy(false); }
   }
 
+  React.useEffect(() => { if (d?.customer) setCoId(d.customer.accountId || ""); }, [d]);
+  async function patchCustomer(body: Record<string, unknown>) {
+    setBusy(true);
+    try { const r = await fetch(`/api/books/customers/${params.id}`, { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) }); if (r.ok) load(); return r.ok; }
+    finally { setBusy(false); }
+  }
+  async function saveCompany() { const ok = await patchCustomer({ accountId: pendCo || null }); if (ok) { setChangeCompany(false); setNewCo(""); } }
+  async function createCompany() {
+    const nm = newCo.trim(); if (!nm) return;
+    setBusy(true);
+    try {
+      const r = await fetch("/api/crm/accounts", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ name: nm }) });
+      const j = await r.json().catch(() => ({}));
+      if (r.ok && j.id) { setAccounts((prev) => [...prev, { id: j.id, name: nm }].sort((a, b) => a.name.localeCompare(b.name))); setPendCo(j.id); await patchCustomer({ accountId: j.id }); setChangeCompany(false); setNewCo(""); }
+    } finally { setBusy(false); }
+  }
+  const coInitials = (nm: string) => (nm || "?").split(" ").filter(Boolean).map((w) => w[0]).slice(0, 2).join("").toUpperCase() || "?";
   if (loading) return <AppShell active="customers"><div style={{ padding: 40, textAlign: "center", color: color.ink.soft }}>Loading…</div></AppShell>;
   if (!d || !form) return <AppShell active="customers"><div style={{ padding: 40, textAlign: "center", color: color.ink.soft }}>Customer not found. <a href="/customers" style={{ color: color.brand.primary }}>Back to customers</a></div></AppShell>;
 
@@ -89,6 +112,36 @@ export default function CustomerDetailPage({ params }: { params: { id: string } 
                 <div><label style={labelS}>Country</label><input value={form.country} onChange={(e) => set("country", e.target.value)} style={fieldS} /></div>
               </div>
               <div><label style={labelS}>Notes</label><textarea value={form.notes} onChange={(e) => set("notes", e.target.value)} rows={3} style={{ ...fieldS, height: "auto", padding: 10, resize: "vertical" }} /></div>
+              <div>
+                <label style={labelS}>Account / company</label>
+                {changeCompany ? (
+                  <div style={{ border: `1px solid ${color.line.DEFAULT}`, borderRadius: 10, padding: 12, background: color.surface.page, display: "flex", flexDirection: "column", gap: 10 }}>
+                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                      <span style={{ fontSize: 12, fontWeight: 700, color: color.ink.mid }}>Account / company</span>
+                      <button type="button" onClick={() => { setChangeCompany(false); setNewCo(""); }} style={{ fontSize: 12, fontWeight: 600, color: color.ink.soft, background: "transparent", border: 0, cursor: "pointer" }}>Close</button>
+                    </div>
+                    <div style={{ display: "flex", gap: 7 }}>
+                      <select autoFocus value={pendCo} onChange={(e) => setPendCo(e.target.value)} style={{ ...fieldS, flex: 1 }}>
+                        <option value="">— No company —</option>
+                        {accounts.map((a) => <option key={a.id} value={a.id}>{a.name}</option>)}
+                      </select>
+                      <Button variant="primary" onClick={saveCompany} disabled={busy}>Save</Button>
+                    </div>
+                    <div style={{ display: "flex", gap: 7 }}>
+                      <input value={newCo} onChange={(e) => setNewCo(e.target.value)} onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); createCompany(); } }} placeholder="…or create a new account" style={{ ...fieldS, flex: 1 }} />
+                      <Button onClick={createCompany} disabled={busy || !newCo.trim()}>Create</Button>
+                    </div>
+                  </div>
+                ) : coId ? (
+                  <div style={{ display: "flex", alignItems: "center", gap: 10, padding: "7px 9px 7px 8px", borderRadius: 10, border: `1px solid ${color.line.DEFAULT}`, background: color.surface.page }}>
+                    <span style={{ width: 30, height: 30, flexShrink: 0, borderRadius: 8, background: color.brand.primaryTint, color: color.brand.primary, fontSize: 12, fontWeight: 700, display: "inline-flex", alignItems: "center", justifyContent: "center" }}>{coInitials(accounts.find((a) => a.id === coId)?.name || "?")}</span>
+                    <a href={`/companies/${coId}`} style={{ flex: 1, minWidth: 0, fontSize: 13.5, fontWeight: 600, color: color.ink.DEFAULT, textDecoration: "none", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{accounts.find((a) => a.id === coId)?.name || "Linked account"}</a>
+                    <button type="button" onClick={() => { setPendCo(coId); setNewCo(""); setChangeCompany(true); }} style={{ flexShrink: 0, height: 30, padding: "0 12px", borderRadius: 8, border: `1px solid ${color.brand.primary}`, background: color.surface.card, color: color.brand.primary, fontSize: 12.5, fontWeight: 600, cursor: "pointer" }}>Change</button>
+                  </div>
+                ) : (
+                  <button type="button" onClick={() => { setPendCo(""); setNewCo(""); setChangeCompany(true); }} style={{ display: "inline-flex", alignItems: "center", gap: 7, height: 36, padding: "0 13px", borderRadius: 9, border: `1px dashed ${color.line.strong}`, background: color.surface.page, color: color.ink.mid, fontSize: 13, fontWeight: 600, cursor: "pointer" }}>+ Link a company</button>
+                )}
+              </div>
               {d.customer.contactId ? <a href={`/contacts/${d.customer.contactId}`} style={{ fontSize: 12.5, color: color.brand.primary, textDecoration: "none" }}>Open CRM contact →</a> : null}
             </div>
           </PanelBody>

@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import { color } from "@xentral/config";
-import { AppShell, PageTitleRow, Button, KPICard } from "@xentral/ui";
+import { AppShell, PageTitleRow, Button, KPICard, AiInlineBar } from "@xentral/ui";
 
 type Meeting = { id: string; title: string; description: string | null; startsAt: string; endsAt: string; allDay: boolean; location: string | null; meetingUrl: string | null; type: string; status: string };
 
@@ -91,6 +91,8 @@ export default function CalendarPage() {
     <AppShell active="calendar">
       <PageTitleRow title="Calendar" subtitle="Meetings, calls and deadlines for your workspace"
         actions={<Button variant="primary" onClick={() => openNew(todayKey)}>+ New meeting</Button>} />
+
+      <AiInlineBar placeholder="Ask AI to schedule a meeting or summarise your week…" />
 
       <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(150px, 1fr))", gap: 10, marginBottom: 14 }}>
         <KPICard label="This month" value={String(kpis.month)} note="scheduled" noteTone={color.brand.primary} />
