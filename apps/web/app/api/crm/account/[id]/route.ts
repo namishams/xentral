@@ -25,15 +25,15 @@ export async function GET(_req: Request, { params }: { params: { id: string } })
   const cid = session.companyId; const id = params.id; const p = pool(url);
 
   const a = await safe(p.query(
-    `select a.id, a.name, a.industry, a.website, a.phone, a.email, a.city, a.country, a.description, a."logoUrl", a."whatsApp" as "whatsApp", a."vatNumber" as "vatNumber", a."addressLine1" as "addressLine1", a.segment, a.employees, a."branchId" as "branchId", br.name as "branchName"
-       from "accounts" a left join "branches" br on br.id = a."branchId" where a.id=$1 and a."companyId"=$2 limit 1`, [id, cid]), { rows: [] as Record<string, unknown>[] });
+    `select a.id, a.name, a.industry, a.website, a.phone, a.email, a.city, a.country, a.description, a."logoUrl", a."whatsApp" as "whatsApp", a."vatNumber" as "vatNumber", a."addressLine1" as "addressLine1", a.segment, a.employees, a."branchId" as "branchId", br.name as "branchName", a."ownerId" as "ownerId", ou.name as "ownerName"
+       from "accounts" a left join "branches" br on br.id = a."branchId" left join "users" ou on ou.id = a."ownerId" where a.id=$1 and a."companyId"=$2 limit 1`, [id, cid]), { rows: [] as Record<string, unknown>[] });
   if (!a.rows[0]) return NextResponse.json({ error: "Not found" }, { status: 404 });
 
   const [contacts, leads, billing, activities, convos] = await Promise.all([
     safe(p.query(`select id, coalesce("firstName",'')||' '||coalesce("lastName",'') as name, title, email, phone from "contacts" where "companyId"=$1 and "accountId"=$2 order by "updatedAt" desc limit 50`, [cid, id]), { rows: [] }),
     safe(p.query(`select id, coalesce("firstName",'')||' '||coalesce("lastName",'') as name, status::text as status, value, currency from "leads" where "companyId"=$1 and "accountId"=$2 order by "updatedAt" desc limit 12`, [cid, id]), { rows: [] }),
     safe(p.query(`select id from "billing_customers" where "companyId"=$1 and "accountId"=$2`, [cid, id]), { rows: [] as { id: string }[] }),
-    safe(p.query(`select id, type, subject, content, to_char("createdAt",'DD Mon YYYY, HH24:MI') as at from "activities" where "companyId"=$1 and "accountId"=$2 order by "createdAt" desc limit 25`, [cid, id]), { rows: [] }),
+    safe(p.query(`select av.id, av.type::text as type, av.subject, av.content, to_char(av."createdAt",'DD Mon YYYY, HH24:MI') as at, au.name as author from "activities" av left join "users" au on au.id = av."userId" where av."companyId"=$1 and av."accountId"=$2 order by av."createdAt" desc limit 40`, [cid, id]), { rows: [] }),
     safe(p.query(`select id, contact_phone as phone, last_message_body as body, to_char(last_message_at,'DD Mon YYYY') as at from "whatsapp_conversations" where company_id=$1 and account_id=$2 order by last_message_at desc limit 5`, [cid, id]), { rows: [] }),
   ]);
   const custIds = (billing.rows as { id: string }[]).map((r) => r.id);
@@ -63,8 +63,10 @@ export async function PATCH(req: Request, { params }: { params: { id: string } }
     const own = await p.query(`select id from "accounts" where id=$1 and "companyId"=$2 limit 1`, [id, cid]);
     if (!own.rows[0]) return NextResponse.json({ error: "Not found" }, { status: 404 });
     if (typeof b.note === "string" && b.note.trim()) {
-      await p.query(`insert into "activities" (id,"companyId","accountId",type,subject,content,"userId","createdAt","updatedAt") values ($1,$2,$3,'NOTE'::"ActivityType",'Note',$4,$5,now(),now())`,
-        [newId("ac"), cid, id, b.note.trim(), session.userId]);
+      const T = ["NOTE","CALL","EMAIL","MEETING","FOLLOW_UP"].includes(String(b.activityType)) ? String(b.activityType) : "NOTE";
+      const subj = ({ NOTE: "Note", CALL: "Call logged", EMAIL: "Email logged", MEETING: "Meeting logged", FOLLOW_UP: "Follow-up" } as Record<string, string>)[T] || "Note";
+      await p.query(`insert into "activities" (id,"companyId","accountId",type,subject,content,"userId","createdAt","updatedAt") values ($1,$2,$3,$4::"ActivityType",$5,$6,$7,now(),now())`,
+        [newId("ac"), cid, id, T, subj, b.note.trim(), session.userId]);
       return NextResponse.json({ ok: true });
     }
     // create a contact attached to this company
