@@ -124,7 +124,7 @@ export default function ContactDetailPage({ params }: { params: { id: string } }
         </div>
       </Panel>
 
-      <div style={{ display: "grid", gridTemplateColumns: "minmax(0, 340px) minmax(0, 1fr)", gap: 16, alignItems: "start" }}>
+      <div style={{ display: "grid", gridTemplateColumns: "minmax(0, 1fr) minmax(0, 1fr)", gap: 16, alignItems: "start" }}>
         {/* left rail */}
         <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
           <Panel>
