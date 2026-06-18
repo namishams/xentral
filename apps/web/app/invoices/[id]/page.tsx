@@ -62,7 +62,7 @@ export default function InvoiceDetailPage({ params }: { params: { id: string } }
         actions={<div style={{ display: "flex", gap: 8, flexWrap: "wrap", alignItems: "center" }}>
           <AskAiButton label="Ask AI" seed={`Draft a polite payment reminder email for invoice ${inv.number} to ${inv.customer || "the customer"}. Outstanding balance ${aed(bal, inv.currency)}, due ${inv.due || "soon"}.`} />
           <Button onClick={() => { window.location.href = "/invoices/" + params.id + "/edit"; }}>Edit items</Button>
-          <Button onClick={openEdit}>Edit</Button>
+          <Button onClick={openEdit}>Status</Button>
           <Button onClick={openPdf}>Download PDF</Button>
           <Button onClick={copyLink}>Copy pay link</Button>
           <Button variant="primary" onClick={send} disabled={busy}>{busy ? "Sending…" : "Send to customer"}</Button>
@@ -159,7 +159,7 @@ export default function InvoiceDetailPage({ params }: { params: { id: string } }
         <div onClick={() => !busy && setEdit(null)} style={{ position: "fixed", inset: 0, background: "rgba(20,28,38,0.45)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 100, padding: 16 }}>
           <div onClick={(e) => e.stopPropagation()} style={{ width: "100%", maxWidth: 420, background: color.surface.card, borderRadius: 14, boxShadow: "0 24px 60px -16px rgba(20,28,38,0.4)", padding: 22 }}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
-              <h2 style={{ margin: 0, fontSize: 17, fontWeight: 700, color: color.ink.DEFAULT }}>Edit invoice</h2>
+              <h2 style={{ margin: 0, fontSize: 17, fontWeight: 700, color: color.ink.DEFAULT }}>Quick edit — status, date & note</h2>
               <button aria-label="Close" onClick={() => setEdit(null)} style={{ border: 0, background: "transparent", fontSize: 20, color: color.ink.soft, cursor: "pointer" }}>×</button>
             </div>
             <label style={lbl}>Status</label>
