@@ -25,8 +25,8 @@ export async function GET(_req: Request, { params }: { params: { id: string } })
   const cid = session.companyId; const id = params.id; const p = pool(url);
 
   const a = await safe(p.query(
-    `select id, name, industry, website, phone, email, city, country, description, "logoUrl"
-       from "accounts" where id=$1 and "companyId"=$2 limit 1`, [id, cid]), { rows: [] as Record<string, unknown>[] });
+    `select a.id, a.name, a.industry, a.website, a.phone, a.email, a.city, a.country, a.description, a."logoUrl", a."whatsApp" as "whatsApp", a."vatNumber" as "vatNumber", a."addressLine1" as "addressLine1", a.segment, a.employees, a."branchId" as "branchId", br.name as "branchName"
+       from "accounts" a left join "branches" br on br.id = a."branchId" where a.id=$1 and a."companyId"=$2 limit 1`, [id, cid]), { rows: [] as Record<string, unknown>[] });
   if (!a.rows[0]) return NextResponse.json({ error: "Not found" }, { status: 404 });
 
   const [contacts, leads, billing, activities, convos] = await Promise.all([
@@ -44,7 +44,8 @@ export async function GET(_req: Request, { params }: { params: { id: string } })
       safe(p.query(`select id, number, status::text as status, total, currency from "quotes" where "companyId"=$1 and "customerId"=any($2) order by "createdAt" desc limit 12`, [cid, custIds]), { rows: [] }),
     ]);
   }
-  return NextResponse.json({ account: a.rows[0], contacts: contacts.rows, deals: leads.rows, invoices: invoices.rows, quotes: quotes.rows, activities: activities.rows, conversations: convos.rows });
+  const branches = await safe(p.query(`select id, name from "branches" where "companyId"=$1 and "isActive"=true order by "isHQ" desc, name asc limit 200`, [cid]), { rows: [] });
+  return NextResponse.json({ account: a.rows[0], contacts: contacts.rows, deals: leads.rows, invoices: invoices.rows, quotes: quotes.rows, activities: activities.rows, conversations: convos.rows, branches: branches.rows });
 }
 
 /** Edit company/account fields, OR add a timeline note ({ note }). */
@@ -74,10 +75,11 @@ export async function PATCH(req: Request, { params }: { params: { id: string } }
       return NextResponse.json({ ok: true, contactId: ctId });
     }
     const sets: string[] = []; const vals: unknown[] = []; let i = 1;
-    for (const f of ["name", "industry", "website", "phone", "email", "city", "country", "description"]) if (f in b) {
+    for (const f of ["name", "industry", "website", "phone", "email", "city", "country", "description", "whatsApp", "vatNumber", "addressLine1", "segment", "branchId"]) if (f in b) {
       if (f === "name" && !String(b[f] ?? "").trim()) continue;
-      sets.push(`"${f}"=$${i}`); vals.push(s(b[f])); i++;
+      sets.push(`"${f}"=$${i}`); vals.push(f === "branchId" && !String(b[f] ?? "").trim() ? null : s(b[f])); i++;
     }
+    if ("employees" in b) { sets.push(`"employees"=$${i}`); vals.push(b.employees === "" || b.employees == null ? null : Number(b.employees) || null); i++; }
     if (!sets.length) return NextResponse.json({ error: "No editable fields" }, { status: 400 });
     sets.push(`"updatedAt"=now()`); vals.push(id, cid);
     await p.query(`update "accounts" set ${sets.join(", ")} where id=$${i} and "companyId"=$${i + 1}`, vals);

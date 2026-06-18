@@ -9,9 +9,9 @@ type Deal = { id: string; name: string; status: string; value: number | null; cu
 type Doc = { id: string; number: string; status: string; total: number; paid?: number; currency: string | null };
 type Act = { id: string; type: string; subject: string | null; content: string | null; at: string };
 type Convo = { id: string; phone: string; body: string | null; at: string };
-type Account = { id: string; name: string; industry: string | null; website: string | null; phone: string | null; email: string | null; city: string | null; country: string | null; description: string | null };
-type Payload = { account: Account; contacts: Contact[]; deals: Deal[]; invoices: Doc[]; quotes: Doc[]; activities: Act[]; conversations?: Convo[] };
-type CForm = { name: string; industry: string; website: string; email: string; phone: string; city: string; country: string; description: string };
+type Account = { id: string; name: string; industry: string | null; website: string | null; phone: string | null; email: string | null; city: string | null; country: string | null; description: string | null; whatsApp?: string | null; vatNumber?: string | null; addressLine1?: string | null; segment?: string | null; employees?: number | null; branchId?: string | null; branchName?: string | null };
+type Payload = { account: Account; contacts: Contact[]; deals: Deal[]; invoices: Doc[]; quotes: Doc[]; activities: Act[]; conversations?: Convo[]; branches?: { id: string; name: string }[] };
+type CForm = { name: string; industry: string; website: string; email: string; phone: string; city: string; country: string; description: string; whatsApp: string; vatNumber: string; addressLine1: string; segment: string; employees: string; branchId: string };
 
 const initials = (n: string) => n.split(" ").filter(Boolean).map((w) => w[0]).slice(0, 2).join("").toUpperCase() || "?";
 const aed = (v: number | null | undefined, c = "AED") => `${c} ${(Number(v) || 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
@@ -37,7 +37,7 @@ export default function CompanyDetailPage({ params }: { params: { id: string } }
     fetch(`/api/crm/account/${params.id}`).then((r) => r.json()).then((j) => {
       if (j.error) { setD(null); setLoading(false); return; }
       setD(j); const a = j.account;
-      const f: CForm = { name: a.name || "", industry: a.industry || "", website: a.website || "", email: a.email || "", phone: a.phone || "", city: a.city || "", country: a.country || "", description: a.description || "" };
+      const f: CForm = { name: a.name || "", industry: a.industry || "", website: a.website || "", email: a.email || "", phone: a.phone || "", city: a.city || "", country: a.country || "", description: a.description || "", whatsApp: a.whatsApp || "", vatNumber: a.vatNumber || "", addressLine1: a.addressLine1 || "", segment: a.segment || "", employees: a.employees != null ? String(a.employees) : "", branchId: a.branchId || "" };
       setForm(f); setClean(f); setLoading(false);
     }).catch(() => setLoading(false));
   }, [params.id]);
@@ -102,7 +102,7 @@ export default function CompanyDetailPage({ params }: { params: { id: string } }
       <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginBottom: 14 }}>
         {a.phone ? <a href={`tel:${a.phone}`} style={{ textDecoration: "none" }}><Button>☎ Call</Button></a> : null}
         {a.email ? <a href={`mailto:${a.email}`} style={{ textDecoration: "none" }}><Button>@ Email</Button></a> : null}
-        {a.phone ? <a href={`https://wa.me/${a.phone.replace(/[^\d]/g, "")}`} target="_blank" rel="noreferrer" style={{ textDecoration: "none" }}><Button>✆ WhatsApp</Button></a> : null}
+        {(a.whatsApp || a.phone) ? <a href={`https://wa.me/${(a.whatsApp || a.phone || "").replace(/[^\d]/g, "")}`} target="_blank" rel="noreferrer" style={{ textDecoration: "none" }}><Button>✆ WhatsApp</Button></a> : null}
         <AskAiButton variant="ghost" label="Draft outreach with AI" seed={`Draft a short outreach message to ${a.name}.`} />
       </div>
 
@@ -129,6 +129,16 @@ export default function CompanyDetailPage({ params }: { params: { id: string } }
                 <div><label style={labelS}>Website</label><input value={form.website} onChange={(e) => set("website", e.target.value)} style={fieldS} /></div>
                 <div><label style={labelS}>Email</label><input value={form.email} onChange={(e) => set("email", e.target.value)} style={fieldS} /></div>
                 <div><label style={labelS}>Phone</label><input value={form.phone} onChange={(e) => set("phone", e.target.value)} style={fieldS} /></div>
+                <div><label style={labelS}>WhatsApp</label><input value={form.whatsApp} onChange={(e) => set("whatsApp", e.target.value)} placeholder="+9715XXXXXXXX" style={fieldS} /></div>
+                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
+                  <div><label style={labelS}>VAT / TRN</label><input value={form.vatNumber} onChange={(e) => set("vatNumber", e.target.value)} style={fieldS} /></div>
+                  <div><label style={labelS}>Segment</label><input value={form.segment} onChange={(e) => set("segment", e.target.value)} placeholder="Enterprise / SMB / VIP" style={fieldS} /></div>
+                </div>
+                <div><label style={labelS}>Address</label><input value={form.addressLine1} onChange={(e) => set("addressLine1", e.target.value)} style={fieldS} /></div>
+                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
+                  <div><label style={labelS}>Employees</label><input value={form.employees} inputMode="numeric" onChange={(e) => set("employees", e.target.value)} style={fieldS} /></div>
+                  <div><label style={labelS}>Branch</label><select value={form.branchId} onChange={(e) => set("branchId", e.target.value)} style={fieldS}><option value="">— None —</option>{(d.branches || []).map((br) => <option key={br.id} value={br.id}>{br.name}</option>)}</select></div>
+                </div>
                 <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
                   <div><label style={labelS}>City</label><input value={form.city} onChange={(e) => set("city", e.target.value)} style={fieldS} /></div>
                   <div><label style={labelS}>Country</label><input value={form.country} onChange={(e) => set("country", e.target.value)} style={fieldS} /></div>
