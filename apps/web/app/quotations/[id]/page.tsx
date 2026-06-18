@@ -89,7 +89,7 @@ export default function QuoteDetailPage({ params }: { params: { id: string } }) 
         badge={<StatusBadge tone={expired ? "critical" : TONE[q.status] ?? "neutral"} label={expired ? "expired" : q.status.toLowerCase()} />}
         actions={<div style={{ display: "flex", gap: 8, flexWrap: "wrap", alignItems: "center" }}>
           <AskAiButton label="Ask AI" seed={`Write a friendly follow-up email for quote ${q.number} to ${q.customer || "the customer"} (total ${aed(q.total, q.currency)}), encouraging them to accept.`} />
-          <Button onClick={() => { window.location.href = "/quotations/" + params.id + "/edit"; }}>Edit items</Button>
+          <Button onClick={() => { window.location.href = "/quotations/" + params.id + "/edit"; }}>Edit</Button>
           <Button onClick={openEdit}>Status / notes</Button>
           <Button onClick={openPdf}>Download PDF</Button>
           <Button onClick={copyLink}>Copy link</Button>
@@ -133,7 +133,7 @@ export default function QuoteDetailPage({ params }: { params: { id: string } }) 
       <div style={{ display: "grid", gridTemplateColumns: "minmax(0,2fr) minmax(0,1fr)", gap: 16, alignItems: "start" }}>
         <Panel>
           <PanelHeader title="Line items" subtitle={`${lines.length} ${lines.length === 1 ? "item" : "items"}`}
-            actions={<Button onClick={() => { window.location.href = "/quotations/" + params.id + "/edit"; }}>Edit items</Button>} />
+            actions={<Button onClick={() => { window.location.href = "/quotations/" + params.id + "/edit"; }}>Edit</Button>} />
           <PanelBody flush>
             <table style={{ width: "100%", borderCollapse: "collapse" }}>
               <thead><tr>

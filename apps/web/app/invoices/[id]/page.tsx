@@ -84,7 +84,7 @@ export default function InvoiceDetailPage({ params }: { params: { id: string } }
         badge={<StatusBadge tone={TONE[inv.status] ?? "neutral"} label={inv.status.replace("_", " ").toLowerCase()} />}
         actions={<div style={{ display: "flex", gap: 8, flexWrap: "wrap", alignItems: "center" }}>
           <AskAiButton label="Ask AI" seed={`Draft a polite payment reminder email for invoice ${inv.number} to ${inv.customer || "the customer"}. Outstanding balance ${aed(bal, inv.currency)}, due ${inv.due || "soon"}.`} />
-          <Button onClick={() => { window.location.href = "/invoices/" + params.id + "/edit"; }}>Edit items</Button>
+          <Button onClick={() => { window.location.href = "/invoices/" + params.id + "/edit"; }}>Edit</Button>
           <Button onClick={openEdit}>Status</Button>
           <Button onClick={openPdf}>Download PDF</Button>
           <Button onClick={duplicate} disabled={busy === "dup"}>{busy === "dup" ? "Duplicating…" : "Duplicate"}</Button>
@@ -123,7 +123,7 @@ export default function InvoiceDetailPage({ params }: { params: { id: string } }
       <div style={{ display: "grid", gridTemplateColumns: "minmax(0,2fr) minmax(0,1fr)", gap: 16, alignItems: "start" }}>
         <Panel>
           <PanelHeader title="Line items" subtitle={`${lines.length} ${lines.length === 1 ? "item" : "items"}`}
-            actions={<Button onClick={() => { window.location.href = "/invoices/" + params.id + "/edit"; }}>Edit items</Button>} />
+            actions={<Button onClick={() => { window.location.href = "/invoices/" + params.id + "/edit"; }}>Edit</Button>} />
           <PanelBody flush>
             <table style={{ width: "100%", borderCollapse: "collapse" }}>
               <thead><tr>
