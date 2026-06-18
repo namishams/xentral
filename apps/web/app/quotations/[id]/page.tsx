@@ -2,6 +2,7 @@
 
 import * as React from "react";
 import { color } from "@xentral/config";
+import { SendComposer } from "../../../components/send-composer";
 import { AppShell, PageTitleRow, Button, StatusBadge, type BadgeTone, Panel, PanelHeader, PanelBody, FactStrip, AskAiButton } from "@xentral/ui";
 import { AttachmentsPanel } from "../../../components/attachments-panel";
 import { DocTimeline } from "../../../components/doc-timeline";
@@ -18,6 +19,7 @@ export default function QuoteDetailPage({ params }: { params: { id: string } }) 
   const [loading, setLoading] = React.useState(true);
   const [busy, setBusy] = React.useState<string | null>(null);
   const [toast, setToast] = React.useState("");
+  const [sendOpen, setSendOpen] = React.useState(false);
   const [edit, setEdit] = React.useState<{ status: string; validUntil: string; notes: string } | null>(null);
 
   const load = React.useCallback(() => {
@@ -27,14 +29,7 @@ export default function QuoteDetailPage({ params }: { params: { id: string } }) 
 
   const viewUrl = q && typeof window !== "undefined" ? `${window.location.origin}/q/${q.token}` : "";
 
-  async function send() {
-    setBusy("send"); setToast("");
-    try {
-      const res = await fetch(`/api/books/quotes/${params.id}/send`, { method: "POST" });
-      const d = await res.json();
-      if (res.ok) { setToast(`Sent to ${d.to}`); load(); } else setToast(d.error || "Could not send");
-    } catch { setToast("Network error"); } finally { setBusy(null); }
-  }
+  function send() { setSendOpen(true); }
   function copyLink() { navigator.clipboard?.writeText(viewUrl).then(() => setToast("Quote link copied")); }
   function openPdf() { window.open(`/api/books/quotes/${params.id}/pdf`, "_blank"); }
   function openEdit() { if (q) setEdit({ status: q.status, validUntil: q.validRaw || "", notes: q.notes || "" }); }
@@ -211,7 +206,8 @@ export default function QuoteDetailPage({ params }: { params: { id: string } }) 
           </div>
         </div>
       ) : null}
-    </AppShell>
+    {sendOpen && q ? <SendComposer kind="quote" id={params.id} docNumber={q.number} onClose={() => setSendOpen(false)} onSent={(t) => { setToast(`Sent to ${t}`); load(); }} /> : null}
+      </AppShell>
   );
 }
 

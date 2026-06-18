@@ -2,6 +2,7 @@
 
 import * as React from "react";
 import { color } from "@xentral/config";
+import { SendComposer } from "../../../components/send-composer";
 import { AppShell, PageTitleRow, Button, StatusBadge, type BadgeTone, Panel, PanelHeader, PanelBody, FactStrip, AskAiButton } from "@xentral/ui";
 import { DocTimeline } from "../../../components/doc-timeline";
 
@@ -19,6 +20,7 @@ export default function InvoiceDetailPage({ params }: { params: { id: string } }
   const [loading, setLoading] = React.useState(true);
   const [busy, setBusy] = React.useState<string | null>(null);
   const [toast, setToast] = React.useState("");
+  const [sendOpen, setSendOpen] = React.useState(false);
   const [edit, setEdit] = React.useState<{ status: string; dueDate: string; notes: string } | null>(null);
   const [pay, setPay] = React.useState<{ amount: string; method: string; reference: string; paidAt: string } | null>(null);
 
@@ -30,11 +32,7 @@ export default function InvoiceDetailPage({ params }: { params: { id: string } }
   const payUrl = typeof window !== "undefined" ? `${window.location.origin}/pay/${params.id}` : "";
   const bal = inv ? Math.max(0, (inv.total || 0) - (inv.amountPaid || 0)) : 0;
 
-  async function send() {
-    setBusy("send"); setToast("");
-    try { const res = await fetch(`/api/books/invoices/${params.id}/send`, { method: "POST" }); const d = await res.json(); if (res.ok) { setToast(`Sent to ${d.to}`); load(); } else setToast(d.error || "Could not send"); }
-    catch { setToast("Network error"); } finally { setBusy(null); }
-  }
+  function send() { setSendOpen(true); }
   function copyLink() { navigator.clipboard?.writeText(payUrl).then(() => setToast("Pay link copied")); }
   function openPdf() { window.open(`/api/books/invoices/${params.id}/pdf`, "_blank"); }
   function openEdit() { if (inv) setEdit({ status: inv.status, dueDate: inv.dueDateRaw || "", notes: inv.notes || "" }); }
@@ -237,7 +235,8 @@ export default function InvoiceDetailPage({ params }: { params: { id: string } }
           </div>
         </div>
       ) : null}
-    </AppShell>
+    {sendOpen && inv ? <SendComposer kind="invoice" id={params.id} docNumber={inv.number} onClose={() => setSendOpen(false)} onSent={(t) => { setToast(`Sent to ${t}`); load(); }} /> : null}
+      </AppShell>
   );
 }
 

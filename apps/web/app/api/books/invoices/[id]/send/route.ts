@@ -31,6 +31,22 @@ async function smtp(p: Pool, companyId: string) {
   return null;
 }
 
+export async function GET(_req: Request, { params }: { params: { id: string } }) {
+  const url = process.env.DATABASE_URL;
+  if (process.env.XENTRAL_LIVE_DATA !== "1" || !url) return NextResponse.json({ error: "Unavailable" }, { status: 503 });
+  const session = await resolveSession();
+  if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  const p = pool(url);
+  try {
+    const r = await p.query(`select d.number, bc.name as customer, bc.email as email from "invoices" d left join "billing_customers" bc on bc.id = d."customerId" where d.id = $1 and d."companyId" = $2`, [params.id, session.companyId]);
+    const doc = r.rows[0]; if (!doc) return NextResponse.json({ error: "Not found" }, { status: 404 });
+    const company = (await p.query(`select name from "companies" where id = $1 limit 1`, [session.companyId])).rows[0] || { name: "Xentral" };
+    const subject = "Invoice " + doc.number + " from " + company.name;
+    const message = "Dear " + (doc.customer || "customer") + ",\n\nPlease find your invoice " + doc.number + " attached. You can pay securely using the button in the email.\n\nThank you.";
+    return NextResponse.json({ to: doc.email || "", customer: doc.customer || "", hasEmail: !!doc.email, subject, message });
+  } catch (e) { return NextResponse.json({ error: (e as Error).message || "Error" }, { status: 500 }); }
+}
+
 export async function POST(req: Request, { params }: { params: { id: string } }) {
   const url = process.env.DATABASE_URL;
   if (process.env.XENTRAL_LIVE_DATA !== "1" || !url) return NextResponse.json({ error: "Live data not enabled" }, { status: 503 });
@@ -56,10 +72,20 @@ export async function POST(req: Request, { params }: { params: { id: string } })
     company = (await p.query(`select name from "companies" where id = $1 limit 1`, [session.companyId])).rows[0] || { name: "Xentral" };
   } catch { return NextResponse.json({ error: "Lookup failed" }, { status: 500 }); }
   if (!inv) return NextResponse.json({ error: "Invoice not found" }, { status: 404 });
-  if (!inv.email || !/.+@.+\..+/.test(inv.email)) return NextResponse.json({ error: "Customer has no email address. Add one on the customer first." }, { status: 400 });
+  // recipient validated after override parse
 
   const cfg = await smtp(p, session.companyId);
   if (!cfg) return NextResponse.json({ error: "No mailbox configured (Settings → Email)." }, { status: 400 });
+  const __ov = await req.json().catch(() => ({} as Record<string, unknown>));
+  const toAddr = (typeof __ov.to === "string" && __ov.to.trim()) ? __ov.to.trim() : (inv.email || "");
+  if (!toAddr || !/.+@.+\..+/.test(toAddr)) return NextResponse.json({ error: "No recipient email — add one on the customer or in the To field." }, { status: 400 });
+  const ccAddr = (typeof __ov.cc === "string" && __ov.cc.trim()) ? __ov.cc.trim() : "";
+  const bccAddr = (typeof __ov.bcc === "string" && __ov.bcc.trim()) ? __ov.bcc.trim() : "";
+  const sendCopy = __ov.sendCopy === true || __ov.sendCopy === "true";
+  const customMsg = (typeof __ov.message === "string" && __ov.message.trim()) ? String(__ov.message) : "";
+  const subjectFinal = (typeof __ov.subject === "string" && __ov.subject.trim()) ? __ov.subject.trim() : ("Invoice " + inv.number + " from " + (company.name || "Xentral"));
+  const __esc = (x: string) => x.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/\n/g, "<br/>");
+  const introHtml = customMsg ? ('<p style="font-size:14px;color:#1d2733;white-space:pre-wrap">' + __esc(customMsg) + '</p>') : ('<p style="font-size:15px">Dear ' + (inv.customer || "customer") + ',</p>' + '<p style="font-size:14px;color:#5b6b7b">Please find your invoice <b>' + inv.number + '</b>' + (inv.due ? (" due on " + inv.due) : "") + '. The PDF is attached.</p>');
 
   const accent = (settings.templateConfig && (settings.templateConfig.accent || settings.templateConfig.accentColor)) || "#0064d9";
   const merchant = settings.legalName || cfg.fromName || "Xentral";
@@ -67,8 +93,8 @@ export async function POST(req: Request, { params }: { params: { id: string } })
   const subject = `Invoice ${inv.number} from ${merchant}`;
   const html = `<div style="font-family:Inter,Arial,sans-serif;max-width:520px;margin:0 auto;color:#1d2733">
     ${settings.logoUrl ? `<img src="${settings.logoUrl}" alt="${merchant}" style="height:38px;margin-bottom:12px"/>` : `<div style="font-size:20px;font-weight:800;color:${accent};margin-bottom:12px">${merchant}</div>`}
-    <p style="font-size:15px">Dear ${inv.customer || "customer"},</p>
-    <p style="font-size:14px;color:#5b6b7b">Please find your invoice <b>${inv.number}</b>${inv.due ? ` due on ${inv.due}` : ""}. The PDF is attached.</p>
+    ${introHtml}
+
     <div style="background:#f6f9fb;border:1px solid #e4e9ef;border-radius:12px;padding:18px;margin:16px 0">
       <div style="font-size:13px;color:#5b6b7b">Amount due</div>
       <div style="font-size:30px;font-weight:800;color:${accent}">${total}</div>
@@ -95,12 +121,12 @@ export async function POST(req: Request, { params }: { params: { id: string } })
   let status = "SENT"; let error: string | null = null;
   try {
     const t = nodemailer.createTransport({ host: cfg.host, port: cfg.port, secure: cfg.secure, auth: { user: cfg.user, pass: cfg.pass } });
-    await t.sendMail({ from: cfg.fromName ? `${cfg.fromName} <${cfg.from}>` : cfg.from, to: inv.email, subject, html, attachments });
+    await t.sendMail({ from: cfg.fromName ? `${cfg.fromName} <${cfg.from}>` : cfg.from, to: toAddr, cc: ([ccAddr, sendCopy ? cfg.from : ""].filter(Boolean) as string[]), bcc: bccAddr || undefined, subject: subjectFinal, html, attachments });
   } catch (e) { status = "FAILED"; error = e instanceof Error ? e.message.slice(0, 200) : "send error"; }
 
-  try { await p.query(`insert into "email_messages" (id,"companyId",subject,body,"fromEmail","toEmail","toName",status,error,"sentAt","createdAt") values ($1,$2,$3,$4,$5,$6,$7,$8,$9,now(),now())`, [newId(), session.companyId, subject, html, cfg.from, inv.email, inv.customer || null, status, error]); } catch { /* best effort */ }
+  try { await p.query(`insert into "email_messages" (id,"companyId",subject,body,"fromEmail","toEmail","toName",status,error,"sentAt","createdAt") values ($1,$2,$3,$4,$5,$6,$7,$8,$9,now(),now())`, [newId(), session.companyId, subjectFinal, html, cfg.from, toAddr, inv.customer || null, status, error]); } catch { /* best effort */ }
 
   if (status === "FAILED") return NextResponse.json({ error: "Could not send: " + error }, { status: 502 });
   try { if (inv.status === "DRAFT") await p.query(`update "invoices" set status='SENT'::"InvoiceStatus", "sentAt"=now(), "updatedAt"=now() where id=$1 and "companyId"=$2`, [params.id, session.companyId]); } catch { /* status best effort */ }
-  return NextResponse.json({ ok: true, to: inv.email });
+  return NextResponse.json({ ok: true, to: toAddr });
 }
