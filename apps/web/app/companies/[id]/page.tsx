@@ -41,11 +41,12 @@ export default function CompanyDetailPage({ params }: { params: { id: string } }
   async function patch(body: Record<string, unknown>) { setBusy(true); try { const r = await fetch(`/api/crm/account/${params.id}`, { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) }); if (r.ok) load(); return r.ok; } finally { setBusy(false); } }
   async function saveForm() { if (!form) return; const ok = await patch(form); if (ok) { setClean(form); setSaved(true); setTimeout(() => setSaved(false), 2000); } }
   async function addNote() { const t = note.trim(); if (!t) return; const ok = await patch({ note: t }); if (ok) setNote(""); }
-  async function addContact() {
-    const name = window.prompt("Contact name (First Last):"); if (!name || !name.trim()) return;
-    const parts = name.trim().split(/\s+/);
-    const email = window.prompt("Email (optional):") || "";
-    await patch({ contactFirstName: parts[0], contactLastName: parts.slice(1).join(" "), contactEmail: email });
+  const [adding, setAdding] = React.useState(false);
+  const [nc, setNc] = React.useState({ first: "", last: "", email: "", title: "" });
+  async function submitContact() {
+    if (!nc.first.trim()) return;
+    const ok = await patch({ contactFirstName: nc.first.trim(), contactLastName: nc.last.trim(), contactEmail: nc.email.trim(), contactTitle: nc.title.trim() });
+    if (ok) { setNc({ first: "", last: "", email: "", title: "" }); setAdding(false); }
   }
   const fieldS: React.CSSProperties = { width: "100%", boxSizing: "border-box", height: 34, border: `1px solid var(--line-strong)`, borderRadius: 8, padding: "0 10px", fontSize: 13, color: "var(--ink)", background: "var(--surface-card)", outline: "none" };
   const labelS: React.CSSProperties = { display: "block", fontSize: 10.5, fontWeight: 700, letterSpacing: 0.3, color: "var(--ink-soft)", textTransform: "uppercase", marginBottom: 4 };
@@ -121,9 +122,23 @@ export default function CompanyDetailPage({ params }: { params: { id: string } }
             </PanelBody>
           </Panel>
           <Panel>
-            <PanelHeader title="Contacts" subtitle={`${d.contacts.length}`} actions={<Button onClick={addContact} disabled={busy}>+ Add</Button>} />
+            <PanelHeader title="Contacts" subtitle={`${d.contacts.length}`} actions={<Button onClick={() => setAdding((v) => !v)}>{adding ? "Close" : "+ Add"}</Button>} />
             <PanelBody flush>
-              {d.contacts.length === 0 ? <div style={{ padding: 16, textAlign: "center", fontSize: 12.5, color: color.ink.soft }}>No contacts linked. Use “+ Add” to create one.</div>
+              {adding ? (
+                <div style={{ padding: "12px 14px", borderBottom: `1px solid ${color.line.DEFAULT}`, background: color.surface.page, display: "flex", flexDirection: "column", gap: 8 }}>
+                  <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
+                    <input autoFocus value={nc.first} onChange={(e) => setNc({ ...nc, first: e.target.value })} placeholder="First name *" style={{ height: 32, border: `1px solid ${color.line.strong}`, borderRadius: 8, padding: "0 10px", fontSize: 12.5, color: color.ink.DEFAULT, background: color.surface.card, outline: "none" }} />
+                    <input value={nc.last} onChange={(e) => setNc({ ...nc, last: e.target.value })} placeholder="Last name" style={{ height: 32, border: `1px solid ${color.line.strong}`, borderRadius: 8, padding: "0 10px", fontSize: 12.5, color: color.ink.DEFAULT, background: color.surface.card, outline: "none" }} />
+                  </div>
+                  <input value={nc.title} onChange={(e) => setNc({ ...nc, title: e.target.value })} placeholder="Title (optional)" style={{ height: 32, border: `1px solid ${color.line.strong}`, borderRadius: 8, padding: "0 10px", fontSize: 12.5, color: color.ink.DEFAULT, background: color.surface.card, outline: "none" }} />
+                  <input value={nc.email} onChange={(e) => setNc({ ...nc, email: e.target.value })} onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); submitContact(); } }} placeholder="Email (optional)" style={{ height: 32, border: `1px solid ${color.line.strong}`, borderRadius: 8, padding: "0 10px", fontSize: 12.5, color: color.ink.DEFAULT, background: color.surface.card, outline: "none" }} />
+                  <div style={{ display: "flex", justifyContent: "flex-end", gap: 8 }}>
+                    <Button onClick={() => setAdding(false)} disabled={busy}>Cancel</Button>
+                    <Button variant="primary" onClick={submitContact} disabled={busy || !nc.first.trim()}>{busy ? "Saving…" : "Add contact"}</Button>
+                  </div>
+                </div>
+              ) : null}
+              {d.contacts.length === 0 && !adding ? <div style={{ padding: 16, textAlign: "center", fontSize: 12.5, color: color.ink.soft }}>No contacts linked. Use “+ Add” to create one.</div>
                 : d.contacts.map((p) => (
                   <a key={p.id} href={`/contacts/${p.id}`} className="xui-row-link" style={linkRow}>
                     <span style={{ width: 28, height: 28, borderRadius: "50%", background: color.brand.primaryTint, color: color.brand.primary, fontSize: 11, fontWeight: 700, display: "inline-flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>{initials(p.name)}</span>
