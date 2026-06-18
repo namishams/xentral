@@ -8,8 +8,9 @@ type Contact = { id: string; name: string; title: string | null; email: string |
 type Deal = { id: string; name: string; status: string; value: number | null; currency: string | null };
 type Doc = { id: string; number: string; status: string; total: number; paid?: number; currency: string | null };
 type Act = { id: string; type: string; subject: string | null; content: string | null; at: string };
+type Convo = { id: string; phone: string; body: string | null; at: string };
 type Account = { id: string; name: string; industry: string | null; website: string | null; phone: string | null; email: string | null; city: string | null; country: string | null; description: string | null };
-type Payload = { account: Account; contacts: Contact[]; deals: Deal[]; invoices: Doc[]; quotes: Doc[]; activities: Act[] };
+type Payload = { account: Account; contacts: Contact[]; deals: Deal[]; invoices: Doc[]; quotes: Doc[]; activities: Act[]; conversations?: Convo[] };
 type CForm = { name: string; industry: string; website: string; email: string; phone: string; city: string; country: string; description: string };
 
 const initials = (n: string) => n.split(" ").filter(Boolean).map((w) => w[0]).slice(0, 2).join("").toUpperCase() || "?";
@@ -87,6 +88,14 @@ export default function CompanyDetailPage({ params }: { params: { id: string } }
           <AskAiButton label="Ask AI" seed={`Summarise the relationship with ${a.name} and suggest the next best action.`} />
           {a.website ? <a href={a.website.startsWith("http") ? a.website : `https://${a.website}`} target="_blank" rel="noreferrer" style={{ textDecoration: "none" }}><Button>Website</Button></a> : null}
         </div>
+      </div>
+
+      {/* Quick actions */}
+      <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginBottom: 14 }}>
+        {a.phone ? <a href={`tel:${a.phone}`} style={{ textDecoration: "none" }}><Button>☎ Call</Button></a> : null}
+        {a.email ? <a href={`mailto:${a.email}`} style={{ textDecoration: "none" }}><Button>@ Email</Button></a> : null}
+        {a.phone ? <a href={`https://wa.me/${a.phone.replace(/[^\d]/g, "")}`} target="_blank" rel="noreferrer" style={{ textDecoration: "none" }}><Button>✆ WhatsApp</Button></a> : null}
+        <AskAiButton variant="ghost" label="Draft outreach with AI" seed={`Draft a short outreach message to ${a.name}.`} />
       </div>
 
       {/* Metrics tiles */}
@@ -181,6 +190,15 @@ export default function CompanyDetailPage({ params }: { params: { id: string } }
               </PanelBody>
             </Panel>
           </div>
+
+          {d.conversations && d.conversations.length > 0 ? (
+            <Panel>
+              <PanelHeader title="WhatsApp conversations" actions={<a href="/inbox" style={{ fontSize: 12, color: color.brand.primary, textDecoration: "none" }}>Open inbox</a>} />
+              <PanelBody flush>
+                {d.conversations.map((cv) => <div key={cv.id} style={{ padding: "9px 16px", borderBottom: `1px solid ${color.line.DEFAULT}` }}><div style={{ fontSize: 12.5, fontWeight: 500 }}>{cv.phone} <span style={{ color: color.ink.soft, fontWeight: 400 }}>· {cv.at}</span></div>{cv.body ? <div style={{ fontSize: 11.5, color: color.ink.soft, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{cv.body}</div> : null}</div>)}
+              </PanelBody>
+            </Panel>
+          ) : null}
 
           <Panel>
             <PanelHeader title="Timeline" subtitle="Everything across contacts, leads and billing" />

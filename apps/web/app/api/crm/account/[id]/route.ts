@@ -29,11 +29,12 @@ export async function GET(_req: Request, { params }: { params: { id: string } })
        from "accounts" where id=$1 and "companyId"=$2 limit 1`, [id, cid]), { rows: [] as Record<string, unknown>[] });
   if (!a.rows[0]) return NextResponse.json({ error: "Not found" }, { status: 404 });
 
-  const [contacts, leads, billing, activities] = await Promise.all([
+  const [contacts, leads, billing, activities, convos] = await Promise.all([
     safe(p.query(`select id, coalesce("firstName",'')||' '||coalesce("lastName",'') as name, title, email, phone from "contacts" where "companyId"=$1 and "accountId"=$2 order by "updatedAt" desc limit 50`, [cid, id]), { rows: [] }),
     safe(p.query(`select id, coalesce("firstName",'')||' '||coalesce("lastName",'') as name, status::text as status, value, currency from "leads" where "companyId"=$1 and "accountId"=$2 order by "updatedAt" desc limit 12`, [cid, id]), { rows: [] }),
     safe(p.query(`select id from "billing_customers" where "companyId"=$1 and "accountId"=$2`, [cid, id]), { rows: [] as { id: string }[] }),
     safe(p.query(`select id, type, subject, content, to_char("createdAt",'DD Mon YYYY, HH24:MI') as at from "activities" where "companyId"=$1 and "accountId"=$2 order by "createdAt" desc limit 25`, [cid, id]), { rows: [] }),
+    safe(p.query(`select id, contact_phone as phone, last_message_body as body, to_char(last_message_at,'DD Mon YYYY') as at from "whatsapp_conversations" where company_id=$1 and account_id=$2 order by last_message_at desc limit 5`, [cid, id]), { rows: [] }),
   ]);
   const custIds = (billing.rows as { id: string }[]).map((r) => r.id);
   let invoices = { rows: [] as Record<string, unknown>[] }, quotes = { rows: [] as Record<string, unknown>[] };
@@ -43,7 +44,7 @@ export async function GET(_req: Request, { params }: { params: { id: string } })
       safe(p.query(`select id, number, status::text as status, total, currency from "quotes" where "companyId"=$1 and "customerId"=any($2) order by "createdAt" desc limit 12`, [cid, custIds]), { rows: [] }),
     ]);
   }
-  return NextResponse.json({ account: a.rows[0], contacts: contacts.rows, deals: leads.rows, invoices: invoices.rows, quotes: quotes.rows, activities: activities.rows });
+  return NextResponse.json({ account: a.rows[0], contacts: contacts.rows, deals: leads.rows, invoices: invoices.rows, quotes: quotes.rows, activities: activities.rows, conversations: convos.rows });
 }
 
 /** Edit company/account fields, OR add a timeline note ({ note }). */
