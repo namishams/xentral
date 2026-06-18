@@ -20,8 +20,12 @@ const newId = (pf: string) => pf + Date.now().toString(36) + Math.random().toStr
 async function resolveKey(url: string, companyId: string): Promise<{ key: string; model: string } | null> {
   const envKey = process.env.OPENAI_API_KEY && process.env.OPENAI_API_KEY.startsWith("sk-") ? process.env.OPENAI_API_KEY : "";
   try {
+    // Prefer the operator's own configured key, else ANY active platform OpenAI key
+    // (the env var can be stale, so a live DB key wins over it).
     const { rows } = await pool(url).query(
-      `select "apiKey", "defaultModel" from "ai_providers" where "companyId" = $1 and provider = 'openai' and "isActive" = true and "apiKey" is not null order by "updatedAt" desc limit 1`, [companyId]);
+      `select "apiKey", "defaultModel" from "ai_providers"
+        where provider = 'openai' and "isActive" = true and "apiKey" is not null
+        order by ("companyId" = $1) desc, "updatedAt" desc limit 1`, [companyId]);
     const dbKey = rows[0]?.apiKey && String(rows[0].apiKey).startsWith("sk-") ? String(rows[0].apiKey) : "";
     const key = dbKey || envKey;
     if (!key) return null;
