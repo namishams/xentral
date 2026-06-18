@@ -1,3 +1,5 @@
+"use client";
+
 import { XentralMark } from "./xentral-mark";
 import { HeaderSearch, HeaderTools, HeaderAvatar } from "./header-menu";
 import * as React from "react";
@@ -148,6 +150,8 @@ export function GlobalHeader({ right }: { right?: React.ReactNode }) {
 
 /** Sidebar — brand + workspace header, then lifecycle-grouped nav. */
 export function Sidebar({ active }: { active?: string }) {
+  const [superAdmin, setSuperAdmin] = React.useState(false);
+  React.useEffect(() => { fetch("/api/me").then((r) => r.json()).then((j) => setSuperAdmin(!!j.superAdmin)).catch(() => {}); }, []);
   return (
     <nav style={{ width: SIDEBAR_WIDTH, flexShrink: 0, background: color.surface.card, borderRight: `1px solid ${color.line.DEFAULT}`, display: "flex", flexDirection: "column", overflowY: "auto" }}>
       <div style={{ padding: "14px 14px 12px", borderBottom: `1px solid ${color.line.DEFAULT}` }}>
@@ -167,7 +171,7 @@ export function Sidebar({ active }: { active?: string }) {
         {NAV.map((section) => (
           <div key={section.group} style={{ display: "flex", flexDirection: "column", gap: 2, marginTop: 6 }}>
             <div style={{ fontSize: 10.5, fontWeight: 700, letterSpacing: 0.8, textTransform: "uppercase", color: color.ink.soft, padding: "6px 12px 4px" }}>{section.group}</div>
-            {section.items.map((n) => {
+            {section.items.filter((n) => n.id !== "admin" || superAdmin).map((n) => {
               const on = n.id === active;
               return (
                 <a key={n.id} href={n.href} style={{ display: "flex", alignItems: "center", gap: 10, height: 34, padding: "0 12px", borderRadius: 8, textDecoration: "none", fontSize: 13, fontWeight: on ? 600 : 500, color: on ? color.brand.primary : color.ink.mid, background: on ? color.brand.primaryTint : "transparent" }}>

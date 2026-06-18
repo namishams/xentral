@@ -2,56 +2,64 @@
 
 import * as React from "react";
 import { color } from "@xentral/config";
-import { AppShell, PageTitleRow, Button, KPICard, DataTable, StatusBadge, type Column, type BadgeTone } from "@xentral/ui";
-import { listTenants, getSaasMetrics, listDisputes, listQuestions, listAnnouncements, type TenantRow, type DisputeRow, type QuestionRow, type AnnouncementRow } from "@xentral/module-platform";
+import { AppShell, PageTitleRow, KPICard, DataTable, Button, EmptyState, type Column } from "@xentral/ui";
 
-const aed = (n: number) => `AED ${n.toLocaleString()}`;
-const T_TONE: Record<string, BadgeTone> = { active: "positive", trial: "info", suspended: "critical" };
-const D_TONE: Record<string, BadgeTone> = { open: "warning", escalated: "critical", resolved: "positive" };
-const Q_TONE: Record<string, BadgeTone> = { open: "warning", answered: "positive" };
-const A_TONE: Record<string, BadgeTone> = { published: "positive", draft: "neutral" };
+type Tenant = { id: string; name: string; credits: number; users: number; contacts: number; joined: string };
+type Supply = { listed: number; available: number; purchases: number; value: number };
+type Totals = { tenants: number; users: number; credits: number };
 
-const TABS = ["Overview", "Companies", "SaaS", "Disputes", "Questions", "Announcements"] as const;
+const aed = (n: number) => `AED ${(Number(n) || 0).toLocaleString()}`;
+const TABS = ["Overview", "Tenants", "Marketplace supply"] as const;
 
 export default function AdminPage() {
   const [tab, setTab] = React.useState<(typeof TABS)[number]>("Overview");
-  const m = getSaasMetrics();
-  const tenants = listTenants();
-  const disputes = listDisputes();
-  const questions = listQuestions();
-  const anns = listAnnouncements();
+  const [tenants, setTenants] = React.useState<Tenant[]>([]);
+  const [supply, setSupply] = React.useState<Supply>({ listed: 0, available: 0, purchases: 0, value: 0 });
+  const [totals, setTotals] = React.useState<Totals>({ tenants: 0, users: 0, credits: 0 });
+  const [loading, setLoading] = React.useState(true);
+  const [busy, setBusy] = React.useState(false);
 
-  const tenantCols: Column<TenantRow>[] = [
-    { key: "name", header: "Company", render: (r) => <span style={{ fontWeight: 600, color: color.ink.DEFAULT }}>{r.name}</span> },
-    { key: "plan", header: "Plan", width: 120, render: (r) => <StatusBadge tone="info" label={r.plan} /> },
-    { key: "users", header: "Users", width: 80, align: "right", render: (r) => <span style={{ color: color.ink.mid }}>{r.users}</span> },
-    { key: "mrr", header: "MRR", width: 110, align: "right", render: (r) => <span style={{ fontWeight: 600 }}>{aed(r.mrr)}</span> },
-    { key: "status", header: "Status", width: 120, render: (r) => <StatusBadge tone={T_TONE[r.status]} label={r.status} /> },
-    { key: "joined", header: "Joined", width: 110, align: "right", render: (r) => <span style={{ color: color.ink.soft }}>{r.joined}</span> },
-  ];
-  const dCols: Column<DisputeRow>[] = [
-    { key: "tenant", header: "Company", render: (r) => <span style={{ fontWeight: 600, color: color.ink.DEFAULT }}>{r.tenant}</span> },
-    { key: "subject", header: "Subject", render: (r) => <span style={{ color: color.ink.mid }}>{r.subject}</span> },
-    { key: "amount", header: "Amount", width: 110, align: "right", render: (r) => <span style={{ fontWeight: 600 }}>{aed(r.amount)}</span> },
-    { key: "status", header: "Status", width: 120, render: (r) => <StatusBadge tone={D_TONE[r.status]} label={r.status} /> },
-    { key: "age", header: "Age", width: 70, align: "right", render: (r) => <span style={{ color: color.ink.soft }}>{r.age}</span> },
-  ];
-  const qCols: Column<QuestionRow>[] = [
-    { key: "tenant", header: "Company", width: 160, render: (r) => <span style={{ fontWeight: 600, color: color.ink.DEFAULT }}>{r.tenant}</span> },
-    { key: "question", header: "Question", render: (r) => <span style={{ color: color.ink.mid }}>{r.question}</span> },
-    { key: "status", header: "Status", width: 120, render: (r) => <StatusBadge tone={Q_TONE[r.status]} label={r.status} /> },
-    { key: "age", header: "Age", width: 70, align: "right", render: (r) => <span style={{ color: color.ink.soft }}>{r.age}</span> },
-  ];
-  const aCols: Column<AnnouncementRow>[] = [
-    { key: "title", header: "Announcement", render: (r) => <span style={{ fontWeight: 600, color: color.ink.DEFAULT }}>{r.title}</span> },
-    { key: "audience", header: "Audience", width: 200, render: (r) => <span style={{ color: color.ink.mid }}>{r.audience}</span> },
-    { key: "status", header: "Status", width: 120, render: (r) => <StatusBadge tone={A_TONE[r.status]} label={r.status} /> },
-    { key: "date", header: "Date", width: 90, align: "right", render: (r) => <span style={{ color: color.ink.soft }}>{r.date}</span> },
+  const load = React.useCallback(() => {
+    setLoading(true);
+    fetch("/api/admin/overview").then((r) => r.json()).then((j) => {
+      setTenants(j.tenants ?? []); setSupply(j.supply ?? { listed: 0, available: 0, purchases: 0, value: 0 });
+      setTotals(j.totals ?? { tenants: 0, users: 0, credits: 0 }); setLoading(false);
+    }).catch(() => setLoading(false));
+  }, []);
+  React.useEffect(() => { load(); }, [load]);
+
+  async function grant(t: Tenant) {
+    const raw = window.prompt(`Adjust credits for ${t.name} (current ${t.credits}).\nEnter a positive number to grant, negative to deduct:`, "100");
+    if (raw == null) return;
+    const delta = Number(raw.replace(/[^\d.-]/g, ""));
+    if (!Number.isFinite(delta) || delta === 0) return;
+    setBusy(true);
+    try {
+      const r = await fetch("/api/admin/credits", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ companyId: t.id, delta }) });
+      const j = await r.json().catch(() => ({}));
+      if (r.ok) load(); else window.alert(j.error || "Could not adjust credits");
+    } finally { setBusy(false); }
+  }
+
+  const cols: Column<Tenant>[] = [
+    { key: "name", header: "Tenant", render: (r) => <span style={{ fontWeight: 600, color: color.ink.DEFAULT }}>{r.name}</span> },
+    { key: "users", header: "Users", width: 90, align: "right", render: (r) => <span style={{ color: color.ink.mid }}>{r.users}</span>, sort: (r) => r.users },
+    { key: "contacts", header: "Contacts", width: 100, align: "right", render: (r) => <span style={{ color: color.ink.mid }}>{r.contacts}</span>, sort: (r) => r.contacts },
+    { key: "credits", header: "Credits", width: 130, align: "right", render: (r) => <span style={{ fontWeight: 700, color: r.credits > 0 ? color.status.positive : color.ink.soft, fontVariantNumeric: "tabular-nums" }}>{r.credits.toLocaleString()}</span>, sort: (r) => r.credits },
+    { key: "joined", header: "Joined", width: 120, align: "right", render: (r) => <span style={{ color: color.ink.soft }}>{r.joined}</span> },
+    { key: "act", header: "", width: 140, render: (r) => <Button onClick={() => grant(r)} disabled={busy}>Adjust credits</Button> },
   ];
 
   return (
     <AppShell active="admin">
-      <PageTitleRow title="Admin Portal" subtitle="Platform operator — cross-tenant SaaS control" actions={<Button variant="primary">+ Announcement</Button>} />
+      <PageTitleRow title="Admin Portal" breadcrumb="Xentral · Platform operator" subtitle="Cross-tenant control — tenants, credits & marketplace supply" />
+
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(160px, 1fr))", gap: 10, marginBottom: 16 }}>
+        <KPICard label="Tenants" value={String(totals.tenants)} note="workspaces" noteTone={color.brand.primary} />
+        <KPICard label="Users" value={String(totals.users)} note="across tenants" noteTone={color.ink.soft} />
+        <KPICard label="Credits in circulation" value={totals.credits.toLocaleString()} note="all tenants" noteTone={color.status.positive} />
+        <KPICard label="Leads available" value={String(supply.available)} note={`${supply.listed} listed`} noteTone={supply.available > 0 ? color.status.positive : color.status.critical} />
+      </div>
 
       <div style={{ display: "flex", gap: 18, borderBottom: `1px solid ${color.line.DEFAULT}`, marginBottom: 16, flexWrap: "wrap" }}>
         {TABS.map((t) => (
@@ -59,33 +67,31 @@ export default function AdminPage() {
         ))}
       </div>
 
-      {tab === "Overview" && (
+      {loading ? <div style={{ padding: 30, textAlign: "center", color: color.ink.soft, fontSize: 13 }}>Loading…</div> : (
         <>
-          <div style={{ display: "flex", gap: 12, marginBottom: 18, flexWrap: "wrap" }}>
-            <KPICard label="MRR" value={aed(m.mrr)} note="monthly recurring" noteTone={color.status.positive} />
-            <KPICard label="ARR" value={aed(m.arr)} note="annualised" noteTone={color.ink.soft} />
-            <KPICard label="Active tenants" value={String(m.activeTenants)} note={`${m.trials} on trial`} noteTone={color.ink.soft} />
-            <KPICard label="Churn" value={`${m.churnPct}%`} note={`▲ ${m.newThisMonth} new this month`} noteTone={color.status.positive} />
-          </div>
-          <div style={{ fontSize: 13, fontWeight: 600, color: color.ink.mid, marginBottom: 8 }}>Recent companies</div>
-          <DataTable columns={tenantCols} rows={tenants} getKey={(r) => r.id} />
+          {tab === "Overview" && (
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))", gap: 12 }}>
+              <KPICard label="Marketplace inventory value" value={aed(supply.value)} note="listed leads" noteTone={color.brand.primary} />
+              <KPICard label="Leads purchased" value={String(supply.purchases)} note="all-time" noteTone={color.ink.soft} />
+              <KPICard label="Avg credits / tenant" value={(totals.tenants ? Math.round(totals.credits / totals.tenants) : 0).toLocaleString()} note="balance" noteTone={color.ink.soft} />
+            </div>
+          )}
+
+          {tab === "Tenants" && (
+            tenants.length === 0 ? <EmptyState title="No tenants yet" hint="Workspaces appear here as they sign up." />
+              : <DataTable<Tenant> columns={cols} rows={tenants} getKey={(r) => r.id} searchable searchPlaceholder="Search tenant…" title="Tenants" initialSort={{ key: "credits", dir: "desc" }} />
+          )}
+
+          {tab === "Marketplace supply" && (
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(170px, 1fr))", gap: 12 }}>
+              <KPICard label="Listed" value={String(supply.listed)} note="total leads" noteTone={color.ink.soft} />
+              <KPICard label="Available now" value={String(supply.available)} note="buyable" noteTone={color.status.positive} />
+              <KPICard label="Purchased" value={String(supply.purchases)} note="all-time" noteTone={color.ink.soft} />
+              <KPICard label="Inventory value" value={aed(supply.value)} note="at list price" noteTone={color.brand.primary} />
+            </div>
+          )}
         </>
       )}
-      {tab === "Companies" && <DataTable columns={tenantCols} rows={tenants} getKey={(r) => r.id} />}
-      {tab === "SaaS" && (
-        <div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
-          <KPICard label="MRR" value={aed(m.mrr)} note="active tenants" noteTone={color.status.positive} />
-          <KPICard label="ARR" value={aed(m.arr)} note="run-rate" noteTone={color.ink.soft} />
-          <KPICard label="Active" value={String(m.activeTenants)} note="paying" noteTone={color.ink.soft} />
-          <KPICard label="Trials" value={String(m.trials)} note="converting" noteTone={color.status.info} />
-          <KPICard label="Churn" value={`${m.churnPct}%`} note="30-day" noteTone={color.ink.soft} />
-        </div>
-      )}
-      {tab === "Disputes" && <DataTable columns={dCols} rows={disputes} getKey={(r) => r.id} />}
-      {tab === "Questions" && <DataTable columns={qCols} rows={questions} getKey={(r) => r.id} />}
-      {tab === "Announcements" && <DataTable columns={aCols} rows={anns} getKey={(r) => r.id} />}
-
-      <p style={{ fontSize: 11, color: color.ink.soft, textAlign: "center", marginTop: 18 }}>Admin portal · @xentral/module-platform · seeded (no real PII) · tokens-only, theme-aware</p>
     </AppShell>
   );
 }
