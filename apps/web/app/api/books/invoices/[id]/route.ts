@@ -33,7 +33,8 @@ export async function GET(_req: Request, { params }: { params: { id: string } })
         where i.id = $1 and i."companyId" = $2 limit 1`, [params.id, session.companyId]);
     if (!inv.rows[0]) return NextResponse.json({ error: "Not found" }, { status: 404 });
     const lines = await p.query(`select name, description, qty, "unitPrice" as "unitPrice", "vatRate" as "vatRate", "discountPct" as "discountPct", "lineTotal" as "lineTotal" from "invoice_lines" where "invoiceId" = $1 order by position asc`, [params.id]);
-    return NextResponse.json({ invoice: inv.rows[0], lines: lines.rows });
+    const pays = await p.query(`select id, amount, method, reference, to_char("paidAt",'DD Mon YYYY') as date from "payment_records" where "invoiceId" = $1 order by "paidAt" desc`, [params.id]);
+    return NextResponse.json({ invoice: inv.rows[0], lines: lines.rows, payments: pays.rows });
   } catch {
     return NextResponse.json({ error: "Error" }, { status: 500 });
   }
