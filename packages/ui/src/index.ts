@@ -28,5 +28,5 @@ export { StagePill } from "./stage-pill";
 export { ThemeToggle } from "./theme-toggle";
 export { XentralMark } from "./xentral-mark";
 export { HeaderSearch, HeaderAvatar } from "./header-menu";
-export { AiLauncher, AskAiButton, HeaderAiField, AiCommandBand } from "./ai-launcher";
+export { AiLauncher, AskAiButton, AiInlineBar, HeaderAiField, AiCommandBand } from "./ai-launcher";
 export { Panel, PanelHeader, PanelBody, PanelFooter, FactStrip } from "./panel";

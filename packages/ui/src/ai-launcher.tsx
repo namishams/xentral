@@ -190,6 +190,26 @@ export function HeaderAiField() {
   );
 }
 
+/** AiInlineBar — full-width inline Ask-AI entry for action/record pages.
+ *  Sits in the content flow (scrolls away with the page); seeds the floating
+ *  dock on submit. No suggestion chips. */
+export function AiInlineBar({ subject, placeholder }: { subject?: string; placeholder?: string }) {
+  const [v, setV] = React.useState("");
+  const [focused, setFocused] = React.useState(false);
+  const submit = () => { const t = v.trim(); if (!t) return; window.dispatchEvent(new CustomEvent("xentral-ai-ask", { detail: { q: t } })); setV(""); };
+  const has = v.trim().length > 0;
+  const ph = placeholder || (subject ? `Ask AI about ${subject}\u2026` : "Ask Xentral AI \u2014 reads your live data and takes actions\u2026");
+  return (
+    <div style={{ display: "flex", alignItems: "center", gap: 11, width: "100%", boxSizing: "border-box", padding: "8px 10px 8px 12px", marginBottom: 16, borderRadius: 14, background: color.surface.card, border: `1px solid ${focused ? BLUE : color.line.strong}`, boxShadow: focused ? "0 0 0 3px rgba(0,100,217,0.14)" : "0 1px 2px rgba(16,24,40,0.04)", transition: "border-color 120ms ease, box-shadow 120ms ease" }}>
+      <span style={{ width: 30, height: 30, flexShrink: 0, borderRadius: "50%", background: "linear-gradient(135deg, #0064d9, #22D3A6)", display: "inline-flex", alignItems: "center", justifyContent: "center" }}><Spark size={16} color="#fff" /></span>
+      <input value={v} onChange={(e) => setV(e.target.value)} onFocus={() => setFocused(true)} onBlur={() => setFocused(false)} onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); submit(); } }} placeholder={ph} aria-label="Ask Xentral AI"
+        style={{ flex: 1, minWidth: 0, border: 0, outline: "none", background: "transparent", fontSize: 14, color: color.ink.DEFAULT, fontFamily: "inherit" }} />
+      <button onClick={submit} disabled={!has} aria-label="Ask Xentral AI" title="Ask Xentral AI"
+        style={{ flexShrink: 0, width: 34, height: 34, borderRadius: 9, border: 0, cursor: has ? "pointer" : "default", background: has ? BLUE : color.surface.sunken, color: has ? "#fff" : color.ink.soft, display: "inline-flex", alignItems: "center", justifyContent: "center", fontSize: 16, transition: "background 120ms ease" }}>{"\u2191"}</button>
+    </div>
+  );
+}
+
 /** AskAiButton — drop on any quiet surface; opens & seeds the floating dock. */
 export function AskAiButton({ seed, label = "Ask Xentral AI", variant = "pill" }: { seed?: string; label?: string; variant?: "pill" | "ghost" }) {
   const ask = () => window.dispatchEvent(new CustomEvent("xentral-ai-ask", { detail: seed ? { q: seed } : {} }));

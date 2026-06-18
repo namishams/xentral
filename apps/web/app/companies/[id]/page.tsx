@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import { color } from "@xentral/config";
-import { AppShell, Button, StatusBadge, type BadgeTone, Panel, PanelHeader, PanelBody, AskAiButton } from "@xentral/ui";
+import { AppShell, Button, StatusBadge, type BadgeTone, Panel, PanelHeader, PanelBody, AiInlineBar } from "@xentral/ui";
 
 type Contact = { id: string; name: string; title: string | null; email: string | null; phone: string | null };
 type Deal = { id: string; name: string; status: string; value: number | null; currency: string | null };
@@ -101,17 +101,17 @@ export default function CompanyDetailPage({ params }: { params: { id: string } }
         </div>
         <div style={{ display: "flex", gap: 8, alignItems: "center", flexShrink: 0 }}>
           {dirty ? <Button variant="primary" onClick={saveForm} disabled={busy}>{busy ? "Saving…" : "Save"}</Button> : (saved ? <span style={{ fontSize: 12.5, fontWeight: 600, color: color.status.positive }}>✓ Saved</span> : null)}
-          <AskAiButton label="Ask AI" seed={`Summarise the relationship with ${a.name} and suggest the next best action.`} />
           {a.website ? <a href={a.website.startsWith("http") ? a.website : `https://${a.website}`} target="_blank" rel="noreferrer" style={{ textDecoration: "none" }}><Button>Website</Button></a> : null}
         </div>
       </div>
+
+      <AiInlineBar subject={a.name} />
 
       {/* Quick actions */}
       <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginBottom: 14 }}>
         {a.phone ? <a href={`tel:${a.phone}`} style={{ textDecoration: "none" }}><Button>☎ Call</Button></a> : null}
         {a.email ? <a href={`mailto:${a.email}`} style={{ textDecoration: "none" }}><Button>@ Email</Button></a> : null}
         {(a.whatsApp || a.phone) ? <a href={`https://wa.me/${(a.whatsApp || a.phone || "").replace(/[^\d]/g, "")}`} target="_blank" rel="noreferrer" style={{ textDecoration: "none" }}><Button>✆ WhatsApp</Button></a> : null}
-        <AskAiButton variant="ghost" label="Draft outreach with AI" seed={`Draft a short outreach message to ${a.name}.`} />
       </div>
 
       {/* Metrics tiles */}

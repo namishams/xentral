@@ -3,7 +3,7 @@
 import * as React from "react";
 import { color } from "@xentral/config";
 import { SendComposer } from "../../../components/send-composer";
-import { AppShell, PageTitleRow, Button, StatusBadge, type BadgeTone, Panel, PanelHeader, PanelBody, FactStrip, AskAiButton } from "@xentral/ui";
+import { AppShell, PageTitleRow, Button, StatusBadge, type BadgeTone, Panel, PanelHeader, PanelBody, FactStrip, AiInlineBar } from "@xentral/ui";
 import { AttachmentsPanel } from "../../../components/attachments-panel";
 import { DocTimeline } from "../../../components/doc-timeline";
 
@@ -83,7 +83,6 @@ export default function QuoteDetailPage({ params }: { params: { id: string } }) 
       <PageTitleRow title={`Quote ${q.number}`} breadcrumb="Books · Quotations"
         badge={<StatusBadge tone={expired ? "critical" : TONE[q.status] ?? "neutral"} label={expired ? "expired" : q.status.toLowerCase()} />}
         actions={<div style={{ display: "flex", gap: 8, flexWrap: "wrap", alignItems: "center" }}>
-          <AskAiButton label="Ask AI" seed={`Write a friendly follow-up email for quote ${q.number} to ${q.customer || "the customer"} (total ${aed(q.total, q.currency)}), encouraging them to accept.`} />
           <Button onClick={() => { window.location.href = "/quotations/" + params.id + "/edit"; }}>Edit</Button>
           <Button onClick={openEdit}>Status / notes</Button>
           <Button onClick={openPdf}>Download PDF</Button>
@@ -97,6 +96,8 @@ export default function QuoteDetailPage({ params }: { params: { id: string } }) 
           {isDraft ? <Button onClick={del} disabled={busy === "del"}>{busy === "del" ? "Deleting…" : "Delete"}</Button> : null}
           <Button variant="primary" onClick={send} disabled={busy === "send"}>{busy === "send" ? "Sending…" : q.sentAt ? "Resend" : "Send to customer"}</Button>
         </div>} />
+
+      <AiInlineBar subject={`quote ${q.number}`} />
 
       {toast ? <div style={{ background: `color-mix(in srgb, ${color.brand.primary} 10%, ${color.surface.card})`, border: `1px solid ${color.brand.primary}`, color: color.brand.primary, borderRadius: 9, padding: "9px 13px", fontSize: 13, marginBottom: 14 }}>{toast}</div> : null}
 

@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import { color } from "@xentral/config";
-import { AppShell, PageTitleRow, Button, Panel, PanelHeader, PanelBody, StatusBadge, type BadgeTone, FactStrip, AskAiButton } from "@xentral/ui";
+import { AppShell, PageTitleRow, Button, Panel, PanelHeader, PanelBody, StatusBadge, type BadgeTone, FactStrip, AiInlineBar } from "@xentral/ui";
 
 type Cust = { id: string; name: string; legalName: string | null; email: string | null; phone: string | null; addressLine1: string | null; addressLine2: string | null; city: string | null; country: string | null; vatNumber: string | null; notes: string | null; contactId: string | null; accountId: string | null };
 type Doc = { id: string; number: string; status: string; total: number; amountPaid?: number; currency: string; issued?: string; due?: string; valid?: string };
@@ -51,10 +51,11 @@ export default function CustomerDetailPage({ params }: { params: { id: string } 
     <AppShell active="customers">
       <PageTitleRow title={d.customer.name} breadcrumb="Books · Customers" showIcon={false}
         actions={<div style={{ display: "flex", gap: 8, alignItems: "center" }}>
-          <AskAiButton label="Ask AI" seed={`Summarise the relationship and payment behaviour for customer ${d.customer.name} (outstanding ${aed(s.outstanding, cur)}). Suggest next steps.`} />
           <Button onClick={() => { window.location.href = "/quotations/new"; }}>New quote</Button>
           <Button variant="primary" onClick={() => { window.location.href = "/invoices/new"; }}>New invoice</Button>
         </div>} />
+
+      <AiInlineBar subject={d.customer.name} />
 
       <Panel style={{ marginBottom: 16 }}>
         <PanelBody>

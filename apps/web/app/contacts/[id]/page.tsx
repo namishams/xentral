@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import { color } from "@xentral/config";
-import { AppShell, PageTitleRow, Button, StatusBadge, type BadgeTone, Panel, PanelHeader, PanelBody, AskAiButton } from "@xentral/ui";
+import { AppShell, PageTitleRow, Button, StatusBadge, type BadgeTone, Panel, PanelHeader, PanelBody, AiInlineBar } from "@xentral/ui";
 
 type Deal = { id: string; name: string; status: string; value: number | null; currency: string | null; created?: string };
 type Doc = { id: string; number: string; status: string; total: number; paid?: number; currency: string | null };
@@ -28,6 +28,7 @@ export default function ContactDetailPage({ params }: { params: { id: string } }
   const [form, setForm] = React.useState<Form | null>(null);
   const [clean, setClean] = React.useState<Form | null>(null);
   const [accounts, setAccounts] = React.useState<{ id: string; name: string }[]>([]);
+  const [changeCompany, setChangeCompany] = React.useState(false);
   const [owners, setOwners] = React.useState<{ id: string; name: string }[]>([]);
   const [note, setNote] = React.useState("");
   const [noteType, setNoteType] = React.useState("NOTE");
@@ -93,13 +94,14 @@ export default function ContactDetailPage({ params }: { params: { id: string } }
       <PageTitleRow title={name} breadcrumb="CRM · Contacts"
         badge={<StatusBadge tone="info" label={cap(c.status)} />}
         actions={<div style={{ display: "flex", gap: 8, flexWrap: "wrap", alignItems: "center" }}>
-          <AskAiButton label="Ask AI" seed={`Draft a follow-up email to ${name}${c.accountName ? " at " + c.accountName : ""}.`} />
           {c.email ? <a href={`mailto:${c.email}`} style={{ textDecoration: "none" }}><Button>Email</Button></a> : null}
           {c.phone ? <a href={`tel:${c.phone}`} style={{ textDecoration: "none" }}><Button>Call</Button></a> : null}
           {(c.whatsApp || c.phone) ? <a href={`https://wa.me/${(c.whatsApp || c.phone || "").replace(/[^\d]/g, "")}`} target="_blank" rel="noreferrer" style={{ textDecoration: "none" }}><Button>WhatsApp</Button></a> : null}
           <Button onClick={vcard}>vCard</Button>
           <Button variant="primary" onClick={addDeal}>+ New deal</Button>
         </div>} />
+
+      <AiInlineBar subject={name} />
 
       {/* Identity + metrics band */}
       <Panel style={{ marginBottom: 16 }}>
@@ -155,11 +157,23 @@ export default function ContactDetailPage({ params }: { params: { id: string } }
                   </div>
                   <div>
                     <label style={labelS}>Company</label>
-                    <select value={form.accountId} onChange={(e) => set("accountId", e.target.value)} style={fieldS}>
-                      <option value="">— No company —</option>
-                      {accounts.map((a) => <option key={a.id} value={a.id}>{a.name}</option>)}
-                    </select>
-                    {form.accountId ? <a href={`/companies/${form.accountId}`} style={{ display: "inline-block", marginTop: 5, fontSize: 12, color: color.brand.primary, textDecoration: "none", fontWeight: 600 }}>Open company →</a> : null}
+                    {changeCompany ? (
+                      <div style={{ display: "flex", gap: 6, alignItems: "center" }}>
+                        <select autoFocus value={form.accountId} onChange={(e) => { set("accountId", e.target.value); setChangeCompany(false); }} style={{ ...fieldS, flex: 1 }}>
+                          <option value="">— No company —</option>
+                          {accounts.map((a) => <option key={a.id} value={a.id}>{a.name}</option>)}
+                        </select>
+                        <button type="button" onClick={() => setChangeCompany(false)} style={{ height: 34, padding: "0 11px", borderRadius: 8, border: `1px solid ${color.line.strong}`, background: color.surface.card, color: color.ink.mid, fontSize: 12.5, fontWeight: 600, cursor: "pointer" }}>Cancel</button>
+                      </div>
+                    ) : form.accountId ? (
+                      <div style={{ display: "flex", alignItems: "center", gap: 10, padding: "7px 9px 7px 8px", borderRadius: 10, border: `1px solid ${color.line.DEFAULT}`, background: color.surface.page }}>
+                        <span style={{ width: 30, height: 30, flexShrink: 0, borderRadius: 8, background: color.brand.primaryTint, color: color.brand.primary, fontSize: 12, fontWeight: 700, display: "inline-flex", alignItems: "center", justifyContent: "center" }}>{initials(accounts.find((a) => a.id === form.accountId)?.name || c.accountName || "?")}</span>
+                        <a href={`/companies/${form.accountId}`} style={{ flex: 1, minWidth: 0, fontSize: 13.5, fontWeight: 600, color: color.ink.DEFAULT, textDecoration: "none", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{accounts.find((a) => a.id === form.accountId)?.name || c.accountName || "Company"}</a>
+                        <button type="button" onClick={() => setChangeCompany(true)} style={{ flexShrink: 0, height: 30, padding: "0 12px", borderRadius: 8, border: `1px solid ${color.brand.primary}`, background: color.surface.card, color: color.brand.primary, fontSize: 12.5, fontWeight: 600, cursor: "pointer" }}>Change</button>
+                      </div>
+                    ) : (
+                      <button type="button" onClick={() => setChangeCompany(true)} style={{ display: "inline-flex", alignItems: "center", gap: 7, height: 36, padding: "0 13px", borderRadius: 9, border: `1px dashed ${color.line.strong}`, background: color.surface.page, color: color.ink.mid, fontSize: 13, fontWeight: 600, cursor: "pointer" }}>+ Link a company</button>
+                    )}
                   </div>
                   <div><label style={labelS}>Address</label><input value={form.addressLine1} onChange={(e) => set("addressLine1", e.target.value)} placeholder="Street / building" style={fieldS} /></div>
                   <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
