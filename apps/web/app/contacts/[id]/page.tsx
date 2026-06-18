@@ -29,6 +29,9 @@ export default function ContactDetailPage({ params }: { params: { id: string } }
   const [clean, setClean] = React.useState<Form | null>(null);
   const [accounts, setAccounts] = React.useState<{ id: string; name: string }[]>([]);
   const [changeCompany, setChangeCompany] = React.useState(false);
+  const [pendCo, setPendCo] = React.useState("");
+  const [newCo, setNewCo] = React.useState("");
+  const [coNote, setCoNote] = React.useState("");
   const [owners, setOwners] = React.useState<{ id: string; name: string }[]>([]);
   const [note, setNote] = React.useState("");
   const [noteType, setNoteType] = React.useState("NOTE");
@@ -53,6 +56,17 @@ export default function ContactDetailPage({ params }: { params: { id: string } }
   }
   async function saveForm() { if (!form) return; const ok = await patch(form); if (ok) { setSaved(true); setTimeout(() => setSaved(false), 2000); } }
   async function addNote() { const t = note.trim(); if (!t) return; const ok = await patch({ note: t, activityType: noteType }); if (ok) setNote(""); }
+  async function saveCompany() { const ok = await patch({ accountId: pendCo || null }); if (ok) { setChangeCompany(false); setNewCo(""); setSaved(true); setTimeout(() => setSaved(false), 2000); } }
+  async function createCompany() {
+    const nm = newCo.trim(); if (!nm) return;
+    setBusy(true);
+    try {
+      const r = await fetch("/api/crm/accounts", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ name: nm }) });
+      const j = await r.json().catch(() => ({}));
+      if (r.ok && j.id) { setAccounts((prev) => [...prev, { id: j.id, name: nm }].sort((a, b) => a.name.localeCompare(b.name))); setPendCo(j.id); await patch({ accountId: j.id }); setChangeCompany(false); setNewCo(""); }
+    } finally { setBusy(false); }
+  }
+  async function addCoNote() { const t = coNote.trim(); if (!t) return; const ok = await patch({ note: t, activityType: "NOTE" }); if (ok) setCoNote(""); }
   const [newTask, setNewTask] = React.useState("");
   async function addTask() { const t = newTask.trim(); if (!t) return; const ok = await patch({ task: t }); if (ok) setNewTask(""); }
   async function addDeal() {
@@ -158,21 +172,36 @@ export default function ContactDetailPage({ params }: { params: { id: string } }
                   <div>
                     <label style={labelS}>Company</label>
                     {changeCompany ? (
-                      <div style={{ display: "flex", gap: 6, alignItems: "center" }}>
-                        <select autoFocus value={form.accountId} onChange={(e) => { set("accountId", e.target.value); setChangeCompany(false); }} style={{ ...fieldS, flex: 1 }}>
-                          <option value="">— No company —</option>
-                          {accounts.map((a) => <option key={a.id} value={a.id}>{a.name}</option>)}
-                        </select>
-                        <button type="button" onClick={() => setChangeCompany(false)} style={{ height: 34, padding: "0 11px", borderRadius: 8, border: `1px solid ${color.line.strong}`, background: color.surface.card, color: color.ink.mid, fontSize: 12.5, fontWeight: 600, cursor: "pointer" }}>Cancel</button>
+                      <div style={{ border: `1px solid ${color.line.DEFAULT}`, borderRadius: 10, padding: 12, background: color.surface.page, display: "flex", flexDirection: "column", gap: 10 }}>
+                        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                          <span style={{ fontSize: 12, fontWeight: 700, color: color.ink.mid }}>Account / company</span>
+                          <button type="button" onClick={() => { setChangeCompany(false); setNewCo(""); }} style={{ fontSize: 12, fontWeight: 600, color: color.ink.soft, background: "transparent", border: 0, cursor: "pointer" }}>Close</button>
+                        </div>
+                        <div style={{ display: "flex", gap: 7 }}>
+                          <select autoFocus value={pendCo} onChange={(e) => setPendCo(e.target.value)} style={{ ...fieldS, flex: 1 }}>
+                            <option value="">— No company —</option>
+                            {accounts.map((a) => <option key={a.id} value={a.id}>{a.name}</option>)}
+                          </select>
+                          <Button variant="primary" onClick={saveCompany} disabled={busy}>Save</Button>
+                        </div>
+                        <div style={{ display: "flex", gap: 7 }}>
+                          <input value={newCo} onChange={(e) => setNewCo(e.target.value)} onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); createCompany(); } }} placeholder="…or create a new account" style={{ ...fieldS, flex: 1 }} />
+                          <Button onClick={createCompany} disabled={busy || !newCo.trim()}>Create</Button>
+                        </div>
+                        <div style={{ borderTop: `1px solid ${color.line.DEFAULT}`, paddingTop: 10 }}>
+                          <div style={{ fontSize: 12, fontWeight: 700, color: color.ink.mid, marginBottom: 6 }}>Internal note</div>
+                          <textarea value={coNote} onChange={(e) => setCoNote(e.target.value)} rows={2} placeholder="Visible to your team on the timeline…" style={{ ...fieldS, height: "auto", padding: 10, resize: "vertical", width: "100%", boxSizing: "border-box" }} />
+                          <div style={{ marginTop: 8 }}><Button onClick={addCoNote} disabled={busy || !coNote.trim()}>Add note</Button></div>
+                        </div>
                       </div>
                     ) : form.accountId ? (
                       <div style={{ display: "flex", alignItems: "center", gap: 10, padding: "7px 9px 7px 8px", borderRadius: 10, border: `1px solid ${color.line.DEFAULT}`, background: color.surface.page }}>
                         <span style={{ width: 30, height: 30, flexShrink: 0, borderRadius: 8, background: color.brand.primaryTint, color: color.brand.primary, fontSize: 12, fontWeight: 700, display: "inline-flex", alignItems: "center", justifyContent: "center" }}>{initials(accounts.find((a) => a.id === form.accountId)?.name || c.accountName || "?")}</span>
                         <a href={`/companies/${form.accountId}`} style={{ flex: 1, minWidth: 0, fontSize: 13.5, fontWeight: 600, color: color.ink.DEFAULT, textDecoration: "none", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{accounts.find((a) => a.id === form.accountId)?.name || c.accountName || "Company"}</a>
-                        <button type="button" onClick={() => setChangeCompany(true)} style={{ flexShrink: 0, height: 30, padding: "0 12px", borderRadius: 8, border: `1px solid ${color.brand.primary}`, background: color.surface.card, color: color.brand.primary, fontSize: 12.5, fontWeight: 600, cursor: "pointer" }}>Change</button>
+                        <button type="button" onClick={() => { setPendCo(form.accountId); setNewCo(""); setChangeCompany(true); }} style={{ flexShrink: 0, height: 30, padding: "0 12px", borderRadius: 8, border: `1px solid ${color.brand.primary}`, background: color.surface.card, color: color.brand.primary, fontSize: 12.5, fontWeight: 600, cursor: "pointer" }}>Change</button>
                       </div>
                     ) : (
-                      <button type="button" onClick={() => setChangeCompany(true)} style={{ display: "inline-flex", alignItems: "center", gap: 7, height: 36, padding: "0 13px", borderRadius: 9, border: `1px dashed ${color.line.strong}`, background: color.surface.page, color: color.ink.mid, fontSize: 13, fontWeight: 600, cursor: "pointer" }}>+ Link a company</button>
+                      <button type="button" onClick={() => { setPendCo(""); setNewCo(""); setChangeCompany(true); }} style={{ display: "inline-flex", alignItems: "center", gap: 7, height: 36, padding: "0 13px", borderRadius: 9, border: `1px dashed ${color.line.strong}`, background: color.surface.page, color: color.ink.mid, fontSize: 13, fontWeight: 600, cursor: "pointer" }}>+ Link a company</button>
                     )}
                   </div>
                   <div><label style={labelS}>Address</label><input value={form.addressLine1} onChange={(e) => set("addressLine1", e.target.value)} placeholder="Street / building" style={fieldS} /></div>
@@ -188,17 +217,6 @@ export default function ContactDetailPage({ params }: { params: { id: string } }
                   <div><label style={labelS}>Notes</label><textarea value={form.notes} onChange={(e) => set("notes", e.target.value)} rows={3} style={{ ...fieldS, height: "auto", padding: 10, resize: "vertical" }} /></div>
                 </div>
               ) : null}
-            </PanelBody>
-          </Panel>
-          <Panel>
-            <PanelHeader title="Open tasks" subtitle={`${d.tasks.length} open`} />
-            <PanelBody flush>
-              <div style={{ display: "flex", gap: 8, padding: "11px 14px", borderBottom: `1px solid ${color.line.DEFAULT}` }}>
-                <input value={newTask} onChange={(e) => setNewTask(e.target.value)} onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); addTask(); } }} placeholder="Add a task…" style={{ flex: 1, height: 32, border: `1px solid ${color.line.strong}`, borderRadius: 8, padding: "0 10px", fontSize: 12.5, color: color.ink.DEFAULT, background: color.surface.card, outline: "none" }} />
-                <Button onClick={addTask} disabled={busy || !newTask.trim()}>Add</Button>
-              </div>
-              {d.tasks.length === 0 ? <div style={{ padding: "16px", textAlign: "center", fontSize: 12.5, color: color.ink.soft }}>No open tasks.</div>
-                : d.tasks.map((t) => <div key={t.id} style={{ padding: "9px 14px", borderBottom: `1px solid ${color.line.DEFAULT}` }}><div style={{ fontSize: 12.5, fontWeight: 500, color: color.ink.DEFAULT }}>{t.title}</div>{t.due ? <div style={{ fontSize: 11, color: color.ink.soft }}>Due {t.due}</div> : null}</div>)}
             </PanelBody>
           </Panel>
         </div>
@@ -265,6 +283,18 @@ export default function ContactDetailPage({ params }: { params: { id: string } }
               </PanelBody>
             </Panel>
           </div>
+
+          <Panel>
+            <PanelHeader title="Open tasks" subtitle={`${d.tasks.length} open`} />
+            <PanelBody flush>
+              <div style={{ display: "flex", gap: 8, padding: "11px 14px", borderBottom: `1px solid ${color.line.DEFAULT}` }}>
+                <input value={newTask} onChange={(e) => setNewTask(e.target.value)} onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); addTask(); } }} placeholder="Add a task…" style={{ flex: 1, height: 32, border: `1px solid ${color.line.strong}`, borderRadius: 8, padding: "0 10px", fontSize: 12.5, color: color.ink.DEFAULT, background: color.surface.card, outline: "none" }} />
+                <Button onClick={addTask} disabled={busy || !newTask.trim()}>Add</Button>
+              </div>
+              {d.tasks.length === 0 ? <div style={{ padding: "16px", textAlign: "center", fontSize: 12.5, color: color.ink.soft }}>No open tasks.</div>
+                : d.tasks.map((t) => <div key={t.id} style={{ padding: "9px 14px", borderBottom: `1px solid ${color.line.DEFAULT}` }}><div style={{ fontSize: 12.5, fontWeight: 500, color: color.ink.DEFAULT }}>{t.title}</div>{t.due ? <div style={{ fontSize: 11, color: color.ink.soft }}>Due {t.due}</div> : null}</div>)}
+            </PanelBody>
+          </Panel>
 
           {d.conversations.length > 0 && (
             <Panel>
