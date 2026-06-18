@@ -3,6 +3,7 @@
 import * as React from "react";
 import { color } from "@xentral/config";
 import { AppShell, PageTitleRow, Button, StatusBadge, type BadgeTone, Panel, PanelHeader, PanelBody, FactStrip, AskAiButton } from "@xentral/ui";
+import { DocTimeline } from "../../../components/doc-timeline";
 
 type Line = { name: string; description: string | null; qty: number; unitPrice: number; vatRate?: number; discountPct?: number; lineTotal: number };
 type Pay = { id: string; amount: number; method: string | null; reference: string | null; date: string | null };
@@ -188,6 +189,7 @@ export default function InvoiceDetailPage({ params }: { params: { id: string } }
               <p style={{ fontSize: 11.5, color: color.ink.soft, marginTop: 14, lineHeight: 1.5 }}>“Send to customer” emails a branded invoice with a secure <b>Pay with Telr</b> button and the PDF attached.</p>
             </PanelBody>
           </Panel>
+          <DocTimeline docType="INVOICE" docId={params.id} />
         </div>
       </div>
 
