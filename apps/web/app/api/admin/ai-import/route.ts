@@ -15,8 +15,6 @@ function pool(url: string): Pool {
   _pool = m ? new Pool({ user: m[1], password: m[2], host: m[3], port: Number(m[4]), database: m[5], max: 4 }) : new Pool({ connectionString: url, max: 4 });
   return _pool;
 }
-const newId = (pf: string) => pf + Date.now().toString(36) + Math.random().toString(36).slice(2, 10);
-
 async function resolveKey(url: string, companyId: string): Promise<{ key: string; model: string } | null> {
   const envKey = process.env.OPENAI_API_KEY && process.env.OPENAI_API_KEY.startsWith("sk-") ? process.env.OPENAI_API_KEY : "";
   try {
@@ -76,19 +74,31 @@ export async function POST(req: Request) {
   const quality = ["HOT", "WARM", "STANDARD"].includes(str("quality").toUpperCase()) ? str("quality").toUpperCase() : "STANDARD";
   const region = str("originRegion") || "Unknown";
   const name = str("name") || str("specialty") || "Imported lead";
-  const id = newId("mkl");
-  const p = pool(url);
-  try {
-    await p.query(
-      `insert into "marketplace_leads" (id, title, specialty, category, "originCountry", "originRegion", quality, summary, "firstName", "lastName", phone, email, "hasPhone", "hasWhatsApp", "hasEmail", "hasLinkedIn", "initialPrice", "minPrice", "decayAmount", "decayInterval", status, "maxPurchases", "purchaseCount", listing_type, "listedAt", "createdAt", "updatedAt", "companyId")
-       values ($1,$2,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,0,24,'DRAFT',3,0,'STANDARD',now(),now(),now(),$18)`,
-      [id, name, str("category") || "Healthcare", str("originCountry") || region, region, quality, str("summary"),
-       str("firstName"), str("lastName"), str("phone"), str("email"),
-       !!data.hasPhone || !!str("phone"), !!data.hasWhatsApp, !!data.hasEmail || !!str("email"), !!data.hasLinkedIn,
-       price, Math.round(price * 0.6), s.companyId],
-    );
-  } catch (e) {
-    return NextResponse.json({ error: (e as Error).message || "Could not save lead" }, { status: 500 });
-  }
-  return NextResponse.json({ ok: true, id, lead: { name, category: str("category") || "Healthcare", region, quality, price, summary: str("summary") } });
+
+  // IMPORTANT: do NOT insert into marketplace_leads here. The operator must
+  // review the extracted data, then choose a listing type (shared / exclusive /
+  // best offer) and set pricing in the Add Lead form. We only return what we found.
+  const lead = {
+    specialty: name,
+    category: str("category") || "Healthcare",
+    originCountry: str("originCountry") || region,
+    originRegion: region,
+    currentLocation: str("currentLocation"),
+    quality,
+    summary: str("summary"),
+    firstName: str("firstName"),
+    lastName: str("lastName"),
+    phone: str("phone"),
+    email: str("email"),
+    linkedIn: str("linkedIn"),
+    notes: str("notes") || str("summary"),
+    hasPhone: !!data.hasPhone || !!str("phone"),
+    hasWhatsApp: !!data.hasWhatsApp,
+    hasEmail: !!data.hasEmail || !!str("email"),
+    hasLinkedIn: !!data.hasLinkedIn || !!str("linkedIn"),
+    hasCV: !!data.hasCV,
+    hasDataflow: !!data.hasDataflow,
+    suggestedPrice: price,
+  };
+  return NextResponse.json({ ok: true, lead });
 }

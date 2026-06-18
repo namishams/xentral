@@ -52,6 +52,7 @@ export default function AdminPage() {
   const [f, setF] = React.useState<AddForm>(blank());
   const [imgs, setImgs] = React.useState<string[]>([]);
   const [aiMsg, setAiMsg] = React.useState("");
+  const [extracted, setExtracted] = React.useState<Record<string, string | number | boolean> | null>(null);
   const fileRef = React.useRef<HTMLInputElement | null>(null);
 
   const load = React.useCallback(() => {
@@ -98,13 +99,39 @@ export default function AdminPage() {
     Promise.all(files.map((file) => new Promise<string>((res) => { const fr = new FileReader(); fr.onload = () => res(String(fr.result)); fr.readAsDataURL(file); }))).then(setImgs);
   }
   async function runImport() {
-    if (!imgs.length) return; setBusy(true); setAiMsg("Analysing screenshots…");
+    if (!imgs.length) return; setBusy(true); setAiMsg(""); setExtracted(null);
     try {
       const r = await fetch("/api/admin/ai-import", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ images: imgs }) });
       const j = await r.json().catch(() => ({}));
-      if (r.ok) { setAiMsg(`✓ Imported draft: ${j.lead?.name} · ${j.lead?.region} · ${aed(j.lead?.price || 0)} — review under Marketplace (DRAFT).`); setImgs([]); load(); }
+      if (r.ok && j.lead) { setExtracted(j.lead as Record<string, string | number | boolean>); setAiMsg(""); }
       else setAiMsg(j.error || "Import failed");
     } finally { setBusy(false); }
+  }
+  // Pre-fill the Add Lead form with the AI-extracted data, then open it so the
+  // operator can choose a listing type (shared / exclusive / best offer) and price.
+  function useAiData() {
+    if (!extracted) return;
+    const x = extracted;
+    const sx = (k: string) => (x[k] == null ? "" : String(x[k]));
+    const reg = (() => { const v = sx("originRegion"); return REGIONS.find((r) => r.toLowerCase() === v.toLowerCase()) || (/eu|europe/i.test(v) ? "Europe" : /gcc/i.test(v) ? "GCC" : /uae|emirat/i.test(v) ? "UAE" : /asia|africa/i.test(v) ? "Asia/Africa" : /america/i.test(v) ? "Americas" : "Unknown"); })();
+    const qual = QUALITIES.includes(sx("quality").toUpperCase()) ? sx("quality").toUpperCase() : "STANDARD";
+    const price = Math.round(Number(x.suggestedPrice) || 50);
+    setF({
+      ...blank(),
+      name: sx("specialty") || sx("name"),
+      category: sx("category") || "Healthcare",
+      originCountry: sx("originCountry"),
+      originRegion: reg,
+      quality: qual,
+      currentLocation: sx("currentLocation"),
+      summary: sx("summary"),
+      firstName: sx("firstName"), lastName: sx("lastName"),
+      phone: sx("phone"), email: sx("email"), linkedIn: sx("linkedIn"),
+      notes: sx("notes") || sx("summary"),
+      hasPhone: !!x.hasPhone, hasWhatsApp: !!x.hasWhatsApp, hasEmail: !!x.hasEmail, hasLinkedIn: !!x.hasLinkedIn, hasCV: !!x.hasCV, hasDataflow: !!x.hasDataflow,
+      initialPrice: String(price), minPrice: String(Math.round(price * 0.6)),
+    });
+    setExtracted(null); setImgs([]); setTab("Marketplace"); setAdding(true);
   }
 
   const cardS: React.CSSProperties = { border: `1px solid ${color.line.DEFAULT}`, borderRadius: 12, background: color.surface.card, overflow: "hidden" };
@@ -228,8 +255,35 @@ export default function AdminPage() {
                 <span style={{ display: "inline-flex", alignItems: "center", gap: 7, marginTop: 8, height: 38, padding: "0 16px", borderRadius: 9, background: color.brand.primaryTint, color: color.brand.primary, fontWeight: 600, fontSize: 13 }}>⬆ Choose Screenshots</span>
               </button>
 
-              {imgs.length > 0 && <div style={{ marginTop: 16 }}><Button variant="primary" onClick={runImport} disabled={busy}>{busy ? "Analysing…" : `Analyse & import ${imgs.length} screenshot${imgs.length > 1 ? "s" : ""}`}</Button> <button onClick={() => { setImgs([]); setAiMsg(""); }} style={{ marginLeft: 8, height: 32, padding: "0 12px", borderRadius: 8, border: `1px solid ${color.line.strong}`, background: color.surface.card, color: color.ink.mid, cursor: "pointer", fontSize: 12.5 }}>Clear</button></div>}
-              {aiMsg && <div style={{ marginTop: 14, fontSize: 13, color: aiMsg.startsWith("✓") ? color.status.positive : color.status.critical }}>{aiMsg}</div>}
+              {imgs.length > 0 && !extracted && <div style={{ marginTop: 16 }}><Button variant="primary" onClick={runImport} disabled={busy}>{busy ? "Analysing…" : `Analyse ${imgs.length} screenshot${imgs.length > 1 ? "s" : ""}`}</Button> <button onClick={() => { setImgs([]); setAiMsg(""); }} style={{ marginLeft: 8, height: 32, padding: "0 12px", borderRadius: 8, border: `1px solid ${color.line.strong}`, background: color.surface.card, color: color.ink.mid, cursor: "pointer", fontSize: 12.5 }}>Clear</button></div>}
+              {aiMsg && <div style={{ marginTop: 14, fontSize: 13, color: color.status.critical }}>{aiMsg}</div>}
+
+              {extracted && (
+                <div style={{ marginTop: 18, border: `1px solid ${color.status.positive}`, borderRadius: 14, overflow: "hidden", background: color.surface.card }}>
+                  <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "12px 16px", borderBottom: `1px solid ${color.line.DEFAULT}`, background: "rgba(34,211,166,0.10)" }}>
+                    <span style={{ display: "inline-flex", alignItems: "center", gap: 8, fontSize: 13.5, fontWeight: 700, color: color.status.positive }}>✓ Lead Data Extracted Successfully</span>
+                    <button onClick={useAiData} style={{ display: "inline-flex", alignItems: "center", gap: 7, height: 36, padding: "0 14px", borderRadius: 9, border: 0, background: color.status.positive, color: "#fff", fontWeight: 700, fontSize: 13, cursor: "pointer" }}>＋ Use This Data → Open Form</button>
+                  </div>
+                  <div style={{ padding: 16, display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: 10 }}>
+                    {Object.entries(extracted).map(([k, v]) => {
+                      if (v === null || v === undefined || v === "") return null;
+                      const label = k.replace(/([A-Z])/g, " $1").replace(/^./, (c) => c.toUpperCase());
+                      const isBool = typeof v === "boolean";
+                      const disp = isBool ? (v ? "✓ Yes" : "✗ No") : String(v);
+                      return (
+                        <div key={k} style={{ display: "flex", gap: 8 }}>
+                          <span style={{ fontSize: 11.5, color: color.ink.soft, width: 130, flexShrink: 0 }}>{label}</span>
+                          <span style={{ fontSize: 12.5, fontWeight: 600, color: isBool ? (v ? color.status.positive : color.ink.soft) : color.ink.DEFAULT }}>{disp}</span>
+                        </div>
+                      );
+                    })}
+                  </div>
+                  <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "0 16px 14px" }}>
+                    <span style={{ fontSize: 12, color: color.ink.soft }}>Review the extracted data, then click “Use This Data” to pre-fill the lead form — choose Shared, Exclusive or Best Offer and set the price there.</span>
+                    <button onClick={() => { setExtracted(null); setImgs([]); setAiMsg(""); }} style={{ flexShrink: 0, marginLeft: 14, height: 30, padding: "0 12px", borderRadius: 8, border: `1px solid ${color.line.strong}`, background: color.surface.card, color: color.ink.mid, cursor: "pointer", fontSize: 12 }}>Start Over</button>
+                  </div>
+                </div>
+              )}
 
               <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 16, marginTop: 24 }}>
                 {[["📱", "WhatsApp Screenshot", "Capture the conversation showing contact info and their interest in UAE licensing."],
