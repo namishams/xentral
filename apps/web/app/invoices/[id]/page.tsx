@@ -6,7 +6,7 @@ import { AppShell, PageTitleRow, Button, StatusBadge, type BadgeTone, Panel, Pan
 
 type Line = { name: string; description: string | null; qty: number; unitPrice: number; vatRate?: number; discountPct?: number; lineTotal: number };
 type Pay = { id: string; amount: number; method: string | null; reference: string | null; date: string | null };
-type Inv = { id: string; number: string; status: string; total: number; amountPaid: number; subtotal: number; vatTotal: number; currency: string; issued: string | null; due: string | null; dueDateRaw: string | null; notes: string | null; customer: string; customerEmail: string | null; payments?: Pay[] };
+type Inv = { id: string; number: string; status: string; total: number; amountPaid: number; subtotal: number; vatTotal: number; currency: string; issued: string | null; due: string | null; dueDateRaw: string | null; notes: string | null; customer: string; customerEmail: string | null; token?: string | null; payments?: Pay[] };
 const aed = (n: number, c = "AED") => `${c} ${(Number(n) || 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 const TONE: Record<string, BadgeTone> = { DRAFT: "neutral", SENT: "info", PARTIALLY_PAID: "warning", PAID: "positive", CANCELLED: "neutral", OVERDUE: "critical" };
 const STATUSES = ["DRAFT", "SENT", "PARTIALLY_PAID", "PAID", "OVERDUE", "CANCELLED"];
@@ -57,6 +57,16 @@ export default function InvoiceDetailPage({ params }: { params: { id: string } }
     try { const res = await fetch(`/api/books/invoices/${params.id}/duplicate`, { method: "POST" }); const d = await res.json(); if (res.ok) { window.location.href = `/invoices/${d.id}`; } else setToast(d.error || "Could not duplicate"); }
     catch { setToast("Network error"); } finally { setBusy(null); }
   }
+  async function einvoice() {
+    setBusy("einv"); setToast("");
+    try {
+      const res = await fetch(`/api/books/invoices/${params.id}/einvoice`, { method: "POST" });
+      const d = await res.json().catch(() => ({}));
+      if (d.ok) { setToast("FTA e-invoice validated ✓ — downloading XML"); window.open(`/api/books/invoices/${params.id}/einvoice`, "_blank"); }
+      else setToast(d.errors ? `e-Invoice invalid: ${d.errors[0]}` : (d.error || "Could not generate e-invoice"));
+    } catch { setToast("Network error"); } finally { setBusy(null); }
+  }
+  function shareLink() { const t = inv?.token; if (!t) { setToast("No share link"); return; } navigator.clipboard?.writeText(`${window.location.origin}/i/${t}`).then(() => setToast("Public invoice link copied")); }
 
   if (loading) return <AppShell active="invoice"><div style={{ padding: 40, textAlign: "center", color: color.ink.soft }}>Loading…</div></AppShell>;
   if (!inv) return <AppShell active="invoice"><div style={{ padding: 40, textAlign: "center", color: color.ink.soft }}>Invoice not found. <a href="/invoices" style={{ color: color.brand.primary }}>Back to invoices</a></div></AppShell>;
@@ -77,8 +87,9 @@ export default function InvoiceDetailPage({ params }: { params: { id: string } }
           <Button onClick={openEdit}>Status</Button>
           <Button onClick={openPdf}>Download PDF</Button>
           <Button onClick={duplicate} disabled={busy === "dup"}>{busy === "dup" ? "Duplicating…" : "Duplicate"}</Button>
+          <Button onClick={einvoice} disabled={busy === "einv"}>{busy === "einv" ? "Validating…" : "e-Invoice (FTA)"}</Button>
           {bal > 0 ? <Button onClick={openPay}>Record payment</Button> : null}
-          <Button onClick={copyLink}>Copy pay link</Button>
+          <Button onClick={shareLink}>Share link</Button>
           <Button variant="primary" onClick={send} disabled={busy === "send"}>{busy === "send" ? "Sending…" : "Send to customer"}</Button>
         </div>} />
 

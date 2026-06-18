@@ -28,10 +28,11 @@ export async function GET(_req: Request, { params }: { params: { id: string } })
       `select i.id, i.number, i.status::text as status, i.total, i."amountPaid" as "amountPaid", i.subtotal, i."vatTotal" as "vatTotal", i.currency,
               to_char(i."issueDate",'DD Mon YYYY') as issued, to_char(i."dueDate",'YYYY-MM-DD') as "dueDateRaw", to_char(i."dueDate",'DD Mon YYYY') as due, i.notes,
               to_char(i."issueDate",'YYYY-MM-DD') as "issueDateRaw", i."referenceNo" as "referenceNo", i."projectName" as "projectName", i."salespersonId" as "salespersonId", i."customerId" as "customerId",
-              bc.name as customer, bc.email as "customerEmail"
+              bc.name as customer, bc.email as "customerEmail", i."publicToken" as token
          from "invoices" i left join "billing_customers" bc on bc.id = i."customerId"
         where i.id = $1 and i."companyId" = $2 limit 1`, [params.id, session.companyId]);
     if (!inv.rows[0]) return NextResponse.json({ error: "Not found" }, { status: 404 });
+    if (!inv.rows[0].token) { const t = Math.random().toString(36).slice(2) + Math.random().toString(36).slice(2); await p.query(`update "invoices" set "publicToken" = $1 where id = $2 and "companyId" = $3 and "publicToken" is null`, [t, params.id, session.companyId]); inv.rows[0].token = t; }
     const lines = await p.query(`select name, description, qty, "unitPrice" as "unitPrice", "vatRate" as "vatRate", "discountPct" as "discountPct", "lineTotal" as "lineTotal" from "invoice_lines" where "invoiceId" = $1 order by position asc`, [params.id]);
     const pays = await p.query(`select id, amount, method, reference, to_char("paidAt",'DD Mon YYYY') as date from "payment_records" where "invoiceId" = $1 order by "paidAt" desc`, [params.id]);
     return NextResponse.json({ invoice: inv.rows[0], lines: lines.rows, payments: pays.rows });
