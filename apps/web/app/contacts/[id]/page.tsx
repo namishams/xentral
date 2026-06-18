@@ -84,7 +84,6 @@ export default function ContactDetailPage({ params }: { params: { id: string } }
     { label: "Outstanding", value: outstanding > 0 ? aed(outstanding) : "—", tone: outstanding > 0 ? color.status.critical : color.ink.DEFAULT },
     { label: "Open deals", value: openDeals.length ? `${openDeals.length} · ${aed(pipeline)}` : "—", tone: color.ink.DEFAULT },
     { label: "Open tasks", value: d.tasks.length ? String(d.tasks.length) : "—", tone: color.ink.DEFAULT },
-    { label: "Last activity", value: d.activities[0]?.at?.split(",")[0] ?? "—", tone: color.ink.DEFAULT },
   ];
 
   const linkRow: React.CSSProperties = { display: "flex", alignItems: "center", gap: 10, padding: "9px 14px", borderBottom: `1px solid ${color.line.DEFAULT}`, textDecoration: "none", color: color.ink.DEFAULT, fontSize: 13 };
@@ -97,6 +96,7 @@ export default function ContactDetailPage({ params }: { params: { id: string } }
           <AskAiButton label="Ask AI" seed={`Draft a follow-up email to ${name}${c.accountName ? " at " + c.accountName : ""}.`} />
           {c.email ? <a href={`mailto:${c.email}`} style={{ textDecoration: "none" }}><Button>Email</Button></a> : null}
           {c.phone ? <a href={`tel:${c.phone}`} style={{ textDecoration: "none" }}><Button>Call</Button></a> : null}
+          {(c.whatsApp || c.phone) ? <a href={`https://wa.me/${(c.whatsApp || c.phone || "").replace(/[^\d]/g, "")}`} target="_blank" rel="noreferrer" style={{ textDecoration: "none" }}><Button>WhatsApp</Button></a> : null}
           <Button onClick={vcard}>vCard</Button>
           <Button variant="primary" onClick={addDeal}>+ New deal</Button>
         </div>} />
@@ -108,7 +108,7 @@ export default function ContactDetailPage({ params }: { params: { id: string } }
           <div style={{ minWidth: 0, flex: 1 }}>
             <div style={{ fontSize: 13.5, color: color.ink.mid }}>{c.title || "Contact"}{c.accountName ? <> · <a href={`/companies/${c.accountId}`} style={{ color: color.brand.primary, textDecoration: "none", fontWeight: 600 }}>{c.accountName}</a></> : null}</div>
             <div style={{ display: "flex", flexWrap: "wrap", gap: "8px 20px", marginTop: 9 }}>
-              {([["Owner", c.assignedToName || "Unassigned"], ["Status", cap(c.status)], ["Lead source", c.leadSource || "—"], ["Last touch", d.activities[0]?.at?.split(",")[0] ?? "—"], ["Next step", d.tasks[0] ? (d.tasks[0].title + (d.tasks[0].due ? " · " + d.tasks[0].due : "")) : "—"]] as [string, string][]).map(([l, v]) => (
+              {([["Owner", c.assignedToName || "Unassigned"], ["Lead source", c.leadSource || "—"], ["Last touch", d.activities[0]?.at?.split(",")[0] ?? "—"], ["Next step", d.tasks[0] ? (d.tasks[0].title + (d.tasks[0].due ? " · " + d.tasks[0].due : "")) : "—"]] as [string, string][]).map(([l, v]) => (
                 <div key={l} style={{ minWidth: 0 }}><div style={{ fontSize: 9.5, fontWeight: 700, letterSpacing: 0.4, textTransform: "uppercase", color: color.ink.soft }}>{l}</div><div style={{ fontSize: 12.5, fontWeight: 600, color: color.ink.DEFAULT, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", maxWidth: 240 }}>{v}</div></div>
               ))}
             </div>
@@ -194,6 +194,36 @@ export default function ContactDetailPage({ params }: { params: { id: string } }
         {/* main */}
         <div style={{ display: "flex", flexDirection: "column", gap: 16, minWidth: 0 }}>
           <Panel>
+            <PanelHeader title="Timeline" subtitle="Notes, calls, billing — newest first" />
+            <PanelBody>
+              <div style={{ display: "flex", gap: 6, flexWrap: "wrap", marginBottom: 8 }}>
+                {(["NOTE","CALL","MEETING","EMAIL","FOLLOW_UP"] as const).map((tp) => { const on = noteType === tp; return <button key={tp} onClick={() => setNoteType(tp)} style={{ fontSize: 11.5, fontWeight: 600, padding: "4px 10px", borderRadius: 999, cursor: "pointer", border: `1px solid ${on ? color.brand.primary : color.line.strong}`, background: on ? color.brand.primaryTint : color.surface.card, color: on ? color.brand.primary : color.ink.mid }}>{am(tp).icon} {cap(tp)}</button>; })}
+              </div>
+              <div style={{ display: "flex", gap: 8, marginBottom: 16 }}>
+                <input value={note} onChange={(e) => setNote(e.target.value)} onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); addNote(); } }} placeholder={noteType === "NOTE" ? "Add a note…" : `Log a ${cap(noteType).toLowerCase()}…`} style={{ flex: 1, height: 34, border: `1px solid ${color.line.strong}`, borderRadius: 8, padding: "0 11px", fontSize: 13, color: color.ink.DEFAULT, background: color.surface.card, outline: "none" }} />
+                <Button variant="primary" onClick={addNote} disabled={busy || !note.trim()}>{busy ? "…" : "Log"}</Button>
+              </div>
+              {d.activities.length === 0 ? <div style={{ padding: "12px 0", textAlign: "center", fontSize: 12.5, color: color.ink.soft }}>No activity yet — log your first call or note above.</div>
+                : <div style={{ display: "flex", flexDirection: "column" }}>{d.activities.map((a, idx) => { const m = am(a.type); return (
+                    <div key={a.id} style={{ display: "flex", gap: 11, paddingBottom: 14 }}>
+                      <div style={{ display: "flex", flexDirection: "column", alignItems: "center", flexShrink: 0 }}>
+                        <span style={{ width: 26, height: 26, borderRadius: "50%", background: `color-mix(in srgb, ${m.color} 14%, ${color.surface.card})`, color: m.color, fontSize: 12, display: "inline-flex", alignItems: "center", justifyContent: "center" }}>{m.icon}</span>
+                        {idx < d.activities.length - 1 ? <span style={{ flex: 1, width: 1, background: color.line.DEFAULT, marginTop: 2 }} /> : null}
+                      </div>
+                      <div style={{ minWidth: 0, flex: 1 }}>
+                        <div style={{ display: "flex", gap: 8, alignItems: "baseline" }}>
+                          <span style={{ fontSize: 12.5, fontWeight: 600, color: color.ink.DEFAULT }}>{a.subject || cap(a.type)}</span>
+                          <span style={{ fontSize: 11, color: color.ink.soft, marginLeft: "auto", flexShrink: 0 }}>{a.at}</span>
+                        </div>
+                        {a.content ? <div style={{ fontSize: 12, color: color.ink.mid, marginTop: 2, whiteSpace: "pre-wrap" }}>{a.content}</div> : null}
+                        {a.author ? <div style={{ fontSize: 10.5, color: color.ink.soft, marginTop: 3 }}>by {a.author}</div> : null}
+                      </div>
+                    </div>
+                  ); })}</div>}
+            </PanelBody>
+          </Panel>
+
+          <Panel>
             <PanelHeader title="Deals" subtitle={`${d.deals.length} linked · ${openDeals.length} open`} />
             <PanelBody flush>
               {d.deals.length === 0 ? <div style={{ padding: 16, textAlign: "center", fontSize: 12.5, color: color.ink.soft }}>No deals linked to this contact yet.</div>
@@ -233,35 +263,7 @@ export default function ContactDetailPage({ params }: { params: { id: string } }
             </Panel>
           )}
 
-          <Panel>
-            <PanelHeader title="Timeline" subtitle="Notes, calls, billing — newest first" />
-            <PanelBody>
-              <div style={{ display: "flex", gap: 6, flexWrap: "wrap", marginBottom: 8 }}>
-                {(["NOTE","CALL","MEETING","EMAIL","FOLLOW_UP"] as const).map((tp) => { const on = noteType === tp; return <button key={tp} onClick={() => setNoteType(tp)} style={{ fontSize: 11.5, fontWeight: 600, padding: "4px 10px", borderRadius: 999, cursor: "pointer", border: `1px solid ${on ? color.brand.primary : color.line.strong}`, background: on ? color.brand.primaryTint : color.surface.card, color: on ? color.brand.primary : color.ink.mid }}>{am(tp).icon} {cap(tp)}</button>; })}
-              </div>
-              <div style={{ display: "flex", gap: 8, marginBottom: 16 }}>
-                <input value={note} onChange={(e) => setNote(e.target.value)} onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); addNote(); } }} placeholder={noteType === "NOTE" ? "Add a note…" : `Log a ${cap(noteType).toLowerCase()}…`} style={{ flex: 1, height: 34, border: `1px solid ${color.line.strong}`, borderRadius: 8, padding: "0 11px", fontSize: 13, color: color.ink.DEFAULT, background: color.surface.card, outline: "none" }} />
-                <Button variant="primary" onClick={addNote} disabled={busy || !note.trim()}>{busy ? "…" : "Log"}</Button>
-              </div>
-              {d.activities.length === 0 ? <div style={{ padding: "12px 0", textAlign: "center", fontSize: 12.5, color: color.ink.soft }}>No activity yet — log your first call or note above.</div>
-                : <div style={{ display: "flex", flexDirection: "column" }}>{d.activities.map((a, idx) => { const m = am(a.type); return (
-                    <div key={a.id} style={{ display: "flex", gap: 11, paddingBottom: 14 }}>
-                      <div style={{ display: "flex", flexDirection: "column", alignItems: "center", flexShrink: 0 }}>
-                        <span style={{ width: 26, height: 26, borderRadius: "50%", background: `color-mix(in srgb, ${m.color} 14%, ${color.surface.card})`, color: m.color, fontSize: 12, display: "inline-flex", alignItems: "center", justifyContent: "center" }}>{m.icon}</span>
-                        {idx < d.activities.length - 1 ? <span style={{ flex: 1, width: 1, background: color.line.DEFAULT, marginTop: 2 }} /> : null}
-                      </div>
-                      <div style={{ minWidth: 0, flex: 1 }}>
-                        <div style={{ display: "flex", gap: 8, alignItems: "baseline" }}>
-                          <span style={{ fontSize: 12.5, fontWeight: 600, color: color.ink.DEFAULT }}>{a.subject || cap(a.type)}</span>
-                          <span style={{ fontSize: 11, color: color.ink.soft, marginLeft: "auto", flexShrink: 0 }}>{a.at}</span>
-                        </div>
-                        {a.content ? <div style={{ fontSize: 12, color: color.ink.mid, marginTop: 2, whiteSpace: "pre-wrap" }}>{a.content}</div> : null}
-                        {a.author ? <div style={{ fontSize: 10.5, color: color.ink.soft, marginTop: 3 }}>by {a.author}</div> : null}
-                      </div>
-                    </div>
-                  ); })}</div>}
-            </PanelBody>
-          </Panel>
+          
         </div>
       </div>
     </AppShell>
