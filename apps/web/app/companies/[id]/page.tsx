@@ -155,52 +155,6 @@ export default function CompanyDetailPage({ params }: { params: { id: string } }
               </div>
             </PanelBody>
           </Panel>
-
-          <Panel>
-            <PanelHeader title="Contacts" subtitle={`${d.contacts.length} linked`} actions={
-              <span style={{ display: "inline-flex", gap: 6 }}>
-                <Button onClick={() => setMode(mode === "link" ? "none" : "link")}>{mode === "link" ? "Close" : "Link"}</Button>
-                <Button variant="primary" onClick={() => setMode(mode === "new" ? "none" : "new")}>{mode === "new" ? "Close" : "+ New"}</Button>
-              </span>} />
-            <PanelBody flush>
-              {mode === "link" ? (
-                <div style={{ padding: "12px 16px", borderBottom: `1px solid ${color.line.DEFAULT}`, background: color.surface.page, display: "flex", flexDirection: "column", gap: 8 }}>
-                  <span style={{ fontSize: 11, fontWeight: 600, color: color.ink.soft, textTransform: "uppercase", letterSpacing: 0.3 }}>Link an existing contact</span>
-                  <select autoFocus value={linkId} onChange={(e) => setLinkId(e.target.value)} style={{ ...fieldS, height: 34, fontSize: 12.5 }}>
-                    <option value="">Select a contact…</option>
-                    {allContacts.filter((x) => x.accountId !== params.id && x.name.trim()).map((x) => (
-                      <option key={x.id} value={x.id}>{x.name}{x.email ? ` · ${x.email}` : ""}{x.accountId ? " (linked elsewhere)" : ""}</option>
-                    ))}
-                  </select>
-                  <div style={{ display: "flex", justifyContent: "flex-end", gap: 8 }}>
-                    <Button onClick={() => { setMode("none"); setLinkId(""); }} disabled={busy}>Cancel</Button>
-                    <Button variant="primary" onClick={linkContact} disabled={busy || !linkId}>{busy ? "Linking…" : "Link contact"}</Button>
-                  </div>
-                </div>
-              ) : null}
-              {mode === "new" ? (
-                <div style={{ padding: "12px 16px", borderBottom: `1px solid ${color.line.DEFAULT}`, background: color.surface.page, display: "flex", flexDirection: "column", gap: 8 }}>
-                  <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
-                    <input autoFocus value={nc.first} onChange={(e) => setNc({ ...nc, first: e.target.value })} placeholder="First name *" style={{ ...fieldS, height: 32, fontSize: 12.5 }} />
-                    <input value={nc.last} onChange={(e) => setNc({ ...nc, last: e.target.value })} placeholder="Last name" style={{ ...fieldS, height: 32, fontSize: 12.5 }} />
-                  </div>
-                  <input value={nc.title} onChange={(e) => setNc({ ...nc, title: e.target.value })} placeholder="Title (optional)" style={{ ...fieldS, height: 32, fontSize: 12.5 }} />
-                  <input value={nc.email} onChange={(e) => setNc({ ...nc, email: e.target.value })} onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); submitContact(); } }} placeholder="Email (optional)" style={{ ...fieldS, height: 32, fontSize: 12.5 }} />
-                  <div style={{ display: "flex", justifyContent: "flex-end", gap: 8 }}>
-                    <Button onClick={() => setMode("none")} disabled={busy}>Cancel</Button>
-                    <Button variant="primary" onClick={submitContact} disabled={busy || !nc.first.trim()}>{busy ? "Saving…" : "Add contact"}</Button>
-                  </div>
-                </div>
-              ) : null}
-              {d.contacts.length === 0 && mode === "none" ? <div style={{ padding: 16, textAlign: "center", fontSize: 12.5, color: color.ink.soft }}>No contacts yet. Use “Link” or “+ New”.</div>
-                : d.contacts.map((p) => (
-                  <a key={p.id} href={`/contacts/${p.id}`} className="xui-row-link" style={linkRow}>
-                    <span style={{ width: 28, height: 28, borderRadius: "50%", background: color.brand.primaryTint, color: color.brand.primary, fontSize: 11, fontWeight: 700, display: "inline-flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>{initials(p.name)}</span>
-                    <span style={{ minWidth: 0, flex: 1 }}><span style={{ display: "block", fontWeight: 500, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{p.name}</span>{p.title ? <span style={{ display: "block", fontSize: 11, color: color.ink.soft }}>{p.title}</span> : null}</span>
-                  </a>
-                ))}
-            </PanelBody>
-          </Panel>
         </div>
 
         {/* main */}
@@ -272,6 +226,52 @@ export default function CompanyDetailPage({ params }: { params: { id: string } }
                       </div>
                     </div>
                   ); })}</div>}
+            </PanelBody>
+          </Panel>
+
+          <Panel>
+            <PanelHeader title="Contacts" subtitle={`${d.contacts.length} linked`} actions={
+              <span style={{ display: "inline-flex", gap: 6 }}>
+                <Button onClick={() => setMode(mode === "link" ? "none" : "link")}>{mode === "link" ? "Close" : "Link"}</Button>
+                <Button variant="primary" onClick={() => setMode(mode === "new" ? "none" : "new")}>{mode === "new" ? "Close" : "+ New"}</Button>
+              </span>} />
+            <PanelBody flush>
+              {mode === "link" ? (
+                <div style={{ padding: "12px 16px", borderBottom: `1px solid ${color.line.DEFAULT}`, background: color.surface.page, display: "flex", flexDirection: "column", gap: 8 }}>
+                  <span style={{ fontSize: 11, fontWeight: 600, color: color.ink.soft, textTransform: "uppercase", letterSpacing: 0.3 }}>Link an existing contact</span>
+                  <select autoFocus value={linkId} onChange={(e) => setLinkId(e.target.value)} style={{ ...fieldS, height: 34, fontSize: 12.5 }}>
+                    <option value="">Select a contact…</option>
+                    {allContacts.filter((x) => x.accountId !== params.id && x.name.trim()).map((x) => (
+                      <option key={x.id} value={x.id}>{x.name}{x.email ? ` · ${x.email}` : ""}{x.accountId ? " (linked elsewhere)" : ""}</option>
+                    ))}
+                  </select>
+                  <div style={{ display: "flex", justifyContent: "flex-end", gap: 8 }}>
+                    <Button onClick={() => { setMode("none"); setLinkId(""); }} disabled={busy}>Cancel</Button>
+                    <Button variant="primary" onClick={linkContact} disabled={busy || !linkId}>{busy ? "Linking…" : "Link contact"}</Button>
+                  </div>
+                </div>
+              ) : null}
+              {mode === "new" ? (
+                <div style={{ padding: "12px 16px", borderBottom: `1px solid ${color.line.DEFAULT}`, background: color.surface.page, display: "flex", flexDirection: "column", gap: 8 }}>
+                  <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
+                    <input autoFocus value={nc.first} onChange={(e) => setNc({ ...nc, first: e.target.value })} placeholder="First name *" style={{ ...fieldS, height: 32, fontSize: 12.5 }} />
+                    <input value={nc.last} onChange={(e) => setNc({ ...nc, last: e.target.value })} placeholder="Last name" style={{ ...fieldS, height: 32, fontSize: 12.5 }} />
+                  </div>
+                  <input value={nc.title} onChange={(e) => setNc({ ...nc, title: e.target.value })} placeholder="Title (optional)" style={{ ...fieldS, height: 32, fontSize: 12.5 }} />
+                  <input value={nc.email} onChange={(e) => setNc({ ...nc, email: e.target.value })} onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); submitContact(); } }} placeholder="Email (optional)" style={{ ...fieldS, height: 32, fontSize: 12.5 }} />
+                  <div style={{ display: "flex", justifyContent: "flex-end", gap: 8 }}>
+                    <Button onClick={() => setMode("none")} disabled={busy}>Cancel</Button>
+                    <Button variant="primary" onClick={submitContact} disabled={busy || !nc.first.trim()}>{busy ? "Saving…" : "Add contact"}</Button>
+                  </div>
+                </div>
+              ) : null}
+              {d.contacts.length === 0 && mode === "none" ? <div style={{ padding: 16, textAlign: "center", fontSize: 12.5, color: color.ink.soft }}>No contacts yet. Use “Link” or “+ New”.</div>
+                : d.contacts.map((p) => (
+                  <a key={p.id} href={`/contacts/${p.id}`} className="xui-row-link" style={linkRow}>
+                    <span style={{ width: 28, height: 28, borderRadius: "50%", background: color.brand.primaryTint, color: color.brand.primary, fontSize: 11, fontWeight: 700, display: "inline-flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>{initials(p.name)}</span>
+                    <span style={{ minWidth: 0, flex: 1 }}><span style={{ display: "block", fontWeight: 500, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{p.name}</span>{p.title ? <span style={{ display: "block", fontSize: 11, color: color.ink.soft }}>{p.title}</span> : null}</span>
+                  </a>
+                ))}
             </PanelBody>
           </Panel>
         </div>
