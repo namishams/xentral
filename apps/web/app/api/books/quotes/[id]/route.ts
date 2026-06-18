@@ -27,8 +27,11 @@ export async function GET(_req: Request, { params }: { params: { id: string } })
     const q = await p.query(
       `select q.id, q.number, q.status::text as status, q.total, q.subtotal, q."vatTotal" as "vatTotal", q.currency,
               to_char(q."issueDate",'DD Mon YYYY') as issued, to_char(q."validUntil",'DD Mon YYYY') as valid, to_char(q."validUntil",'YYYY-MM-DD') as "validRaw", q.notes, q."publicToken" as token,
-              bc.name as customer, bc.email as "customerEmail"
+              q."invoiceId" as "invoiceId", q."sentAt" as "sentAt", q."invoiceId" is not null as converted,
+              bc.name as customer, bc.email as "customerEmail",
+              inv.number as "invoiceNumber"
          from "quotes" q left join "billing_customers" bc on bc.id = q."customerId"
+              left join "invoices" inv on inv.id = q."invoiceId"
         where q.id = $1 and q."companyId" = $2 limit 1`, [params.id, session.companyId]);
     if (!q.rows[0]) return NextResponse.json({ error: "Not found" }, { status: 404 });
     const lines = await p.query(`select name, description, qty, "unitPrice" as "unitPrice", "vatRate" as "vatRate", "discountPct" as "discountPct", "lineTotal" as "lineTotal" from "quote_lines" where "quoteId" = $1 order by position asc`, [params.id]);
@@ -90,5 +93,29 @@ export async function PATCH(req: Request, { params }: { params: { id: string } }
   } catch {
     await client.query("rollback").catch(() => {});
     return NextResponse.json({ error: "Update failed" }, { status: 500 });
+  } finally { client.release(); }
+}
+
+/** Delete a DRAFT quote (and its lines). Sent/accepted quotes are protected. */
+export async function DELETE(_req: Request, { params }: { params: { id: string } }) {
+  const url = process.env.DATABASE_URL;
+  if (process.env.XENTRAL_LIVE_DATA !== "1" || !url) return NextResponse.json({ error: "Live data not enabled" }, { status: 503 });
+  const session = await resolveSession();
+  if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  const client = await pool(url).connect();
+  try {
+    await client.query("begin");
+    const own = await client.query(`select status::text as status, "invoiceId" from "quotes" where id = $1 and "companyId" = $2 for update`, [params.id, session.companyId]);
+    if (!own.rows[0]) { await client.query("rollback"); return NextResponse.json({ error: "Not found" }, { status: 404 }); }
+    if (own.rows[0].invoiceId) { await client.query("rollback"); return NextResponse.json({ error: "This quote is linked to an invoice and can't be deleted." }, { status: 409 }); }
+    if (own.rows[0].status !== "DRAFT") { await client.query("rollback"); return NextResponse.json({ error: "Only draft quotes can be deleted." }, { status: 409 }); }
+    await client.query(`delete from "quote_lines" where "quoteId" = $1`, [params.id]);
+    await client.query(`delete from "document_attachments" where "companyId" = $1 and "docType" = 'QUOTE' and "docId" = $2`, [session.companyId, params.id]);
+    await client.query(`delete from "quotes" where id = $1 and "companyId" = $2`, [params.id, session.companyId]);
+    await client.query("commit");
+    return NextResponse.json({ ok: true });
+  } catch {
+    await client.query("rollback").catch(() => {});
+    return NextResponse.json({ error: "Delete failed" }, { status: 500 });
   } finally { client.release(); }
 }
