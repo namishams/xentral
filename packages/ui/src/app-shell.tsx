@@ -150,8 +150,9 @@ export function GlobalHeader({ right }: { right?: React.ReactNode }) {
 
 /** Sidebar — brand + workspace header, then lifecycle-grouped nav. */
 export function Sidebar({ active }: { active?: string }) {
-  const [superAdmin, setSuperAdmin] = React.useState(false);
-  React.useEffect(() => { fetch("/api/me").then((r) => r.json()).then((j) => setSuperAdmin(!!j.superAdmin)).catch(() => {}); }, []);
+  const [me, setMe] = React.useState<{ superAdmin?: boolean; companyName?: string; credits?: number }>({});
+  React.useEffect(() => { fetch("/api/me").then((r) => r.json()).then((j) => setMe(j || {})).catch(() => {}); }, []);
+  const superAdmin = !!me.superAdmin;
   return (
     <nav style={{ width: SIDEBAR_WIDTH, flexShrink: 0, background: color.surface.card, borderRight: `1px solid ${color.line.DEFAULT}`, display: "flex", flexDirection: "column", overflowY: "auto" }}>
       <div style={{ padding: "14px 14px 12px", borderBottom: `1px solid ${color.line.DEFAULT}` }}>
@@ -160,9 +161,9 @@ export function Sidebar({ active }: { active?: string }) {
           <span style={{ fontSize: 16, fontWeight: 700 }}>Xentral</span>
         </a>
         <div style={{ marginTop: 12, background: color.surface.sunken, borderRadius: 9, padding: "9px 11px" }}>
-          <div style={{ fontSize: 13, fontWeight: 600, color: color.ink.DEFAULT }}>Mediflow</div>
+          <div style={{ fontSize: 13, fontWeight: 600, color: color.ink.DEFAULT }}>{me.companyName || "Workspace"}</div>
           <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginTop: 3 }}>
-            <span style={{ fontSize: 12, color: color.status.positive, fontWeight: 600 }}>● AED 999 credits</span>
+            <span style={{ fontSize: 12, color: color.status.positive, fontWeight: 600 }}>● {(me.credits ?? 0).toLocaleString()} credits</span>
             <a href="/settings" style={{ fontSize: 12, fontWeight: 600, color: color.brand.primary, textDecoration: "none" }}>Top Up</a>
           </div>
         </div>
