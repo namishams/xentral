@@ -20,6 +20,7 @@ function Logo({ name, size = 30 }: { name: string; size?: number }) {
 const SORTS: { k: string; label: string }[] = [
   { k: "name", label: "Name A-Z" },
   { k: "deals", label: "Open deals (high)" },
+  { k: "contacts", label: "Contacts (most)" },
   { k: "city", label: "City A-Z" },
 ];
 
@@ -29,11 +30,20 @@ const COLUMNS: Column<CompanyRow>[] = [
       <Logo name={r.name} />
       <span style={{ minWidth: 0 }}>
         <span style={{ display: "block", fontWeight: 600, color: color.ink.DEFAULT, lineHeight: "16px" }}>{r.name}</span>
-        <span style={{ display: "block", fontSize: 11.5, color: color.ink.soft, lineHeight: "15px" }}>{r.industry || "-"}</span>
+        <span style={{ display: "block", fontSize: 11.5, color: color.ink.soft, lineHeight: "15px" }}>{r.segment || "No segment"}</span>
       </span>
     </span>
   ) },
-  { key: "city", header: "City", width: 150, render: (r) => <span style={{ color: color.ink.mid }}>{r.city || "-"}</span> },
+  { key: "industry", header: "Industry", width: 160, render: (r) => (r.industry
+    ? <span style={{ display: "inline-flex", alignItems: "center", padding: "2px 9px", borderRadius: 999, fontSize: 12, fontWeight: 600, color: color.ink.mid, background: color.surface.sunken, border: `1px solid ${color.line.DEFAULT}` }}>{r.industry}</span>
+    : <span style={{ color: color.ink.soft }}>-</span>) },
+  { key: "city", header: "Location", width: 170, render: (r) => (
+    <span style={{ minWidth: 0 }}>
+      <span style={{ display: "block", color: color.ink.mid, lineHeight: "16px" }}>{r.city || "-"}</span>
+      {r.country ? <span style={{ display: "block", fontSize: 11.5, color: color.ink.soft, lineHeight: "14px" }}>{r.country}</span> : null}
+    </span>
+  ) },
+  { key: "contacts", header: "Contacts", width: 130, align: "right", render: (r) => <span style={{ color: r.contacts > 0 ? color.ink.mid : color.ink.soft, fontVariantNumeric: "tabular-nums" }}>{r.contacts || 0}</span> },
   { key: "openDeals", header: "Open deals", width: 120, render: (r) => <StatusBadge tone={r.openDeals > 0 ? "positive" : "neutral"} label={String(r.openDeals)} /> },
   { key: "owner", header: "Owner", width: 120, render: (r) => (r.owner ? <StatusBadge tone="info" label={r.owner} /> : <span style={{ color: color.ink.soft }}>Unassigned</span>) },
 ];
@@ -45,13 +55,16 @@ function Card({ r }: { r: CompanyRow }) {
         <Logo name={r.name} size={40} />
         <span style={{ minWidth: 0 }}>
           <span style={{ display: "block", fontWeight: 700, fontSize: 14, color: color.ink.DEFAULT }}>{r.name}</span>
-          <span style={{ display: "block", fontSize: 12, color: color.ink.soft }}>{r.industry || "-"}</span>
+          <span style={{ display: "block", fontSize: 12, color: color.ink.soft }}>{r.industry || "-"}{r.segment ? ` · ${r.segment}` : ""}</span>
         </span>
       </div>
       <div style={{ height: 1, background: color.line.DEFAULT }} />
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", fontSize: 12.5, color: color.ink.mid }}>
-        <span>{r.city || "-"}</span>
-        <StatusBadge tone={r.openDeals > 0 ? "positive" : "neutral"} label={`${r.openDeals} deals`} />
+        <span>{[r.city, r.country].filter(Boolean).join(", ") || "-"}</span>
+        <span style={{ display: "inline-flex", gap: 8, alignItems: "center" }}>
+          <span style={{ fontSize: 12, color: color.ink.soft }}>{r.contacts || 0} contacts</span>
+          <StatusBadge tone={r.openDeals > 0 ? "positive" : "neutral"} label={`${r.openDeals} deals`} />
+        </span>
       </div>
       <div>{r.owner ? <StatusBadge tone="info" label={r.owner} /> : <span style={{ fontSize: 12, color: color.ink.soft }}>Unassigned</span>}</div>
     </a>
@@ -75,6 +88,7 @@ export function CompaniesTable({ rows: all }: { rows: CompanyRow[] }) {
   const kpis = React.useMemo(() => ({
     total: all.length,
     openDeals: all.reduce((s, r) => s + (r.openDeals || 0), 0),
+    contacts: all.reduce((s, r) => s + (r.contacts || 0), 0),
     withDeals: all.filter((r) => r.openDeals > 0).length,
     owners: owners.length,
     industries: industries.length,
@@ -84,11 +98,12 @@ export function CompaniesTable({ rows: all }: { rows: CompanyRow[] }) {
   const filtered = all
     .filter((r) => owner === "all" || r.owner === owner)
     .filter((r) => industry === "all" || r.industry === industry)
-    .filter((r) => (r.name + r.industry + r.city).toLowerCase().includes(q.toLowerCase()));
+    .filter((r) => (r.name + r.industry + r.city + (r.country || "") + (r.segment || "")).toLowerCase().includes(q.toLowerCase()));
   const rows = [...filtered].sort((a, b) =>
     sortK === "deals" ? b.openDeals - a.openDeals
-      : sortK === "city" ? (a.city || "").localeCompare(b.city || "")
-        : a.name.localeCompare(b.name));
+      : sortK === "contacts" ? (b.contacts || 0) - (a.contacts || 0)
+        : sortK === "city" ? (a.city || "").localeCompare(b.city || "")
+          : a.name.localeCompare(b.name));
 
   const pageRows = view === "list" ? rows.slice((page - 1) * pageSize, page * pageSize) : rows;
   const selStyle: React.CSSProperties = { height: 34, borderRadius: 8, border: `1px solid ${color.line.strong}`, background: color.surface.card, color: color.ink.DEFAULT, fontSize: 13, padding: "0 10px", cursor: "pointer" };
@@ -98,6 +113,7 @@ export function CompaniesTable({ rows: all }: { rows: CompanyRow[] }) {
       <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(150px, 1fr))", gap: 10, marginBottom: 16 }}>
         <KPICard label="Companies" value={String(kpis.total)} note="accounts" noteTone={color.brand.primary} />
         <KPICard label="Open deals" value={String(kpis.openDeals)} note="across accounts" noteTone={color.status.positive} />
+        <KPICard label="Contacts" value={String(kpis.contacts)} note="linked people" noteTone={color.brand.primary} />
         <KPICard label="With deals" value={String(kpis.withDeals)} note="active accounts" noteTone={color.ink.soft} />
         <KPICard label="Owners" value={String(kpis.owners)} note="team coverage" noteTone={color.ink.soft} />
         <KPICard label="Industries" value={String(kpis.industries)} note="segments" noteTone={color.ink.soft} />

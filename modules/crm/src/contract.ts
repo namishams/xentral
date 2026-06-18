@@ -89,6 +89,9 @@ export type CompanyRow = {
   name: string;
   industry: string;
   city: string;
+  country: string;
+  segment: string;
+  contacts: number;
   openDeals: number;
   owner: string;
 };
@@ -102,6 +105,9 @@ export async function loadCompanies(scope?: TenantScope): Promise<CompanyRow[]> 
       name: r.name,
       industry: r.industry ?? "",
       city: r.city ?? "",
+      country: r.country ?? "",
+      segment: r.segment ?? "",
+      contacts: r.contacts ?? 0,
       openDeals: r.openDeals ?? 0,
       owner: r.owner ?? "",
     }));
@@ -112,11 +118,11 @@ export async function loadCompanies(scope?: TenantScope): Promise<CompanyRow[]> 
 /** Seed company directory for the workspace. */
 export function listCompanies(): CompanyRow[] {
   return [
-    { id: "a1", name: "Skyline Developers", industry: "Construction", city: "Dubai", openDeals: 3, owner: "Nami" },
-    { id: "a2", name: "Gulf Trading", industry: "Wholesale", city: "Sharjah", openDeals: 1, owner: "Sara" },
-    { id: "a3", name: "Al Noor Real Estate", industry: "Real Estate", city: "Abu Dhabi", openDeals: 2, owner: "Nami" },
-    { id: "a4", name: "Damac Properties", industry: "Real Estate", city: "Dubai", openDeals: 4, owner: "Omar" },
-    { id: "a5", name: "Emaar Group", industry: "Real Estate", city: "Dubai", openDeals: 1, owner: "Sara" },
+    { id: "a1", name: "Skyline Developers", industry: "Construction", city: "Dubai", country: "UAE", segment: "Enterprise", contacts: 4, openDeals: 3, owner: "Nami" },
+    { id: "a2", name: "Gulf Trading", industry: "Wholesale", city: "Sharjah", country: "UAE", segment: "SMB", contacts: 2, openDeals: 1, owner: "Sara" },
+    { id: "a3", name: "Al Noor Real Estate", industry: "Real Estate", city: "Abu Dhabi", country: "UAE", segment: "Mid-Market", contacts: 3, openDeals: 2, owner: "Nami" },
+    { id: "a4", name: "Damac Properties", industry: "Real Estate", city: "Dubai", country: "UAE", segment: "Enterprise", contacts: 6, openDeals: 4, owner: "Omar" },
+    { id: "a5", name: "Emaar Group", industry: "Real Estate", city: "Dubai", country: "UAE", segment: "Enterprise", contacts: 5, openDeals: 1, owner: "Sara" },
   ];
 }
 

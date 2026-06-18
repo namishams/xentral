@@ -54,9 +54,10 @@ export function createLiveDataSource(query: QueryFn): DataSource {
 
     async listCompanies(scope: TenantScope): Promise<RawCompany[]> {
       const { rows } = await query(
-        `select a."id", a."name", a."industry", a."city",
+        `select a."id", a."name", a."industry", a."city", a."country", a."segment",
                 u."name" as "owner",
-                (select count(*)::int from "leads" l where l."accountId" = a."id") as "openDeals"
+                (select count(*)::int from "leads" l where l."accountId" = a."id") as "openDeals",
+                (select count(*)::int from "contacts" ct where ct."accountId" = a."id") as "contacts"
            from "accounts" a
            left join "users" u on u."id" = a."ownerId"
           where a."companyId" = $1 and a."isArchived" = false
@@ -69,8 +70,11 @@ export function createLiveDataSource(query: QueryFn): DataSource {
         name: str(r.name) ?? "",
         industry: str(r.industry),
         city: str(r.city),
+        country: str(r.country),
+        segment: str(r.segment),
         owner: str(r.owner),
         openDeals: typeof r.openDeals === "number" ? r.openDeals : Number(r.openDeals ?? 0),
+        contacts: typeof r.contacts === "number" ? r.contacts : Number(r.contacts ?? 0),
       }));
     },
 

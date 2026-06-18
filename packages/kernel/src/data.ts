@@ -29,6 +29,9 @@ export type RawCompany = {
   name: string;
   industry?: string;
   city?: string;
+  country?: string;
+  segment?: string;
+  contacts?: number;
   openDeals?: number;
   owner?: string;
 };
