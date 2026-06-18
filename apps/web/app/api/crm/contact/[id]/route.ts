@@ -24,7 +24,7 @@ export async function GET(_req: Request, { params }: { params: { id: string } })
   const cid = session.companyId; const id = params.id; const p = pool(url);
 
   const c = await safe(p.query(
-    `select c.id, c."firstName", c."lastName", c.title, c.email, c.phone, c."whatsApp", c.status::text as status, c.notes, c."accountId", c."avatarUrl", c."leadSource" as "leadSource", c."assignedToId" as "assignedToId",
+    `select c.id, c."firstName", c."lastName", c.title, c.email, c.phone, c."whatsApp", c.status::text as status, c.notes, c."accountId", c."avatarUrl", c."leadSource" as "leadSource", c."assignedToId" as "assignedToId", c.salutation, c."addressLine1" as "addressLine1", c.city, c.country, c.website, c.instagram, c."linkedIn" as "linkedIn", c."contactKind" as "contactKind",
             a.name as "accountName", au.name as "assignedToName"
        from "contacts" c left join "accounts" a on a.id = c."accountId" left join "users" au on au.id = c."assignedToId"
       where c.id = $1 and c."companyId" = $2 limit 1`, [id, cid]), { rows: [] as Record<string, unknown>[] });
@@ -90,7 +90,7 @@ export async function PATCH(req: Request, { params }: { params: { id: string } }
     }
     // field edit
     const sets: string[] = []; const vals: unknown[] = []; let i = 1;
-    for (const f of ["firstName", "lastName", "title", "email", "phone", "whatsApp", "notes", "leadSource"]) if (f in b) { sets.push(`"${f}"=$${i}`); vals.push(s(b[f])); i++; }
+    for (const f of ["firstName", "lastName", "title", "email", "phone", "whatsApp", "notes", "leadSource", "salutation", "addressLine1", "city", "country", "website", "instagram", "linkedIn", "contactKind"]) if (f in b) { sets.push(`"${f}"=$${i}`); vals.push(s(b[f])); i++; }
     if ("assignedToId" in b) { sets.push(`"assignedToId"=$${i}`); vals.push(b.assignedToId && String(b.assignedToId).trim() ? String(b.assignedToId) : null); i++; }
     if (typeof b.status === "string" && ["NEW","CONTACTED","QUALIFIED","PROPOSAL","NEGOTIATION","WON","LOST","ON_HOLD"].includes(b.status)) { sets.push(`"status"=$${i}::"ContactStatus"`); vals.push(b.status); i++; }
     if ("accountId" in b) {

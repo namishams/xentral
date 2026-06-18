@@ -9,7 +9,7 @@ type Doc = { id: string; number: string; status: string; total: number; paid?: n
 type Task = { id: string; title: string; due: string | null };
 type Act = { id: string; type: string; subject: string | null; content: string | null; at: string; author?: string | null; direction?: string | null; outcome?: string | null };
 type Convo = { id: string; phone: string; body: string | null; at: string };
-type Contact = { id: string; firstName: string; lastName: string | null; title: string | null; email: string | null; phone: string | null; whatsApp: string | null; status: string; notes: string | null; accountId: string | null; accountName: string | null; leadSource?: string | null; assignedToId?: string | null; assignedToName?: string | null };
+type Contact = { id: string; firstName: string; lastName: string | null; title: string | null; email: string | null; phone: string | null; whatsApp: string | null; status: string; notes: string | null; accountId: string | null; accountName: string | null; leadSource?: string | null; assignedToId?: string | null; assignedToName?: string | null; salutation?: string | null; addressLine1?: string | null; city?: string | null; country?: string | null; website?: string | null; instagram?: string | null; linkedIn?: string | null; contactKind?: string | null };
 type Payload = { contact: Contact; tasks: Task[]; deals: Deal[]; invoices: Doc[]; quotes: Doc[]; activities: Act[]; conversations: Convo[] };
 
 const initials = (n: string) => n.split(" ").filter(Boolean).map((w) => w[0]).slice(0, 2).join("").toUpperCase() || "?";
@@ -22,7 +22,7 @@ const ACT: Record<string, { icon: string; color: string }> = { NOTE: { icon: "�
 const am = (k: string): { icon: string; color: string } => ACT[k] ?? { icon: "•", color: "#647082" };
 
 export default function ContactDetailPage({ params }: { params: { id: string } }) {
-  type Form = { firstName: string; lastName: string; title: string; email: string; phone: string; whatsApp: string; notes: string; accountId: string; leadSource: string; assignedToId: string; status: string };
+  type Form = { firstName: string; lastName: string; title: string; email: string; phone: string; whatsApp: string; notes: string; accountId: string; leadSource: string; assignedToId: string; status: string; salutation: string; addressLine1: string; city: string; country: string; website: string; instagram: string; linkedIn: string; contactKind: string };
   const [d, setD] = React.useState<Payload | null>(null);
   const [loading, setLoading] = React.useState(true);
   const [form, setForm] = React.useState<Form | null>(null);
@@ -37,7 +37,7 @@ export default function ContactDetailPage({ params }: { params: { id: string } }
     fetch(`/api/crm/contact/${params.id}`).then((r) => r.json()).then((j) => {
       if (j.error) { setD(null); setLoading(false); return; }
       setD(j);
-      const f: Form = { firstName: j.contact.firstName || "", lastName: j.contact.lastName || "", title: j.contact.title || "", email: j.contact.email || "", phone: j.contact.phone || "", whatsApp: j.contact.whatsApp || "", notes: j.contact.notes || "", accountId: j.contact.accountId || "", leadSource: j.contact.leadSource || "", assignedToId: j.contact.assignedToId || "", status: j.contact.status || "NEW" };
+      const f: Form = { firstName: j.contact.firstName || "", lastName: j.contact.lastName || "", title: j.contact.title || "", email: j.contact.email || "", phone: j.contact.phone || "", whatsApp: j.contact.whatsApp || "", notes: j.contact.notes || "", accountId: j.contact.accountId || "", leadSource: j.contact.leadSource || "", assignedToId: j.contact.assignedToId || "", status: j.contact.status || "NEW", salutation: j.contact.salutation || "", addressLine1: j.contact.addressLine1 || "", city: j.contact.city || "", country: j.contact.country || "", website: j.contact.website || "", instagram: j.contact.instagram || "", linkedIn: j.contact.linkedIn || "", contactKind: j.contact.contactKind || "" };
       setForm(f); setClean(f); setLoading(false);
     }).catch(() => setLoading(false));
   }, [params.id]);
@@ -59,6 +59,11 @@ export default function ContactDetailPage({ params }: { params: { id: string } }
     const valS = window.prompt("Value (AED, optional):") || "";
     const value = Number(valS.replace(/[^\d.]/g, "")) || undefined;
     await patch({ dealName: name.trim(), dealValue: value });
+  }
+  function vcard() {
+    if (!d) return; const cc = d.contact; const fn = `${cc.firstName} ${cc.lastName ?? ""}`.trim();
+    const L = ["BEGIN:VCARD","VERSION:3.0",`N:${cc.lastName||""};${cc.firstName||""};;${cc.salutation||""};`,`FN:${fn}`, cc.title?`TITLE:${cc.title}`:"", cc.accountName?`ORG:${cc.accountName}`:"", cc.email?`EMAIL;TYPE=WORK:${cc.email}`:"", cc.phone?`TEL;TYPE=WORK,VOICE:${cc.phone}`:"", cc.whatsApp?`TEL;TYPE=CELL:${cc.whatsApp}`:"", cc.website?`URL:${cc.website}`:"", (cc.addressLine1||cc.city||cc.country)?`ADR;TYPE=WORK:;;${cc.addressLine1||""};${cc.city||""};;;${cc.country||""}`:"", "END:VCARD"].filter(Boolean);
+    const blob = new Blob([L.join("\r\n")], { type: "text/vcard" }); const el = document.createElement("a"); el.href = URL.createObjectURL(blob); el.download = `${fn||"contact"}.vcf`; el.click(); URL.revokeObjectURL(el.href);
   }
   const set = (k: keyof Form, v: string) => setForm((f) => (f ? { ...f, [k]: v } : f));
   const fieldS: React.CSSProperties = { width: "100%", boxSizing: "border-box", height: 34, border: `1px solid ${color.line.strong}`, borderRadius: 8, padding: "0 10px", fontSize: 13, color: color.ink.DEFAULT, background: color.surface.card, outline: "none" };
@@ -92,6 +97,7 @@ export default function ContactDetailPage({ params }: { params: { id: string } }
           <AskAiButton label="Ask AI" seed={`Draft a follow-up email to ${name}${c.accountName ? " at " + c.accountName : ""}.`} />
           {c.email ? <a href={`mailto:${c.email}`} style={{ textDecoration: "none" }}><Button>Email</Button></a> : null}
           {c.phone ? <a href={`tel:${c.phone}`} style={{ textDecoration: "none" }}><Button>Call</Button></a> : null}
+          <Button onClick={vcard}>vCard</Button>
           <Button variant="primary" onClick={addDeal}>+ New deal</Button>
         </div>} />
 
@@ -128,14 +134,27 @@ export default function ContactDetailPage({ params }: { params: { id: string } }
             <PanelBody>
               {form ? (
                 <div style={{ display: "flex", flexDirection: "column", gap: 11 }}>
-                  <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
+                  <div style={{ display: "grid", gridTemplateColumns: "0.85fr 1fr 1fr", gap: 10 }}>
+                    <div><label style={labelS}>Salutation</label><select value={form.salutation} onChange={(e) => set("salutation", e.target.value)} style={fieldS}><option value="">—</option>{["Mr","Mrs","Ms","Mx","Dr","Prof.","Eng.","Sheikh","Sheikha","H.E.","Hon."].map((x) => <option key={x} value={x}>{x}</option>)}</select></div>
                     <div><label style={labelS}>First name</label><input value={form.firstName} onChange={(e) => set("firstName", e.target.value)} style={fieldS} /></div>
                     <div><label style={labelS}>Last name</label><input value={form.lastName} onChange={(e) => set("lastName", e.target.value)} style={fieldS} /></div>
                   </div>
-                  <div><label style={labelS}>Title</label><input value={form.title} onChange={(e) => set("title", e.target.value)} style={fieldS} /></div>
-                  <div><label style={labelS}>Email</label><input value={form.email} onChange={(e) => set("email", e.target.value)} style={fieldS} /></div>
-                  <div><label style={labelS}>Phone</label><input value={form.phone} onChange={(e) => set("phone", e.target.value)} style={fieldS} /></div>
-                  <div><label style={labelS}>WhatsApp</label><input value={form.whatsApp} onChange={(e) => set("whatsApp", e.target.value)} style={fieldS} /></div>
+                  <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
+                    <div><label style={labelS}>Job title</label><input value={form.title} onChange={(e) => set("title", e.target.value)} placeholder="e.g. Procurement Manager" style={fieldS} /></div>
+                    <div><label style={labelS}>Type</label><select value={form.contactKind} onChange={(e) => set("contactKind", e.target.value)} style={fieldS}><option value="">—</option><option value="Business">Business</option><option value="Private">Private</option></select></div>
+                  </div>
+                  <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
+                    <div><label style={labelS}>Email</label><input value={form.email} onChange={(e) => set("email", e.target.value)} style={fieldS} /></div>
+                    <div><label style={labelS}>Phone</label><input value={form.phone} onChange={(e) => set("phone", e.target.value)} style={fieldS} /></div>
+                  </div>
+                  <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
+                    <div><label style={labelS}>WhatsApp</label><input value={form.whatsApp} onChange={(e) => set("whatsApp", e.target.value)} style={fieldS} /></div>
+                    <div><label style={labelS}>LinkedIn</label><input value={form.linkedIn} onChange={(e) => set("linkedIn", e.target.value)} placeholder="profile URL" style={fieldS} /></div>
+                  </div>
+                  <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
+                    <div><label style={labelS}>Website</label><input value={form.website} onChange={(e) => set("website", e.target.value)} style={fieldS} /></div>
+                    <div><label style={labelS}>Instagram</label><input value={form.instagram} onChange={(e) => set("instagram", e.target.value)} placeholder="@handle" style={fieldS} /></div>
+                  </div>
                   <div>
                     <label style={labelS}>Company</label>
                     <select value={form.accountId} onChange={(e) => set("accountId", e.target.value)} style={fieldS}>
@@ -143,6 +162,11 @@ export default function ContactDetailPage({ params }: { params: { id: string } }
                       {accounts.map((a) => <option key={a.id} value={a.id}>{a.name}</option>)}
                     </select>
                     {form.accountId ? <a href={`/companies/${form.accountId}`} style={{ display: "inline-block", marginTop: 5, fontSize: 12, color: color.brand.primary, textDecoration: "none", fontWeight: 600 }}>Open company →</a> : null}
+                  </div>
+                  <div><label style={labelS}>Address</label><input value={form.addressLine1} onChange={(e) => set("addressLine1", e.target.value)} placeholder="Street / building" style={fieldS} /></div>
+                  <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
+                    <div><label style={labelS}>City</label><input value={form.city} onChange={(e) => set("city", e.target.value)} style={fieldS} /></div>
+                    <div><label style={labelS}>Country</label><input value={form.country} onChange={(e) => set("country", e.target.value)} style={fieldS} /></div>
                   </div>
                   <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
                     <div><label style={labelS}>Lead source</label><select value={form.leadSource} onChange={(e) => set("leadSource", e.target.value)} style={fieldS}><option value="">—</option>{["Website","Referral","WhatsApp","Marketplace","Event","Cold outreach","Advertising","Other"].map((x) => <option key={x} value={x}>{x}</option>)}</select></div>
