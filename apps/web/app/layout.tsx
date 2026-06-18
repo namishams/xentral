@@ -41,7 +41,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
 .xui-tr{transition:background 120ms ease;}
 .xui-tr:hover{background:var(--surface-page);}
 .xui-panel--i:hover{box-shadow:0 4px 12px rgba(16,24,40,0.10)!important;}
-.xui-row-link:hover{background:var(--surface-page);}` }} />
+.xui-row-link:hover{background:var(--surface-page);}\n/* enterprise polish */\n*{scrollbar-width:thin;scrollbar-color:var(--line-strong) transparent;}\n*::-webkit-scrollbar{width:10px;height:10px;}\n*::-webkit-scrollbar-thumb{background:var(--line-strong);border-radius:8px;border:2px solid var(--surface-card);}\n*::-webkit-scrollbar-thumb:hover{background:var(--ink-soft);}\n*::-webkit-scrollbar-track{background:transparent;}\n:focus-visible{outline:2px solid var(--brand-primary);outline-offset:2px;border-radius:6px;}\nbutton:focus:not(:focus-visible),a:focus:not(:focus-visible),input:focus:not(:focus-visible),select:focus:not(:focus-visible),textarea:focus:not(:focus-visible){outline:none;}\ntable{font-variant-numeric:tabular-nums;}\nbutton{transition:background 120ms ease,border-color 120ms ease,box-shadow 120ms ease,opacity 120ms ease;}\ninput,select,textarea{transition:border-color 120ms ease,box-shadow 120ms ease;}\n::selection{background:var(--brand-tint);color:var(--ink);}` }} />
         <script dangerouslySetInnerHTML={{ __html: "(function(){try{var t=localStorage.getItem('xentral-theme');if(t==='dark')document.documentElement.setAttribute('data-theme','dark');}catch(e){}})();" }} />
       </head>
       <body style={{ margin: 0, background: "var(--surface-page)", color: "var(--ink)", fontFamily: "Inter, system-ui, -apple-system, Segoe UI, Roboto, sans-serif" }}>
