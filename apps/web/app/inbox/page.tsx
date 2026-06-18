@@ -18,6 +18,7 @@ export default function InboxPage() {
   const [reply, setReply] = React.useState("");
   const [sending, setSending] = React.useState(false);
   const [q, setQ] = React.useState("");
+  const [isOperator, setIsOperator] = React.useState(false);
 
   const loadConvs = React.useCallback(() => {
     fetch("/api/whatsapp/conversations").then((r) => r.json()).then((d) => {
@@ -28,6 +29,7 @@ export default function InboxPage() {
     }).catch(() => setLoading(false));
   }, []);
   React.useEffect(() => { loadConvs(); }, [loadConvs]);
+  React.useEffect(() => { fetch("/api/me").then((r) => r.json()).then((d) => setIsOperator(!!d.superAdmin)).catch(() => {}); }, []);
 
   const loadMsgs = React.useCallback((id: string) => {
     fetch(`/api/whatsapp/conversations/${id}/messages`).then((r) => r.json()).then((d) => setMsgs(d.messages ?? [])).catch(() => setMsgs([]));
@@ -45,6 +47,15 @@ export default function InboxPage() {
       if (r.ok) { setReply(""); loadMsgs(activeId); loadConvs(); }
     } catch { /* noop */ }
     setSending(false);
+  };
+
+  // Operator-only: turn this WhatsApp lead into a marketplace listing.
+  // Routes to the Admin console with the contact pre-filled into the Add-Lead form,
+  // where the operator picks listing type (Shared / Exclusive / Best Offer) + price.
+  const listOnMarketplace = () => {
+    if (!active) return;
+    const params = new URLSearchParams({ waName: active.name || "", waPhone: active.phone || "" });
+    window.location.href = `/admin?${params.toString()}`;
   };
 
   return (
@@ -90,10 +101,13 @@ export default function InboxPage() {
             <>
               <div style={{ padding: "12px 16px", borderBottom: `1px solid ${color.line.DEFAULT}`, display: "flex", alignItems: "center", gap: 10 }}>
                 <span style={{ width: 34, height: 34, borderRadius: "50%", background: color.surface.sunken, color: color.ink.mid, display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 700, fontSize: 12 }}>{initials(active.name || active.phone)}</span>
-                <span>
+                <span style={{ flex: 1, minWidth: 0 }}>
                   <span style={{ display: "block", fontWeight: 600, color: color.ink.DEFAULT }}>{active.name || active.phone}</span>
                   <span style={{ display: "block", fontSize: 12, color: color.ink.soft }}>{active.phone} · {active.mode === "AI" ? "AI mode" : "Manual"}</span>
                 </span>
+                {isOperator ? (
+                  <button onClick={listOnMarketplace} title="Turn this lead into a marketplace listing" style={{ height: 34, padding: "0 13px", borderRadius: 8, border: 0, background: color.brand.primary, color: color.ink.onPrimary, fontSize: 12.5, fontWeight: 700, cursor: "pointer", whiteSpace: "nowrap" }}>🏪 List on marketplace</button>
+                ) : null}
               </div>
               <div style={{ flex: 1, overflowY: "auto", padding: 16, background: color.surface.page, display: "flex", flexDirection: "column", gap: 8 }}>
                 {msgs.length === 0 ? <div style={{ color: color.ink.soft, fontSize: 13, textAlign: "center", marginTop: 20 }}>No messages.</div>

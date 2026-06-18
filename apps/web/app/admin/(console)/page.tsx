@@ -61,6 +61,20 @@ export default function AdminPage() {
   }, []);
   React.useEffect(() => { load(); }, [load]);
 
+  // Prefill the Add-Lead form when arriving from a WhatsApp conversation
+  // (Inbox → "List on marketplace"). Opens the Marketplace tab + modal.
+  React.useEffect(() => {
+    if (typeof window === "undefined") return;
+    const sp = new URLSearchParams(window.location.search);
+    const waName = sp.get("waName"); const waPhone = sp.get("waPhone");
+    if (!waName && !waPhone) return;
+    const parts = (waName || "").trim().split(/\s+/).filter(Boolean);
+    setF({ ...blank(), name: waName || "WhatsApp lead", firstName: parts[0] || "", lastName: parts.slice(1).join(" "), phone: waPhone || "", hasWhatsApp: true, hasPhone: !!waPhone });
+    setTab("Marketplace");
+    setAdding(true);
+    window.history.replaceState({}, "", "/admin");
+  }, []);
+
   async function act(body: Record<string, unknown>) {
     setBusy(true);
     try { const r = await fetch("/api/admin/actions", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) }); const j = await r.json().catch(() => ({})); if (!r.ok) window.alert(j.error || "Action failed"); else load(); return r.ok; }
