@@ -34,7 +34,7 @@ export async function GET(_req: Request, { params }: { params: { id: string } })
     safe(p.query(`select id, title, to_char("dueAt",'DD Mon YYYY') as due, "isCompleted" from "tasks" where "companyId"=$1 and "contactId"=$2 and "isCompleted"=false order by "dueAt" asc nulls last limit 8`, [cid, id]), { rows: [] }),
     safe(p.query(`select id, coalesce("firstName",'')||' '||coalesce("lastName",'') as name, status::text as status, value, currency, to_char("createdAt",'DD Mon YYYY') as created from "leads" where "companyId"=$1 and contact_id=$2 order by "updatedAt" desc limit 12`, [cid, id]), { rows: [] }),
     safe(p.query(`select id from "billing_customers" where "companyId"=$1 and "contactId"=$2`, [cid, id]), { rows: [] as { id: string }[] }),
-    safe(p.query(`select id, type, subject, content, to_char("createdAt",'DD Mon YYYY, HH24:MI') as at from "activities" where "companyId"=$1 and "contactId"=$2 order by "createdAt" desc limit 25`, [cid, id]), { rows: [] }),
+    safe(p.query(`select a.id, a.type::text as type, a.subject, a.content, a.direction, a.outcome, to_char(a."createdAt",'DD Mon YYYY, HH24:MI') as at, au.name as author from "activities" a left join "users" au on au.id = a."userId" where a."companyId"=$1 and a."contactId"=$2 order by a."createdAt" desc limit 40`, [cid, id]), { rows: [] }),
     safe(p.query(`select id, contact_phone as phone, last_message_body as body, to_char(last_message_at,'DD Mon YYYY') as at from "whatsapp_conversations" where company_id=$1 and contact_id=$2 order by last_message_at desc limit 5`, [cid, id]), { rows: [] }),
   ]);
   const custIds = (billing.rows as { id: string }[]).map((r) => r.id);
@@ -69,8 +69,10 @@ export async function PATCH(req: Request, { params }: { params: { id: string } }
     if (!own.rows[0]) return NextResponse.json({ error: "Not found" }, { status: 404 });
 
     if (typeof b.note === "string" && b.note.trim()) {
-      await p.query(`insert into "activities" (id,"companyId","contactId",type,subject,content,"userId","createdAt","updatedAt") values ($1,$2,$3,'NOTE'::"ActivityType",'Note',$4,$5,now(),now())`,
-        [newId("ac"), cid, id, b.note.trim(), session.userId]);
+      const T = ["NOTE","CALL","EMAIL","MEETING","FOLLOW_UP"].includes(String(b.activityType)) ? String(b.activityType) : "NOTE";
+      const subj = ({ NOTE: "Note", CALL: "Call logged", EMAIL: "Email logged", MEETING: "Meeting logged", FOLLOW_UP: "Follow-up" } as Record<string, string>)[T] || "Note";
+      await p.query(`insert into "activities" (id,"companyId","contactId",type,subject,content,"userId","createdAt","updatedAt") values ($1,$2,$3,$4::"ActivityType",$5,$6,$7,now(),now())`,
+        [newId("ac"), cid, id, T, subj, b.note.trim(), session.userId]);
       return NextResponse.json({ ok: true });
     }
     if (typeof b.task === "string" && b.task.trim()) {

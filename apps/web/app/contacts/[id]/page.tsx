@@ -7,7 +7,7 @@ import { AppShell, PageTitleRow, Button, StatusBadge, type BadgeTone, Panel, Pan
 type Deal = { id: string; name: string; status: string; value: number | null; currency: string | null; created?: string };
 type Doc = { id: string; number: string; status: string; total: number; paid?: number; currency: string | null };
 type Task = { id: string; title: string; due: string | null };
-type Act = { id: string; type: string; subject: string | null; content: string | null; at: string };
+type Act = { id: string; type: string; subject: string | null; content: string | null; at: string; author?: string | null; direction?: string | null; outcome?: string | null };
 type Convo = { id: string; phone: string; body: string | null; at: string };
 type Contact = { id: string; firstName: string; lastName: string | null; title: string | null; email: string | null; phone: string | null; whatsApp: string | null; status: string; notes: string | null; accountId: string | null; accountName: string | null; leadSource?: string | null; assignedToId?: string | null; assignedToName?: string | null };
 type Payload = { contact: Contact; tasks: Task[]; deals: Deal[]; invoices: Doc[]; quotes: Doc[]; activities: Act[]; conversations: Convo[] };
@@ -18,6 +18,8 @@ const OPEN_DEAL = (s: string) => !["WON", "LOST", "UNQUALIFIED"].includes((s || 
 const dealTone = (s: string): BadgeTone => { const u = (s || "").toUpperCase(); return u === "WON" ? "positive" : u === "LOST" || u === "UNQUALIFIED" ? "critical" : u === "NEGOTIATION" || u === "PROPOSAL" ? "warning" : "info"; };
 const invTone = (s: string): BadgeTone => { const u = (s || "").toUpperCase(); return u === "PAID" ? "positive" : u === "OVERDUE" ? "critical" : u === "PARTIALLY_PAID" ? "warning" : u === "CANCELLED" ? "neutral" : "info"; };
 const cap = (s: string) => s ? s.charAt(0).toUpperCase() + s.slice(1).toLowerCase().replace(/_/g, " ") : "—";
+const ACT: Record<string, { icon: string; color: string }> = { NOTE: { icon: "✎", color: "#647082" }, CALL: { icon: "☎", color: "#0064d9" }, EMAIL: { icon: "@", color: "#6b3fd4" }, MEETING: { icon: "▦", color: "#188918" }, FOLLOW_UP: { icon: "⏰", color: "#df6e0c" }, STATUS_CHANGE: { icon: "⇄", color: "#647082" }, ASSIGNMENT: { icon: "◍", color: "#647082" }, TASK: { icon: "✓", color: "#188918" }, BILLING: { icon: "▣", color: "#647082" } };
+const am = (k: string): { icon: string; color: string } => ACT[k] ?? { icon: "•", color: "#647082" };
 
 export default function ContactDetailPage({ params }: { params: { id: string } }) {
   type Form = { firstName: string; lastName: string; title: string; email: string; phone: string; whatsApp: string; notes: string; accountId: string; leadSource: string; assignedToId: string; status: string };
@@ -28,6 +30,7 @@ export default function ContactDetailPage({ params }: { params: { id: string } }
   const [accounts, setAccounts] = React.useState<{ id: string; name: string }[]>([]);
   const [owners, setOwners] = React.useState<{ id: string; name: string }[]>([]);
   const [note, setNote] = React.useState("");
+  const [noteType, setNoteType] = React.useState("NOTE");
   const [busy, setBusy] = React.useState(false);
   const [saved, setSaved] = React.useState(false);
   const load = React.useCallback(() => {
@@ -48,7 +51,7 @@ export default function ContactDetailPage({ params }: { params: { id: string } }
     finally { setBusy(false); }
   }
   async function saveForm() { if (!form) return; const ok = await patch(form); if (ok) { setSaved(true); setTimeout(() => setSaved(false), 2000); } }
-  async function addNote() { const t = note.trim(); if (!t) return; const ok = await patch({ note: t }); if (ok) setNote(""); }
+  async function addNote() { const t = note.trim(); if (!t) return; const ok = await patch({ note: t, activityType: noteType }); if (ok) setNote(""); }
   const [newTask, setNewTask] = React.useState("");
   async function addTask() { const t = newTask.trim(); if (!t) return; const ok = await patch({ task: t }); if (ok) setNewTask(""); }
   async function addDeal() {
@@ -97,10 +100,11 @@ export default function ContactDetailPage({ params }: { params: { id: string } }
         <div style={{ display: "flex", alignItems: "center", gap: 14, padding: "16px 18px", borderBottom: `1px solid ${color.line.DEFAULT}`, flexWrap: "wrap" }}>
           <span style={{ width: 52, height: 52, borderRadius: "50%", background: color.brand.primaryTint, color: color.brand.primary, fontSize: 19, fontWeight: 700, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>{initials(name)}</span>
           <div style={{ minWidth: 0, flex: 1 }}>
-            <div style={{ fontSize: 18, fontWeight: 700, color: color.ink.DEFAULT }}>{name}</div>
-            <div style={{ fontSize: 12.5, color: color.ink.mid }}>
-              {c.title || "Contact"}
-              {c.accountName ? <> · <a href={`/companies/${c.accountId}`} style={{ color: color.brand.primary, textDecoration: "none", fontWeight: 600 }}>{c.accountName}</a></> : null}
+            <div style={{ fontSize: 13.5, color: color.ink.mid }}>{c.title || "Contact"}{c.accountName ? <> · <a href={`/companies/${c.accountId}`} style={{ color: color.brand.primary, textDecoration: "none", fontWeight: 600 }}>{c.accountName}</a></> : null}</div>
+            <div style={{ display: "flex", flexWrap: "wrap", gap: "8px 20px", marginTop: 9 }}>
+              {([["Owner", c.assignedToName || "Unassigned"], ["Status", cap(c.status)], ["Lead source", c.leadSource || "—"], ["Last touch", d.activities[0]?.at?.split(",")[0] ?? "—"], ["Next step", d.tasks[0] ? (d.tasks[0].title + (d.tasks[0].due ? " · " + d.tasks[0].due : "")) : "—"]] as [string, string][]).map(([l, v]) => (
+                <div key={l} style={{ minWidth: 0 }}><div style={{ fontSize: 9.5, fontWeight: 700, letterSpacing: 0.4, textTransform: "uppercase", color: color.ink.soft }}>{l}</div><div style={{ fontSize: 12.5, fontWeight: 600, color: color.ink.DEFAULT, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", maxWidth: 240 }}>{v}</div></div>
+              ))}
             </div>
           </div>
         </div>
@@ -208,23 +212,30 @@ export default function ContactDetailPage({ params }: { params: { id: string } }
           <Panel>
             <PanelHeader title="Timeline" subtitle="Notes, calls, billing — newest first" />
             <PanelBody>
-              <div style={{ display: "flex", gap: 8, marginBottom: 14 }}>
-                <input value={note} onChange={(e) => setNote(e.target.value)} onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); addNote(); } }} placeholder="Add a note…" style={{ flex: 1, height: 34, border: `1px solid ${color.line.strong}`, borderRadius: 8, padding: "0 11px", fontSize: 13, color: color.ink.DEFAULT, background: color.surface.card, outline: "none" }} />
-                <Button variant="primary" onClick={addNote} disabled={busy || !note.trim()}>{busy ? "…" : "Add note"}</Button>
+              <div style={{ display: "flex", gap: 6, flexWrap: "wrap", marginBottom: 8 }}>
+                {(["NOTE","CALL","MEETING","EMAIL","FOLLOW_UP"] as const).map((tp) => { const on = noteType === tp; return <button key={tp} onClick={() => setNoteType(tp)} style={{ fontSize: 11.5, fontWeight: 600, padding: "4px 10px", borderRadius: 999, cursor: "pointer", border: `1px solid ${on ? color.brand.primary : color.line.strong}`, background: on ? color.brand.primaryTint : color.surface.card, color: on ? color.brand.primary : color.ink.mid }}>{am(tp).icon} {cap(tp)}</button>; })}
               </div>
-              {d.activities.length === 0 ? <div style={{ padding: "12px 0", textAlign: "center", fontSize: 12.5, color: color.ink.soft }}>No activity yet.</div>
-                : <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>{d.activities.map((a) => (
-                    <div key={a.id} style={{ display: "flex", gap: 10 }}>
-                      <span style={{ width: 8, height: 8, borderRadius: "50%", background: color.brand.primary, marginTop: 5, flexShrink: 0 }} />
+              <div style={{ display: "flex", gap: 8, marginBottom: 16 }}>
+                <input value={note} onChange={(e) => setNote(e.target.value)} onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); addNote(); } }} placeholder={noteType === "NOTE" ? "Add a note…" : `Log a ${cap(noteType).toLowerCase()}…`} style={{ flex: 1, height: 34, border: `1px solid ${color.line.strong}`, borderRadius: 8, padding: "0 11px", fontSize: 13, color: color.ink.DEFAULT, background: color.surface.card, outline: "none" }} />
+                <Button variant="primary" onClick={addNote} disabled={busy || !note.trim()}>{busy ? "…" : "Log"}</Button>
+              </div>
+              {d.activities.length === 0 ? <div style={{ padding: "12px 0", textAlign: "center", fontSize: 12.5, color: color.ink.soft }}>No activity yet — log your first call or note above.</div>
+                : <div style={{ display: "flex", flexDirection: "column" }}>{d.activities.map((a, idx) => { const m = am(a.type); return (
+                    <div key={a.id} style={{ display: "flex", gap: 11, paddingBottom: 14 }}>
+                      <div style={{ display: "flex", flexDirection: "column", alignItems: "center", flexShrink: 0 }}>
+                        <span style={{ width: 26, height: 26, borderRadius: "50%", background: `color-mix(in srgb, ${m.color} 14%, ${color.surface.card})`, color: m.color, fontSize: 12, display: "inline-flex", alignItems: "center", justifyContent: "center" }}>{m.icon}</span>
+                        {idx < d.activities.length - 1 ? <span style={{ flex: 1, width: 1, background: color.line.DEFAULT, marginTop: 2 }} /> : null}
+                      </div>
                       <div style={{ minWidth: 0, flex: 1 }}>
                         <div style={{ display: "flex", gap: 8, alignItems: "baseline" }}>
                           <span style={{ fontSize: 12.5, fontWeight: 600, color: color.ink.DEFAULT }}>{a.subject || cap(a.type)}</span>
                           <span style={{ fontSize: 11, color: color.ink.soft, marginLeft: "auto", flexShrink: 0 }}>{a.at}</span>
                         </div>
                         {a.content ? <div style={{ fontSize: 12, color: color.ink.mid, marginTop: 2, whiteSpace: "pre-wrap" }}>{a.content}</div> : null}
+                        {a.author ? <div style={{ fontSize: 10.5, color: color.ink.soft, marginTop: 3 }}>by {a.author}</div> : null}
                       </div>
                     </div>
-                  ))}</div>}
+                  ); })}</div>}
             </PanelBody>
           </Panel>
         </div>
