@@ -20,11 +20,12 @@ const invTone = (s: string): BadgeTone => { const u = (s || "").toUpperCase(); r
 const cap = (s: string) => s ? s.charAt(0).toUpperCase() + s.slice(1).toLowerCase().replace(/_/g, " ") : "—";
 
 export default function ContactDetailPage({ params }: { params: { id: string } }) {
-  type Form = { firstName: string; lastName: string; title: string; email: string; phone: string; whatsApp: string; notes: string };
+  type Form = { firstName: string; lastName: string; title: string; email: string; phone: string; whatsApp: string; notes: string; accountId: string };
   const [d, setD] = React.useState<Payload | null>(null);
   const [loading, setLoading] = React.useState(true);
   const [form, setForm] = React.useState<Form | null>(null);
   const [clean, setClean] = React.useState<Form | null>(null);
+  const [accounts, setAccounts] = React.useState<{ id: string; name: string }[]>([]);
   const [note, setNote] = React.useState("");
   const [busy, setBusy] = React.useState(false);
   const [saved, setSaved] = React.useState(false);
@@ -32,11 +33,12 @@ export default function ContactDetailPage({ params }: { params: { id: string } }
     fetch(`/api/crm/contact/${params.id}`).then((r) => r.json()).then((j) => {
       if (j.error) { setD(null); setLoading(false); return; }
       setD(j);
-      const f: Form = { firstName: j.contact.firstName || "", lastName: j.contact.lastName || "", title: j.contact.title || "", email: j.contact.email || "", phone: j.contact.phone || "", whatsApp: j.contact.whatsApp || "", notes: j.contact.notes || "" };
+      const f: Form = { firstName: j.contact.firstName || "", lastName: j.contact.lastName || "", title: j.contact.title || "", email: j.contact.email || "", phone: j.contact.phone || "", whatsApp: j.contact.whatsApp || "", notes: j.contact.notes || "", accountId: j.contact.accountId || "" };
       setForm(f); setClean(f); setLoading(false);
     }).catch(() => setLoading(false));
   }, [params.id]);
   React.useEffect(() => { load(); }, [load]);
+  React.useEffect(() => { fetch("/api/crm/accounts").then((r) => r.json()).then((j) => setAccounts(Array.isArray(j.rows) ? j.rows : [])).catch(() => {}); }, []);
   const dirty = !!form && !!clean && (Object.keys(form) as (keyof Form)[]).some((k) => form[k] !== clean[k]);
   async function patch(body: Record<string, unknown>) {
     setBusy(true);
@@ -45,6 +47,14 @@ export default function ContactDetailPage({ params }: { params: { id: string } }
   }
   async function saveForm() { if (!form) return; const ok = await patch(form); if (ok) { setSaved(true); setTimeout(() => setSaved(false), 2000); } }
   async function addNote() { const t = note.trim(); if (!t) return; const ok = await patch({ note: t }); if (ok) setNote(""); }
+  const [newTask, setNewTask] = React.useState("");
+  async function addTask() { const t = newTask.trim(); if (!t) return; const ok = await patch({ task: t }); if (ok) setNewTask(""); }
+  async function addDeal() {
+    const name = window.prompt("Deal name:"); if (!name || !name.trim()) return;
+    const valS = window.prompt("Value (AED, optional):") || "";
+    const value = Number(valS.replace(/[^\d.]/g, "")) || undefined;
+    await patch({ dealName: name.trim(), dealValue: value });
+  }
   const set = (k: keyof Form, v: string) => setForm((f) => (f ? { ...f, [k]: v } : f));
   const fieldS: React.CSSProperties = { width: "100%", boxSizing: "border-box", height: 34, border: `1px solid ${color.line.strong}`, borderRadius: 8, padding: "0 10px", fontSize: 13, color: color.ink.DEFAULT, background: color.surface.card, outline: "none" };
   const labelS: React.CSSProperties = { display: "block", fontSize: 10.5, fontWeight: 700, letterSpacing: 0.3, color: color.ink.soft, textTransform: "uppercase", marginBottom: 4 };
@@ -77,6 +87,7 @@ export default function ContactDetailPage({ params }: { params: { id: string } }
           <AskAiButton label="Ask AI" seed={`Draft a follow-up email to ${name}${c.accountName ? " at " + c.accountName : ""}.`} />
           {c.email ? <a href={`mailto:${c.email}`} style={{ textDecoration: "none" }}><Button>Email</Button></a> : null}
           {c.phone ? <a href={`tel:${c.phone}`} style={{ textDecoration: "none" }}><Button>Call</Button></a> : null}
+          <Button variant="primary" onClick={addDeal}>+ New deal</Button>
         </div>} />
 
       {/* Identity + metrics band */}
@@ -121,7 +132,11 @@ export default function ContactDetailPage({ params }: { params: { id: string } }
                   <div><label style={labelS}>WhatsApp</label><input value={form.whatsApp} onChange={(e) => set("whatsApp", e.target.value)} style={fieldS} /></div>
                   <div>
                     <label style={labelS}>Company</label>
-                    {c.accountName ? <a href={`/companies/${c.accountId}`} style={{ display: "inline-block", fontSize: 13, color: color.brand.primary, textDecoration: "none", fontWeight: 600 }}>{c.accountName} →</a> : <span style={{ fontSize: 13, color: color.ink.soft }}>—</span>}
+                    <select value={form.accountId} onChange={(e) => set("accountId", e.target.value)} style={fieldS}>
+                      <option value="">— No company —</option>
+                      {accounts.map((a) => <option key={a.id} value={a.id}>{a.name}</option>)}
+                    </select>
+                    {form.accountId ? <a href={`/companies/${form.accountId}`} style={{ display: "inline-block", marginTop: 5, fontSize: 12, color: color.brand.primary, textDecoration: "none", fontWeight: 600 }}>Open company →</a> : null}
                   </div>
                   <div><label style={labelS}>Notes</label><textarea value={form.notes} onChange={(e) => set("notes", e.target.value)} rows={3} style={{ ...fieldS, height: "auto", padding: 10, resize: "vertical" }} /></div>
                 </div>
@@ -131,6 +146,10 @@ export default function ContactDetailPage({ params }: { params: { id: string } }
           <Panel>
             <PanelHeader title="Open tasks" subtitle={`${d.tasks.length} open`} />
             <PanelBody flush>
+              <div style={{ display: "flex", gap: 8, padding: "11px 14px", borderBottom: `1px solid ${color.line.DEFAULT}` }}>
+                <input value={newTask} onChange={(e) => setNewTask(e.target.value)} onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); addTask(); } }} placeholder="Add a task…" style={{ flex: 1, height: 32, border: `1px solid ${color.line.strong}`, borderRadius: 8, padding: "0 10px", fontSize: 12.5, color: color.ink.DEFAULT, background: color.surface.card, outline: "none" }} />
+                <Button onClick={addTask} disabled={busy || !newTask.trim()}>Add</Button>
+              </div>
               {d.tasks.length === 0 ? <div style={{ padding: "16px", textAlign: "center", fontSize: 12.5, color: color.ink.soft }}>No open tasks.</div>
                 : d.tasks.map((t) => <div key={t.id} style={{ padding: "9px 14px", borderBottom: `1px solid ${color.line.DEFAULT}` }}><div style={{ fontSize: 12.5, fontWeight: 500, color: color.ink.DEFAULT }}>{t.title}</div>{t.due ? <div style={{ fontSize: 11, color: color.ink.soft }}>Due {t.due}</div> : null}</div>)}
             </PanelBody>

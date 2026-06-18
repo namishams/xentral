@@ -78,9 +78,22 @@ export async function PATCH(req: Request, { params }: { params: { id: string } }
         b.due ? [newId("tk"), b.task.trim(), s(b.due), cid, id, session.userId] : [newId("tk"), b.task.trim(), cid, id, session.userId]);
       return NextResponse.json({ ok: true });
     }
+    if (typeof b.dealName === "string" && b.dealName.trim()) {
+      const ct = await p.query(`select "firstName","lastName","accountId" from "contacts" where id=$1 and "companyId"=$2 limit 1`, [id, cid]);
+      const row = ct.rows[0] || {};
+      const lid = newId("ld");
+      await p.query(`insert into "leads" (id,"firstName","lastName",value,notes,"companyId","createdById",contact_id,"accountId","createdAt","updatedAt") values ($1,$2,$3,$4,$5,$6,$7,$8,$9,now(),now())`,
+        [lid, s(row.firstName) || "Deal", s(row.lastName) || "", b.dealValue != null ? Number(b.dealValue) : null, s(b.dealName), cid, session.userId, id, s(row.accountId)]);
+      return NextResponse.json({ ok: true, leadId: lid });
+    }
     // field edit
     const sets: string[] = []; const vals: unknown[] = []; let i = 1;
     for (const f of ["firstName", "lastName", "title", "email", "phone", "whatsApp", "notes"]) if (f in b) { sets.push(`"${f}"=$${i}`); vals.push(s(b[f])); i++; }
+    if ("accountId" in b) {
+      const aid = b.accountId ? String(b.accountId) : null;
+      if (aid) { const own = await p.query(`select id from "accounts" where id=$1 and "companyId"=$2 limit 1`, [aid, cid]); if (!own.rows[0]) return NextResponse.json({ error: "Company not found" }, { status: 400 }); }
+      sets.push(`"accountId"=$${i}`); vals.push(aid); i++;
+    }
     if (!sets.length) return NextResponse.json({ error: "No editable fields" }, { status: 400 });
     sets.push(`"updatedAt"=now()`); vals.push(id, cid);
     await p.query(`update "contacts" set ${sets.join(", ")} where id=$${i} and "companyId"=$${i + 1}`, vals);

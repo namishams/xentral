@@ -14,7 +14,7 @@ function pool(url: string): Pool {
   _pool = m ? new Pool({ user: m[1], password: m[2], host: m[3], port: Number(m[4]), database: m[5], max: 4 }) : new Pool({ connectionString: url, max: 4 });
   return _pool;
 }
-const safe = async (p: Promise<any>, d: any): Promise<any> => { try { return await p; } catch { return d; } };
+const safe = async (p: Promise<unknown>, d: unknown): Promise<{ rows: Record<string, unknown>[] }> => { try { return (await p) as { rows: Record<string, unknown>[] }; } catch { return d as { rows: Record<string, unknown>[] }; } };
 
 export async function GET(_req: Request, { params }: { params: { id: string } }) {
   const url = process.env.DATABASE_URL;
@@ -43,4 +43,35 @@ export async function GET(_req: Request, { params }: { params: { id: string } })
     ]);
   }
   return NextResponse.json({ account: a.rows[0], contacts: contacts.rows, deals: leads.rows, invoices: invoices.rows, quotes: quotes.rows, activities: activities.rows });
+}
+
+/** Edit company/account fields, OR add a timeline note ({ note }). */
+export async function PATCH(req: Request, { params }: { params: { id: string } }) {
+  const url = process.env.DATABASE_URL;
+  if (process.env.XENTRAL_LIVE_DATA !== "1" || !url) return NextResponse.json({ error: "Live data not enabled" }, { status: 503 });
+  const session = await resolveSession();
+  if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  const cid = session.companyId; const id = params.id; const p = pool(url);
+  let b: Record<string, unknown>;
+  try { b = await req.json(); } catch { return NextResponse.json({ error: "Bad JSON" }, { status: 400 }); }
+  const s = (v: unknown) => (v == null ? null : String(v));
+  const newId = (pf: string) => pf + Date.now().toString(36) + Math.random().toString(36).slice(2, 10);
+  try {
+    const own = await p.query(`select id from "accounts" where id=$1 and "companyId"=$2 limit 1`, [id, cid]);
+    if (!own.rows[0]) return NextResponse.json({ error: "Not found" }, { status: 404 });
+    if (typeof b.note === "string" && b.note.trim()) {
+      await p.query(`insert into "activities" (id,"companyId","accountId",type,subject,content,"userId","createdAt","updatedAt") values ($1,$2,$3,'NOTE'::"ActivityType",'Note',$4,$5,now(),now())`,
+        [newId("ac"), cid, id, b.note.trim(), session.userId]);
+      return NextResponse.json({ ok: true });
+    }
+    const sets: string[] = []; const vals: unknown[] = []; let i = 1;
+    for (const f of ["name", "industry", "website", "phone", "email", "city", "country", "description"]) if (f in b) {
+      if (f === "name" && !String(b[f] ?? "").trim()) continue;
+      sets.push(`"${f}"=$${i}`); vals.push(s(b[f])); i++;
+    }
+    if (!sets.length) return NextResponse.json({ error: "No editable fields" }, { status: 400 });
+    sets.push(`"updatedAt"=now()`); vals.push(id, cid);
+    await p.query(`update "accounts" set ${sets.join(", ")} where id=$${i} and "companyId"=$${i + 1}`, vals);
+    return NextResponse.json({ ok: true });
+  } catch (e) { return NextResponse.json({ error: (e as Error).message || "Update failed" }, { status: 500 }); }
 }
