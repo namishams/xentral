@@ -26,10 +26,12 @@ export async function GET(req: Request) {
       const { rows } = await pool(url).query(
         `select c.id, c.name, c.email, count(i.id)::int as "invoiceCount",
                 coalesce(sum(case when i.status::text in ('SENT','PARTIALLY_PAID','OVERDUE') then (i.total - i."amountPaid") else 0 end),0) as outstanding,
+                coalesce(sum(case when i.status::text <> 'CANCELLED' then i.total else 0 end),0) as billed,
+                coalesce(sum(i."amountPaid"),0) as paid,
                 coalesce(max(i.currency),'AED') as currency
            from "billing_customers" c left join "invoices" i on i.id is not null and i."customerId" = c.id and i."companyId" = $1
           where c."companyId" = $1 group by c.id, c.name, c.email order by outstanding desc, c.name asc limit 1000`, [session.companyId]);
-      return NextResponse.json({ rows: rows.map((r) => ({ ...r, outstanding: Number(r.outstanding) || 0 })) });
+      return NextResponse.json({ rows: rows.map((r) => ({ ...r, outstanding: Number(r.outstanding) || 0, billed: Number(r.billed) || 0, paid: Number(r.paid) || 0 })) });
     }
     const { rows } = await pool(url).query(
       `select id, name, email from "billing_customers" where "companyId" = $1 order by name asc limit 1000`, [session.companyId]);

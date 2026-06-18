@@ -21,7 +21,7 @@ export async function GET() {
   if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   try {
     const { rows } = await pool(url).query(
-      `select i.id, i.number, bc.name as customer, i.status::text as status, i.total, i."amountPaid" as "amountPaid", i.currency, to_char(i."dueDate",'DD Mon') as due from "invoices" i left join "billing_customers" bc on bc.id = i."customerId" where i."companyId" = $1 order by i."createdAt" desc limit 400`, [session.companyId]);
+      `select i.id, i.number, bc.name as customer, i.status::text as status, i.total, i."amountPaid" as "amountPaid", i.currency, to_char(i."issueDate",'DD Mon YYYY') as issued, to_char(i."dueDate",'DD Mon YYYY') as due, (i."dueDate" is not null and i."dueDate" < now() and i.status in ('SENT','PARTIALLY_PAID'))::int as overdue from "invoices" i left join "billing_customers" bc on bc.id = i."customerId" where i."companyId" = $1 order by i."createdAt" desc limit 400`, [session.companyId]);
     return NextResponse.json({ rows });
   } catch { return NextResponse.json({ rows: [] }); }
 }
