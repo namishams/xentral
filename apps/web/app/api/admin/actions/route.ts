@@ -43,21 +43,53 @@ export async function POST(req: Request) {
   try {
     if (kind === "mkt.add") {
       const id = newId("mkl");
-      const name = S(b.name) || "New lead";
       const region = S(b.originRegion) || "Unknown";
+      const lt = S(b.listingType) || "shared";
+      const exclusive = lt === "exclusive" || !!b.isExclusive;
+      const cap = exclusive ? 1 : Math.max(1, Nn(b.maxPurchases) || 3);
+      const years = b.yearsExperience != null && S(b.yearsExperience) !== "" ? Nn(b.yearsExperience) : null;
+      const bidsClose = S(b.bidsCloseAt) ? new Date(S(b.bidsCloseAt)) : null;
       await p.query(
-        `insert into "marketplace_leads" (id, title, specialty, category, "originCountry", "originRegion", quality, "initialPrice", "minPrice", "decayAmount", "decayInterval", status, "maxPurchases", "purchaseCount", listing_type, "listedAt", "createdAt", "updatedAt", "companyId")
-         values ($1,$2,$2,$3,$4,$5,$6,$7,$8,0,24,$9,$10,0,'STANDARD',now(),now(),now(),$11)`,
-        [id, name, S(b.category) || "General", S(b.originCountry) || region, region, S(b.quality) || "STANDARD", Nn(b.initialPrice), Nn(b.minPrice) || Nn(b.initialPrice), S(b.status) || "AVAILABLE", Math.max(1, Nn(b.maxPurchases) || 1), s.companyId],
+        `insert into "marketplace_leads" (id, title, specialty, category, "originCountry", "originRegion", quality, "yearsExperience", "currentLocation", summary,
+            "hasPhone","hasWhatsApp","hasEmail","hasLinkedIn","hasCV","hasDataflow",
+            "firstName","lastName",phone,email,"linkedIn",notes,"cvUrl",
+            "initialPrice","minPrice","decayAmount","decayInterval","isExclusive","maxPurchases","purchaseCount",
+            listing_type, min_bid, reserve_price, bids_close_at, status, "listedAt","createdAt","updatedAt","companyId")
+         values ($1,$2,$2,$3,$4,$5,$6,$7,$8,$9, $10,$11,$12,$13,$14,$15, $16,$17,$18,$19,$20,$21,$22,
+            $23,$24,$25,$26,$27,$28,0, $29,$30,$31,$32,$33, now(),now(),now(),$34)`,
+        [id, S(b.name) || "New lead", S(b.category) || "General", S(b.originCountry) || region, region, S(b.quality) || "STANDARD", years, S(b.currentLocation), S(b.summary),
+         !!b.hasPhone, !!b.hasWhatsApp, !!b.hasEmail, !!b.hasLinkedIn, !!b.hasCV, !!b.hasDataflow,
+         S(b.firstName), S(b.lastName), S(b.phone), S(b.email), S(b.linkedIn), S(b.notes), S(b.cvUrl) || null,
+         Nn(b.initialPrice), Nn(b.minPrice) || Nn(b.initialPrice), Nn(b.decayAmount), Nn(b.decayInterval) || 24, exclusive, cap,
+         lt, lt === "best_offer" ? Nn(b.minBid) : null, lt === "best_offer" ? (Nn(b.reservePrice) || null) : null, bidsClose, S(b.status) || "AVAILABLE", s.companyId],
       );
       return NextResponse.json({ ok: true, id });
     }
     if (kind === "mkt.update") {
       const id = S(b.id); if (!id) return NextResponse.json({ error: "id required" }, { status: 400 });
+      const region = S(b.originRegion) || "Unknown";
+      const lt = S(b.listingType) || "shared";
+      const exclusive = lt === "exclusive" || !!b.isExclusive;
+      const cap = exclusive ? 1 : Math.max(1, Nn(b.maxPurchases) || 3);
+      const years = b.yearsExperience != null && S(b.yearsExperience) !== "" ? Nn(b.yearsExperience) : null;
+      const bidsClose = S(b.bidsCloseAt) ? new Date(S(b.bidsCloseAt)) : null;
       await p.query(
-        `update "marketplace_leads" set title=$2, specialty=$2, category=$3, "originRegion"=$4, quality=$5, "initialPrice"=$6, "minPrice"=$7, "maxPurchases"=$8, status=$9, "updatedAt"=now() where id=$1`,
-        [id, S(b.name), S(b.category) || "General", S(b.originRegion) || "Unknown", S(b.quality) || "STANDARD", Nn(b.initialPrice), Nn(b.minPrice), Math.max(1, Nn(b.maxPurchases) || 1), S(b.status) || "AVAILABLE"],
+        `update "marketplace_leads" set title=$2, specialty=$2, category=$3, "originCountry"=$4, "originRegion"=$5, quality=$6,
+            "yearsExperience"=$7, "currentLocation"=$8, summary=$9,
+            "hasPhone"=$10,"hasWhatsApp"=$11,"hasEmail"=$12,"hasLinkedIn"=$13,"hasCV"=$14,"hasDataflow"=$15,
+            "firstName"=$16,"lastName"=$17,phone=$18,email=$19,"linkedIn"=$20,notes=$21,
+            "initialPrice"=$22,"minPrice"=$23,"decayAmount"=$24,"decayInterval"=$25,"isExclusive"=$26,"maxPurchases"=$27,
+            listing_type=$28, min_bid=$29, reserve_price=$30, bids_close_at=$31, status=$32, "updatedAt"=now()
+         where id=$1`,
+        [id, S(b.name), S(b.category) || "General", S(b.originCountry) || region, region, S(b.quality) || "STANDARD",
+         years, S(b.currentLocation), S(b.summary),
+         !!b.hasPhone, !!b.hasWhatsApp, !!b.hasEmail, !!b.hasLinkedIn, !!b.hasCV, !!b.hasDataflow,
+         S(b.firstName), S(b.lastName), S(b.phone), S(b.email), S(b.linkedIn), S(b.notes),
+         Nn(b.initialPrice), Nn(b.minPrice), Nn(b.decayAmount), Nn(b.decayInterval) || 24, exclusive, cap,
+         lt, lt === "best_offer" ? Nn(b.minBid) : null, lt === "best_offer" ? (Nn(b.reservePrice) || null) : null, bidsClose, S(b.status) || "AVAILABLE"],
       );
+      // optional CV url update (kept separate so blank doesn't wipe an existing CV)
+      if (S(b.cvUrl)) await p.query(`update "marketplace_leads" set "cvUrl"=$2 where id=$1`, [id, S(b.cvUrl)]);
       return NextResponse.json({ ok: true });
     }
     if (kind === "mkt.delete") {

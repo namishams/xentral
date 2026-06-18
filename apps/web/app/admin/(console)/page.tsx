@@ -14,9 +14,33 @@ type Payout = { id: string; company: string; amount: number; status: string; met
 type NumMap = Record<string, number>;
 type Feed = { ok?: boolean; totals?: NumMap; streams?: NumMap; supply?: NumMap; tenants?: Tenant[]; leads?: Lead[]; topups?: Topup[]; demos?: Demo[]; questions?: Q[]; resellers?: Reseller[]; payouts?: Payout[]; topCustomers?: Tenant[] };
 
+type AddForm = {
+  id?: string; name: string; category: string; originCountry: string; originRegion: string; quality: string;
+  yearsExperience: string; currentLocation: string; summary: string;
+  hasPhone: boolean; hasWhatsApp: boolean; hasEmail: boolean; hasLinkedIn: boolean; hasCV: boolean; hasDataflow: boolean;
+  firstName: string; lastName: string; phone: string; email: string; linkedIn: string; notes: string; cvUrl: string; cvName: string;
+  listingType: string; minBid: string; reservePrice: string; bidsCloseAt: string;
+  initialPrice: string; minPrice: string; decayAmount: string; decayInterval: string; maxPurchases: string; status: string;
+};
+const blank = (): AddForm => ({
+  name: "", category: "Healthcare", originCountry: "", originRegion: "UAE", quality: "STANDARD",
+  yearsExperience: "", currentLocation: "", summary: "",
+  hasPhone: true, hasWhatsApp: true, hasEmail: true, hasLinkedIn: false, hasCV: false, hasDataflow: false,
+  firstName: "", lastName: "", phone: "", email: "", linkedIn: "", notes: "", cvUrl: "", cvName: "",
+  listingType: "shared", minBid: "", reservePrice: "", bidsCloseAt: "",
+  initialPrice: "50", minPrice: "30", decayAmount: "10", decayInterval: "6", maxPurchases: "3", status: "AVAILABLE",
+});
+
 const aed = (n: number) => `AED ${(Number(n) || 0).toLocaleString()}`;
 const TABS = ["Overview", "Marketplace", "AI Import", "Credits", "Companies", "Questions", "Demo Requests", "Resellers"] as const;
 const QTONE: Record<string, BadgeTone> = { AVAILABLE: "positive", SOLD: "neutral", DRAFT: "info", EXPIRED: "critical", HOT: "critical", WARM: "critical", STANDARD: "info" };
+const REGIONS = ["UAE", "GCC", "Asia/Africa", "Europe", "Americas", "Unknown"];
+const QUALITIES = ["HOT", "WARM", "STANDARD"];
+const LISTINGS = [
+  { id: "shared", label: "Shared", hint: "Multiple buyers, price drops over time" },
+  { id: "exclusive", label: "Exclusive", hint: "1 buyer only, fixed price" },
+  { id: "best_offer", label: "Best Offer", hint: "Companies bid, you pick the winner" },
+];
 
 export default function AdminPage() {
   const [tab, setTab] = React.useState<(typeof TABS)[number]>("Overview");
@@ -25,7 +49,7 @@ export default function AdminPage() {
   const [busy, setBusy] = React.useState(false);
   const [mFilter, setMFilter] = React.useState("ALL");
   const [adding, setAdding] = React.useState(false);
-  const [form, setForm] = React.useState<Partial<Lead>>({});
+  const [f, setF] = React.useState<AddForm>(blank());
   const [imgs, setImgs] = React.useState<string[]>([]);
   const [aiMsg, setAiMsg] = React.useState("");
 
@@ -42,34 +66,57 @@ export default function AdminPage() {
   }
   const totals = d.totals || {}; const streams = d.streams || {}; const supply = d.supply || {};
 
-  // ---- Marketplace ----
   const leads = (d.leads || []).filter((l) => mFilter === "ALL" || l.status === mFilter);
-  function openAdd() { setForm({ quality: "STANDARD", status: "AVAILABLE", category: "Healthcare", origin: "UAE", price: 50, floor: 30, cap: 3 }); setAdding(true); }
-  function openEdit(l: Lead) { setForm({ ...l }); setAdding(true); }
-  async function saveLead() {
-    const body = { kind: form.id ? "mkt.update" : "mkt.add", id: form.id, name: form.name, category: form.category, originRegion: form.origin, quality: form.quality, initialPrice: form.price, minPrice: form.floor, maxPurchases: form.cap, status: form.status };
-    if (await act(body)) { setAdding(false); setForm({}); }
+  function openAdd() { setF(blank()); setAdding(true); }
+  function openEdit(l: Lead) {
+    setF({ ...blank(), id: l.id, name: l.name, category: l.category, originRegion: l.origin || "UAE", quality: l.quality || "STANDARD",
+      initialPrice: String(l.price || 0), minPrice: String(l.floor || 0), maxPurchases: String(l.cap || 1), status: l.status || "AVAILABLE",
+      listingType: l.kind === "exclusive" || l.kind === "best_offer" ? l.kind : "shared" });
+    setAdding(true);
   }
-  const fieldS: React.CSSProperties = { height: 32, border: `1px solid ${color.line.strong}`, borderRadius: 8, padding: "0 9px", fontSize: 12.5, background: color.surface.card, color: color.ink.DEFAULT };
+  const set = (k: keyof AddForm, v: string | boolean) => setF((p) => ({ ...p, [k]: v }));
+  async function saveLead() {
+    if (!f.name.trim()) return;
+    const body = { kind: f.id ? "mkt.update" : "mkt.add", ...f, isExclusive: f.listingType === "exclusive" };
+    if (await act(body)) { setAdding(false); setF(blank()); }
+  }
+  async function uploadCv(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0]; if (!file) return;
+    const fd = new FormData(); fd.append("file", file);
+    setBusy(true);
+    try {
+      const r = await fetch("/api/admin/cv-upload", { method: "POST", body: fd });
+      const j = await r.json().catch(() => ({}));
+      if (r.ok && j.url) set("cvUrl", j.url), set("cvName", file.name), set("hasCV", true);
+      else window.alert(j.error || "Upload failed");
+    } finally { setBusy(false); }
+  }
 
-  // ---- AI Import ----
   function onFiles(e: React.ChangeEvent<HTMLInputElement>) {
     const files = Array.from(e.target.files || []).slice(0, 3);
-    Promise.all(files.map((f) => new Promise<string>((res) => { const fr = new FileReader(); fr.onload = () => res(String(fr.result)); fr.readAsDataURL(f); }))).then(setImgs);
+    Promise.all(files.map((file) => new Promise<string>((res) => { const fr = new FileReader(); fr.onload = () => res(String(fr.result)); fr.readAsDataURL(file); }))).then(setImgs);
   }
   async function runImport() {
     if (!imgs.length) return; setBusy(true); setAiMsg("Analysing screenshots…");
     try {
       const r = await fetch("/api/admin/ai-import", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ images: imgs }) });
       const j = await r.json().catch(() => ({}));
-      if (r.ok) { setAiMsg(`✓ Imported draft: ${j.lead?.name} · ${j.lead?.region} · ${aed(j.lead?.price || 0)} — review it under Marketplace (DRAFT).`); setImgs([]); load(); }
+      if (r.ok) { setAiMsg(`✓ Imported draft: ${j.lead?.name} · ${j.lead?.region} · ${aed(j.lead?.price || 0)} — review under Marketplace (DRAFT).`); setImgs([]); load(); }
       else setAiMsg(j.error || "Import failed");
     } finally { setBusy(false); }
   }
 
-  const card: React.CSSProperties = { border: `1px solid ${color.line.DEFAULT}`, borderRadius: 12, background: color.surface.card, overflow: "hidden" };
+  const cardS: React.CSSProperties = { border: `1px solid ${color.line.DEFAULT}`, borderRadius: 12, background: color.surface.card, overflow: "hidden" };
   const th: React.CSSProperties = { textAlign: "left", fontSize: 11, fontWeight: 700, letterSpacing: 0.3, color: color.ink.soft, textTransform: "uppercase", padding: "9px 14px", borderBottom: `1px solid ${color.line.DEFAULT}` };
   const td: React.CSSProperties = { padding: "10px 14px", borderBottom: `1px solid ${color.line.DEFAULT}`, fontSize: 13, color: color.ink.DEFAULT };
+  const fieldS: React.CSSProperties = { width: "100%", boxSizing: "border-box", height: 38, border: `1px solid ${color.line.strong}`, borderRadius: 9, padding: "0 11px", fontSize: 13.5, background: color.surface.card, color: color.ink.DEFAULT, outline: "none" };
+  const lbl: React.CSSProperties = { display: "block", fontSize: 11, fontWeight: 700, letterSpacing: 0.3, color: color.ink.soft, marginBottom: 5 };
+  const sec: React.CSSProperties = { fontSize: 11, fontWeight: 700, letterSpacing: 0.5, textTransform: "uppercase", color: color.brand.primary, margin: "4px 0 2px" };
+  const chk = (k: keyof AddForm, label: string) => (
+    <label style={{ display: "inline-flex", alignItems: "center", gap: 7, fontSize: 13, color: color.ink.DEFAULT, cursor: "pointer" }}>
+      <input type="checkbox" checked={!!f[k]} onChange={(e) => set(k, e.target.checked)} /> {label}
+    </label>
+  );
 
   return (
     <AppShell active="admin">
@@ -106,7 +153,7 @@ export default function AdminPage() {
                 <KPICard label="Open questions" value={String(totals.openQuestions ?? 0)} note="lead Q&A" noteTone={color.ink.soft} />
                 <KPICard label="Demo requests" value={String(totals.pendingDemos ?? 0)} note="new" noteTone={color.ink.soft} />
               </div>
-              <div style={card}>
+              <div style={cardS}>
                 <div style={th}>Top customers (by spend)</div>
                 {(d.topCustomers || []).filter((t) => t.spent > 0).length === 0 ? <div style={{ padding: 14, fontSize: 12.5, color: color.ink.soft }}>No marketplace spend yet.</div>
                   : (d.topCustomers || []).filter((t) => t.spent > 0).map((t) => (
@@ -122,33 +169,21 @@ export default function AdminPage() {
           {tab === "Marketplace" && (
             <div>
               <div style={{ display: "flex", gap: 8, alignItems: "center", marginBottom: 12, flexWrap: "wrap" }}>
-                {["ALL", "AVAILABLE", "SOLD", "DRAFT"].map((f) => <button key={f} onClick={() => setMFilter(f)} style={{ fontSize: 12, fontWeight: 600, padding: "5px 12px", borderRadius: 999, cursor: "pointer", border: `1px solid ${mFilter === f ? color.ink.DEFAULT : color.line.strong}`, background: mFilter === f ? color.ink.DEFAULT : color.surface.card, color: mFilter === f ? color.surface.card : color.ink.mid }}>{f}</button>)}
+                {["ALL", "AVAILABLE", "SOLD", "DRAFT"].map((x) => <button key={x} onClick={() => setMFilter(x)} style={{ fontSize: 12, fontWeight: 600, padding: "5px 12px", borderRadius: 999, cursor: "pointer", border: `1px solid ${mFilter === x ? color.ink.DEFAULT : color.line.strong}`, background: mFilter === x ? color.ink.DEFAULT : color.surface.card, color: mFilter === x ? color.surface.card : color.ink.mid }}>{x}</button>)}
                 <span style={{ flex: 1 }} /><span style={{ fontSize: 12.5, color: color.ink.soft }}>{leads.length} leads</span>
                 <Button variant="primary" onClick={openAdd}>+ Add Lead</Button>
               </div>
-              {adding && (
-                <div style={{ ...card, padding: 14, marginBottom: 12, display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(150px,1fr))", gap: 10, alignItems: "end" }}>
-                  <label style={{ fontSize: 11, fontWeight: 700, color: color.ink.soft }}>Lead / role<input value={form.name || ""} onChange={(e) => setForm({ ...form, name: e.target.value })} style={{ ...fieldS, width: "100%", marginTop: 4 }} /></label>
-                  <label style={{ fontSize: 11, fontWeight: 700, color: color.ink.soft }}>Category<input value={form.category || ""} onChange={(e) => setForm({ ...form, category: e.target.value })} style={{ ...fieldS, width: "100%", marginTop: 4 }} /></label>
-                  <label style={{ fontSize: 11, fontWeight: 700, color: color.ink.soft }}>Origin<input value={form.origin || ""} onChange={(e) => setForm({ ...form, origin: e.target.value })} style={{ ...fieldS, width: "100%", marginTop: 4 }} /></label>
-                  <label style={{ fontSize: 11, fontWeight: 700, color: color.ink.soft }}>Quality<select value={form.quality} onChange={(e) => setForm({ ...form, quality: e.target.value })} style={{ ...fieldS, width: "100%", marginTop: 4 }}>{["HOT", "WARM", "STANDARD"].map((x) => <option key={x}>{x}</option>)}</select></label>
-                  <label style={{ fontSize: 11, fontWeight: 700, color: color.ink.soft }}>Price AED<input type="number" value={form.price ?? 0} onChange={(e) => setForm({ ...form, price: Number(e.target.value) })} style={{ ...fieldS, width: "100%", marginTop: 4 }} /></label>
-                  <label style={{ fontSize: 11, fontWeight: 700, color: color.ink.soft }}>Floor AED<input type="number" value={form.floor ?? 0} onChange={(e) => setForm({ ...form, floor: Number(e.target.value) })} style={{ ...fieldS, width: "100%", marginTop: 4 }} /></label>
-                  <label style={{ fontSize: 11, fontWeight: 700, color: color.ink.soft }}>Max buyers<input type="number" value={form.cap ?? 1} onChange={(e) => setForm({ ...form, cap: Number(e.target.value) })} style={{ ...fieldS, width: "100%", marginTop: 4 }} /></label>
-                  <label style={{ fontSize: 11, fontWeight: 700, color: color.ink.soft }}>Status<select value={form.status} onChange={(e) => setForm({ ...form, status: e.target.value })} style={{ ...fieldS, width: "100%", marginTop: 4 }}>{["AVAILABLE", "DRAFT", "SOLD", "EXPIRED"].map((x) => <option key={x}>{x}</option>)}</select></label>
-                  <div style={{ display: "flex", gap: 8 }}><Button variant="primary" onClick={saveLead} disabled={busy || !form.name}>{form.id ? "Save" : "Add"}</Button><Button onClick={() => { setAdding(false); setForm({}); }}>Cancel</Button></div>
-                </div>
-              )}
-              <div style={{ ...card, overflowX: "auto" }}>
+              <div style={{ ...cardS, overflowX: "auto" }}>
                 <table style={{ width: "100%", borderCollapse: "collapse" }}>
-                  <thead><tr><th style={th}>Lead</th><th style={th}>Category</th><th style={th}>Origin</th><th style={{ ...th, textAlign: "right" }}>Price</th><th style={{ ...th, textAlign: "right" }}>Buyers</th><th style={th}>Status</th><th style={{ ...th, textAlign: "right" }}>Actions</th></tr></thead>
+                  <thead><tr><th style={th}>Lead</th><th style={th}>Category</th><th style={th}>Origin</th><th style={th}>Type</th><th style={{ ...th, textAlign: "right" }}>Price</th><th style={{ ...th, textAlign: "right" }}>Buyers</th><th style={th}>Status</th><th style={{ ...th, textAlign: "right" }}>Actions</th></tr></thead>
                   <tbody>
-                    {leads.length === 0 ? <tr><td style={{ ...td, textAlign: "center", color: color.ink.soft }} colSpan={7}>No leads.</td></tr>
+                    {leads.length === 0 ? <tr><td style={{ ...td, textAlign: "center", color: color.ink.soft }} colSpan={8}>No leads.</td></tr>
                       : leads.map((l) => (
                         <tr key={l.id}>
                           <td style={td}><span style={{ fontWeight: 600 }}>{l.name}</span> <StatusBadge tone={QTONE[l.quality] ?? "info"} label={l.quality} /></td>
                           <td style={td}>{l.category}</td>
                           <td style={td}>{l.origin}</td>
+                          <td style={td}><span style={{ fontSize: 11.5, color: color.ink.soft }}>{l.kind === "best_offer" ? "Best Offer" : l.kind === "exclusive" ? "Exclusive" : "Shared"}</span></td>
                           <td style={{ ...td, textAlign: "right", fontWeight: 600 }}>{aed(l.price)}</td>
                           <td style={{ ...td, textAlign: "right" }}>{l.buyers}/{l.cap}</td>
                           <td style={td}><StatusBadge tone={QTONE[l.status] ?? "neutral"} label={l.status} /></td>
@@ -162,7 +197,7 @@ export default function AdminPage() {
           )}
 
           {tab === "AI Import" && (
-            <div style={{ ...card, padding: 22, maxWidth: 640 }}>
+            <div style={{ ...cardS, padding: 22, maxWidth: 640 }}>
               <div style={{ fontSize: 16, fontWeight: 700, color: color.ink.DEFAULT, marginBottom: 4 }}>AI Lead Import</div>
               <div style={{ fontSize: 13, color: color.ink.mid, marginBottom: 16 }}>Upload up to 3 screenshots (WhatsApp, email, LinkedIn, CV) — GPT-4 Vision extracts the lead and drafts it into marketplace supply.</div>
               <input type="file" accept="image/*" multiple onChange={onFiles} style={{ fontSize: 13, marginBottom: 12 }} />
@@ -174,7 +209,7 @@ export default function AdminPage() {
 
           {tab === "Credits" && (
             <div style={{ display: "grid", gridTemplateColumns: "minmax(0,1fr) minmax(0,1fr)", gap: 16, alignItems: "start" }}>
-              <div style={card}>
+              <div style={cardS}>
                 <div style={th}>Top-up requests</div>
                 {(d.topups || []).length === 0 ? <div style={{ padding: 14, fontSize: 12.5, color: color.ink.soft }}>No requests.</div>
                   : (d.topups || []).map((t) => (
@@ -184,7 +219,7 @@ export default function AdminPage() {
                     </div>
                   ))}
               </div>
-              <div style={card}>
+              <div style={cardS}>
                 <div style={th}>Manual credit adjustment</div>
                 {(d.tenants || []).map((t) => (
                   <div key={t.id} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "11px 14px", borderBottom: `1px solid ${color.line.DEFAULT}` }}>
@@ -197,7 +232,7 @@ export default function AdminPage() {
           )}
 
           {tab === "Companies" && (
-            <div style={{ ...card, overflowX: "auto" }}>
+            <div style={{ ...cardS, overflowX: "auto" }}>
               <table style={{ width: "100%", borderCollapse: "collapse" }}>
                 <thead><tr><th style={th}>Tenant</th><th style={{ ...th, textAlign: "right" }}>Users</th><th style={{ ...th, textAlign: "right" }}>Contacts</th><th style={{ ...th, textAlign: "right" }}>Credits</th><th style={{ ...th, textAlign: "right" }}>Spent</th><th style={th}>Joined</th><th style={{ ...th, textAlign: "right" }}></th></tr></thead>
                 <tbody>
@@ -218,7 +253,7 @@ export default function AdminPage() {
           )}
 
           {tab === "Questions" && (
-            <div style={card}>
+            <div style={cardS}>
               <div style={th}>Lead questions</div>
               {(d.questions || []).length === 0 ? <div style={{ padding: 14, fontSize: 12.5, color: color.ink.soft }}>No questions.</div>
                 : (d.questions || []).map((qq) => (
@@ -233,7 +268,7 @@ export default function AdminPage() {
           )}
 
           {tab === "Demo Requests" && (
-            <div style={{ ...card, overflowX: "auto" }}>
+            <div style={{ ...cardS, overflowX: "auto" }}>
               <table style={{ width: "100%", borderCollapse: "collapse" }}>
                 <thead><tr><th style={th}>Name</th><th style={th}>Company</th><th style={th}>Country</th><th style={th}>Use case</th><th style={th}>Status</th><th style={{ ...th, textAlign: "right" }}></th></tr></thead>
                 <tbody>
@@ -255,7 +290,7 @@ export default function AdminPage() {
 
           {tab === "Resellers" && (
             <div style={{ display: "grid", gridTemplateColumns: "minmax(0,1fr) minmax(0,1fr)", gap: 16, alignItems: "start" }}>
-              <div style={card}>
+              <div style={cardS}>
                 <div style={th}>Resellers</div>
                 {(d.resellers || []).length === 0 ? <div style={{ padding: 14, fontSize: 12.5, color: color.ink.soft }}>No resellers.</div>
                   : (d.resellers || []).map((r) => (
@@ -265,7 +300,7 @@ export default function AdminPage() {
                     </div>
                   ))}
               </div>
-              <div style={card}>
+              <div style={cardS}>
                 <div style={th}>Payout requests</div>
                 {(d.payouts || []).length === 0 ? <div style={{ padding: 14, fontSize: 12.5, color: color.ink.soft }}>No payouts.</div>
                   : (d.payouts || []).map((po) => (
@@ -278,6 +313,89 @@ export default function AdminPage() {
             </div>
           )}
         </>
+      )}
+
+      {/* ── Add / edit lead modal ── */}
+      {adding && (
+        <div onClick={() => !busy && setAdding(false)} style={{ position: "fixed", inset: 0, background: "rgba(16,24,38,0.5)", display: "flex", alignItems: "flex-start", justifyContent: "center", zIndex: 100, padding: "32px 16px", overflowY: "auto" }}>
+          <div onClick={(e) => e.stopPropagation()} style={{ width: "100%", maxWidth: 720, background: color.surface.card, borderRadius: 16, boxShadow: "0 30px 70px -18px rgba(16,24,38,0.5)" }}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "16px 22px", borderBottom: `1px solid ${color.line.DEFAULT}` }}>
+              <h2 style={{ margin: 0, fontSize: 17, fontWeight: 700, color: color.ink.DEFAULT }}>{f.id ? "Edit lead" : "Add new lead"}</h2>
+              <button onClick={() => setAdding(false)} aria-label="Close" style={{ border: 0, background: "transparent", fontSize: 20, color: color.ink.soft, cursor: "pointer" }}>×</button>
+            </div>
+            <div style={{ padding: 22, display: "flex", flexDirection: "column", gap: 16, maxHeight: "76vh", overflowY: "auto" }}>
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
+                <div><label style={lbl}>Specialty / Job title *</label><input value={f.name} onChange={(e) => set("name", e.target.value)} placeholder="e.g. Registered Nurse" style={fieldS} autoFocus /></div>
+                <div><label style={lbl}>Category *</label><input value={f.category} onChange={(e) => set("category", e.target.value)} placeholder="e.g. Healthcare" style={fieldS} /></div>
+                <div><label style={lbl}>Origin country *</label><input value={f.originCountry} onChange={(e) => set("originCountry", e.target.value)} placeholder="e.g. Philippines" style={fieldS} /></div>
+                <div><label style={lbl}>Region</label><select value={f.originRegion} onChange={(e) => set("originRegion", e.target.value)} style={fieldS}>{REGIONS.map((x) => <option key={x}>{x}</option>)}</select></div>
+                <div><label style={lbl}>Quality</label><select value={f.quality} onChange={(e) => set("quality", e.target.value)} style={fieldS}>{QUALITIES.map((x) => <option key={x}>{x}</option>)}</select></div>
+                <div><label style={lbl}>Years of experience</label><input type="number" value={f.yearsExperience} onChange={(e) => set("yearsExperience", e.target.value)} style={fieldS} /></div>
+                <div style={{ gridColumn: "1 / -1" }}><label style={lbl}>Current location</label><input value={f.currentLocation} onChange={(e) => set("currentLocation", e.target.value)} placeholder="e.g. Dubai, UAE" style={fieldS} /></div>
+                <div style={{ gridColumn: "1 / -1" }}><label style={lbl}>Public summary (teaser — no private info)</label><textarea value={f.summary} onChange={(e) => set("summary", e.target.value)} rows={2} style={{ ...fieldS, height: "auto", padding: 10, resize: "vertical" }} /></div>
+              </div>
+
+              <div>
+                <div style={sec}>Included contact info</div>
+                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: "8px 14px", marginTop: 8 }}>
+                  {chk("hasPhone", "Phone")}{chk("hasWhatsApp", "WhatsApp")}{chk("hasEmail", "Email")}{chk("hasLinkedIn", "LinkedIn")}{chk("hasCV", "CV / Resume")}{chk("hasDataflow", "DataFlow done")}
+                </div>
+              </div>
+
+              <div style={{ border: `1px solid ${color.line.DEFAULT}`, borderRadius: 12, padding: 14, background: color.surface.page }}>
+                <div style={{ ...sec, color: color.ink.mid }}>Private — revealed after purchase</div>
+                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, marginTop: 8 }}>
+                  <div><label style={lbl}>First name</label><input value={f.firstName} onChange={(e) => set("firstName", e.target.value)} style={fieldS} /></div>
+                  <div><label style={lbl}>Last name</label><input value={f.lastName} onChange={(e) => set("lastName", e.target.value)} style={fieldS} /></div>
+                  <div><label style={lbl}>Phone / WhatsApp</label><input value={f.phone} onChange={(e) => set("phone", e.target.value)} style={fieldS} /></div>
+                  <div><label style={lbl}>Email</label><input value={f.email} onChange={(e) => set("email", e.target.value)} style={fieldS} /></div>
+                  <div style={{ gridColumn: "1 / -1" }}><label style={lbl}>LinkedIn URL</label><input value={f.linkedIn} onChange={(e) => set("linkedIn", e.target.value)} style={fieldS} /></div>
+                  <div style={{ gridColumn: "1 / -1" }}><label style={lbl}>Internal notes</label><textarea value={f.notes} onChange={(e) => set("notes", e.target.value)} rows={2} style={{ ...fieldS, height: "auto", padding: 10, resize: "vertical" }} /></div>
+                  <div style={{ gridColumn: "1 / -1" }}><label style={lbl}>CV / Resume (PDF, DOC, JPG — max 5 MB)</label>
+                    <input type="file" accept=".pdf,.doc,.docx,.jpg,.jpeg,.png" onChange={uploadCv} style={{ fontSize: 12.5 }} />
+                    {f.cvName ? <span style={{ fontSize: 12, color: color.status.positive, marginLeft: 8 }}>✓ {f.cvName}</span> : null}
+                  </div>
+                </div>
+              </div>
+
+              <div>
+                <div style={sec}>Listing type</div>
+                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 10, marginTop: 8 }}>
+                  {LISTINGS.map((o) => { const on = f.listingType === o.id; return (
+                    <button key={o.id} type="button" onClick={() => set("listingType", o.id)} style={{ textAlign: "left", padding: "10px 12px", borderRadius: 10, cursor: "pointer", border: `1.5px solid ${on ? color.brand.primary : color.line.strong}`, background: on ? color.brand.primaryTint : color.surface.card }}>
+                      <div style={{ fontSize: 13, fontWeight: 700, color: on ? color.brand.primary : color.ink.DEFAULT }}>{o.label}</div>
+                      <div style={{ fontSize: 11, color: color.ink.soft, marginTop: 2 }}>{o.hint}</div>
+                    </button>
+                  ); })}
+                </div>
+              </div>
+
+              {f.listingType === "best_offer" ? (
+                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
+                  <div><label style={lbl}>Min bid (AED)</label><input type="number" value={f.minBid} onChange={(e) => set("minBid", e.target.value)} placeholder="e.g. 500" style={fieldS} /></div>
+                  <div><label style={lbl}>Bids close at</label><input type="datetime-local" value={f.bidsCloseAt} onChange={(e) => set("bidsCloseAt", e.target.value)} style={fieldS} /></div>
+                </div>
+              ) : (
+                <div style={{ border: `1px solid ${color.line.DEFAULT}`, borderRadius: 12, padding: 14, background: color.surface.page }}>
+                  <div style={sec}>Pricing &amp; decay</div>
+                  <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 12, marginTop: 8 }}>
+                    <div><label style={lbl}>Start price (AED)</label><input type="number" value={f.initialPrice} onChange={(e) => set("initialPrice", e.target.value)} style={fieldS} /></div>
+                    <div><label style={lbl}>Min price (AED)</label><input type="number" value={f.minPrice} onChange={(e) => set("minPrice", e.target.value)} style={fieldS} /></div>
+                    <div><label style={lbl}>Drop (AED)</label><input type="number" value={f.decayAmount} onChange={(e) => set("decayAmount", e.target.value)} disabled={f.listingType === "exclusive"} style={fieldS} /></div>
+                    <div><label style={lbl}>Every (hrs)</label><input type="number" value={f.decayInterval} onChange={(e) => set("decayInterval", e.target.value)} disabled={f.listingType === "exclusive"} style={fieldS} /></div>
+                  </div>
+                  {f.listingType === "shared" ? <div style={{ marginTop: 10, width: 140 }}><label style={lbl}>Max buyers</label><input type="number" value={f.maxPurchases} onChange={(e) => set("maxPurchases", e.target.value)} style={fieldS} /></div> : null}
+                </div>
+              )}
+
+              <div><label style={lbl}>Status</label><select value={f.status} onChange={(e) => set("status", e.target.value)} style={{ ...fieldS, width: 200 }}>{["AVAILABLE", "DRAFT", "SOLD", "EXPIRED"].map((x) => <option key={x}>{x}</option>)}</select></div>
+            </div>
+            <div style={{ display: "flex", justifyContent: "flex-end", gap: 8, padding: "14px 22px", borderTop: `1px solid ${color.line.DEFAULT}` }}>
+              <Button onClick={() => setAdding(false)} disabled={busy}>Cancel</Button>
+              <Button variant="primary" onClick={saveLead} disabled={busy || !f.name.trim()}>{busy ? "Saving…" : f.id ? "Save changes" : "Add to Marketplace"}</Button>
+            </div>
+          </div>
+        </div>
       )}
     </AppShell>
   );
