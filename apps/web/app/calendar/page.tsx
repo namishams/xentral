@@ -20,6 +20,9 @@ const hm = (d: Date) => `${pad(d.getHours())}:${pad(d.getMinutes())}`;
 const timeOf = (s: string) => { const d = new Date(s); return isNaN(+d) ? "" : d.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }); };
 const MONTHS = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
 const WEEK = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
+const ROW_H = 44;
+const HOURS = Array.from({ length: 24 }, (_, i) => i);
+const startOfWeek = (d: Date) => { const x = new Date(d); const wd = (x.getDay() + 6) % 7; x.setDate(x.getDate() - wd); x.setHours(0, 0, 0, 0); return x; };
 
 type Draft = { id?: string; title: string; type: string; date: string; start: string; end: string; allDay: boolean; location: string; meetingUrl: string; description: string };
 const blankDraft = (date: string): Draft => ({ title: "", type: "meeting", date, start: "09:00", end: "10:00", allDay: false, location: "", meetingUrl: "", description: "" });
@@ -27,8 +30,8 @@ const blankDraft = (date: string): Draft => ({ title: "", type: "meeting", date,
 export default function CalendarPage() {
   const [meetings, setMeetings] = React.useState<Meeting[]>([]);
   const [loading, setLoading] = React.useState(true);
-  const [cursor, setCursor] = React.useState(() => { const d = new Date(); return new Date(d.getFullYear(), d.getMonth(), 1); });
-  const [view, setView] = React.useState<"month" | "agenda">("month");
+  const [cursor, setCursor] = React.useState(() => new Date());
+  const [view, setView] = React.useState<"month" | "week" | "day" | "agenda">("month");
   const [draft, setDraft] = React.useState<Draft | null>(null);
   const [saving, setSaving] = React.useState(false);
 
@@ -62,6 +65,13 @@ export default function CalendarPage() {
   const monthMeetings = meetings.filter((m) => new Date(m.startsAt).getMonth() === cursor.getMonth() && new Date(m.startsAt).getFullYear() === cursor.getFullYear());
   const kpis = { month: monthMeetings.length, today: (byDay.get(todayKey) ?? []).length, upcoming: meetings.filter((m) => +new Date(m.startsAt) >= now).length, calls: monthMeetings.filter((m) => m.type === "call").length };
 
+  const gridScrollRef = React.useRef<HTMLDivElement | null>(null);
+  const gridDays = view === "week" ? Array.from({ length: 7 }, (_, i) => { const x = startOfWeek(cursor); x.setDate(x.getDate() + i); return x; }) : view === "day" ? [cursor] : [];
+  React.useEffect(() => { if ((view === "week" || view === "day") && gridScrollRef.current) gridScrollRef.current.scrollTop = 7 * ROW_H; }, [view]);
+  const wkStart = startOfWeek(cursor); const wkEnd = new Date(wkStart); wkEnd.setDate(wkStart.getDate() + 6);
+  const fmtShort = (d: Date) => d.toLocaleDateString(undefined, { day: "2-digit", month: "short" });
+  const headLabel = view === "week" ? `${fmtShort(wkStart)} \u2013 ${fmtShort(wkEnd)} ${wkEnd.getFullYear()}` : view === "day" ? cursor.toLocaleDateString(undefined, { weekday: "short", day: "2-digit", month: "short", year: "numeric" }) : `${MONTHS[cursor.getMonth()]} ${cursor.getFullYear()}`;
+  const step = (dir: number) => setCursor((c) => { const n = new Date(c); if (view === "week") n.setDate(n.getDate() + 7 * dir); else if (view === "day") n.setDate(n.getDate() + dir); else n.setMonth(n.getMonth() + dir); return n; });
   function openNew(dateKey: string) { setDraft(blankDraft(dateKey)); }
   function openEdit(m: Meeting) {
     const s = new Date(m.startsAt), e = new Date(m.endsAt);
@@ -103,13 +113,13 @@ export default function CalendarPage() {
 
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12, flexWrap: "wrap", gap: 10 }}>
         <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-          <button aria-label="Previous month" style={navBtn} onClick={() => setCursor(new Date(cursor.getFullYear(), cursor.getMonth() - 1, 1))}>‹</button>
-          <div style={{ fontSize: 16, fontWeight: 700, color: color.ink.DEFAULT, minWidth: 170, textAlign: "center" }}>{MONTHS[cursor.getMonth()]} {cursor.getFullYear()}</div>
-          <button aria-label="Next month" style={navBtn} onClick={() => setCursor(new Date(cursor.getFullYear(), cursor.getMonth() + 1, 1))}>›</button>
-          <Button onClick={() => setCursor(() => { const d = new Date(); return new Date(d.getFullYear(), d.getMonth(), 1); })}>Today</Button>
+          <button aria-label="Previous" style={navBtn} onClick={() => step(-1)}>‹</button>
+          <div style={{ fontSize: 16, fontWeight: 700, color: color.ink.DEFAULT, minWidth: 200, textAlign: "center" }}>{headLabel}</div>
+          <button aria-label="Next" style={navBtn} onClick={() => step(1)}>›</button>
+          <Button onClick={() => setCursor(new Date())}>Today</Button>
         </div>
         <div style={{ display: "inline-flex", border: `1px solid ${color.line.strong}`, borderRadius: 8, overflow: "hidden" }}>
-          {(["month", "agenda"] as const).map((v) => (
+          {(["day", "week", "month", "agenda"] as const).map((v) => (
             <button key={v} onClick={() => setView(v)} style={{ padding: "6px 14px", fontSize: 12.5, fontWeight: 600, border: 0, cursor: "pointer", background: view === v ? color.ink.DEFAULT : color.surface.card, color: view === v ? color.surface.card : color.ink.mid, textTransform: "capitalize" }}>{v}</button>
           ))}
         </div>
@@ -143,6 +153,36 @@ export default function CalendarPage() {
                 </div>
               );
             })}
+          </div>
+        </div>
+      ) : (view === "week" || view === "day") ? (
+        <div style={{ border: `1px solid ${color.line.DEFAULT}`, borderRadius: 12, overflow: "hidden", background: color.surface.card }}>
+          <div style={{ display: "flex", borderBottom: `1px solid ${color.line.DEFAULT}` }}>
+            <div style={{ width: 56, flexShrink: 0 }} />
+            {gridDays.map((d) => { const isT = ymd(d) === todayKey; return (
+              <div key={ymd(d)} style={{ flex: 1, textAlign: "center", padding: "8px 4px", borderLeft: `1px solid ${color.line.DEFAULT}` }}>
+                <div style={{ fontSize: 10.5, fontWeight: 700, letterSpacing: 0.4, color: color.ink.soft, textTransform: "uppercase" }}>{WEEK[(d.getDay() + 6) % 7]}</div>
+                <div style={{ fontSize: 15, fontWeight: 700, marginTop: 3, width: 28, height: 28, lineHeight: "28px", borderRadius: "50%", display: "inline-block", background: isT ? color.brand.primary : "transparent", color: isT ? color.ink.onPrimary : color.ink.DEFAULT }}>{d.getDate()}</div>
+              </div>
+            ); })}
+          </div>
+          <div ref={gridScrollRef} style={{ maxHeight: 560, overflowY: "auto" }}>
+            <div style={{ display: "flex", position: "relative" }}>
+              <div style={{ width: 56, flexShrink: 0 }}>
+                {HOURS.map((h) => <div key={h} style={{ height: ROW_H, position: "relative" }}><span style={{ position: "absolute", top: -7, right: 8, fontSize: 10.5, color: color.ink.soft }}>{h === 0 ? "" : `${pad(h)}:00`}</span></div>)}
+              </div>
+              {gridDays.map((d) => { const evs = byDay.get(ymd(d)) ?? []; return (
+                <div key={ymd(d)} onClick={() => openNew(ymd(d))} style={{ flex: 1, position: "relative", borderLeft: `1px solid ${color.line.DEFAULT}`, cursor: "pointer", minWidth: 0 }}>
+                  {HOURS.map((h) => <div key={h} style={{ height: ROW_H, borderTop: h === 0 ? "none" : `1px solid ${color.line.DEFAULT}` }} />)}
+                  {evs.map((m) => { const sd = new Date(m.startsAt); const ed = new Date(m.endsAt); const top = ((sd.getHours() * 60 + sd.getMinutes()) / 60) * ROW_H; const dur = Math.max(22, (Math.max(0, (+ed - +sd)) / 60000 / 60) * ROW_H); return (
+                    <button key={m.id} onClick={(ev) => { ev.stopPropagation(); openEdit(m); }} title={m.title} style={{ position: "absolute", top: m.allDay ? 0 : top, left: 3, right: 3, height: m.allDay ? ROW_H - 6 : dur, overflow: "hidden", textAlign: "left", border: 0, borderRadius: 6, padding: "3px 7px", cursor: "pointer", background: `color-mix(in srgb, ${typeColor(m.type)} 16%, ${color.surface.card})`, color: typeColor(m.type), borderLeft: `3px solid ${typeColor(m.type)}` }}>
+                      <span style={{ display: "block", fontSize: 11, fontWeight: 700, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{m.title}</span>
+                      <span style={{ fontSize: 10, opacity: 0.85 }}>{m.allDay ? "All day" : `${timeOf(m.startsAt)}\u2013${timeOf(m.endsAt)}`}</span>
+                    </button>
+                  ); })}
+                </div>
+              ); })}
+            </div>
           </div>
         </div>
       ) : (
