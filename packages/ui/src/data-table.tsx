@@ -116,6 +116,7 @@ export function DataTable<T>({
               </span>
             );
           })}
+          {rowHref ? <span style={{ width: 24, flexShrink: 0 }} /> : null}
         </div>
         {sorted.map((row, i) => {
           const bg = zebra && i % 2 === 1 ? color.surface.page : color.surface.card;
@@ -123,6 +124,7 @@ export function DataTable<T>({
             <span key={col.key} style={{ ...cell(col), whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{col.render(row)}</span>
           ));
           const href = rowHref?.(row);
+          if (href) inner.push(<span key="__chev" aria-hidden="true" style={{ width: 24, flexShrink: 0, display: "inline-flex", alignItems: "center", justifyContent: "flex-end", color: color.ink.soft }}><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m9 18 6-6-6-6" /></svg></span>);
           return href
             ? <a key={getKey(row)} href={href} className="xui-row-link" style={{ ...rowStyle, background: bg }}>{inner}</a>
             : <div key={getKey(row)} className="xui-row-link" style={{ ...rowStyle, background: bg }}>{inner}</div>;
