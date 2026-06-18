@@ -24,9 +24,9 @@ export async function GET(_req: Request, { params }: { params: { id: string } })
   const cid = session.companyId; const id = params.id; const p = pool(url);
 
   const c = await safe(p.query(
-    `select c.id, c."firstName", c."lastName", c.title, c.email, c.phone, c."whatsApp", c.status::text as status, c.notes, c."accountId", c."avatarUrl",
-            a.name as "accountName"
-       from "contacts" c left join "accounts" a on a.id = c."accountId"
+    `select c.id, c."firstName", c."lastName", c.title, c.email, c.phone, c."whatsApp", c.status::text as status, c.notes, c."accountId", c."avatarUrl", c."leadSource" as "leadSource", c."assignedToId" as "assignedToId",
+            a.name as "accountName", au.name as "assignedToName"
+       from "contacts" c left join "accounts" a on a.id = c."accountId" left join "users" au on au.id = c."assignedToId"
       where c.id = $1 and c."companyId" = $2 limit 1`, [id, cid]), { rows: [] as Record<string, unknown>[] });
   if (!c.rows[0]) return NextResponse.json({ error: "Not found" }, { status: 404 });
 
@@ -88,7 +88,9 @@ export async function PATCH(req: Request, { params }: { params: { id: string } }
     }
     // field edit
     const sets: string[] = []; const vals: unknown[] = []; let i = 1;
-    for (const f of ["firstName", "lastName", "title", "email", "phone", "whatsApp", "notes"]) if (f in b) { sets.push(`"${f}"=$${i}`); vals.push(s(b[f])); i++; }
+    for (const f of ["firstName", "lastName", "title", "email", "phone", "whatsApp", "notes", "leadSource"]) if (f in b) { sets.push(`"${f}"=$${i}`); vals.push(s(b[f])); i++; }
+    if ("assignedToId" in b) { sets.push(`"assignedToId"=$${i}`); vals.push(b.assignedToId && String(b.assignedToId).trim() ? String(b.assignedToId) : null); i++; }
+    if (typeof b.status === "string" && ["NEW","CONTACTED","QUALIFIED","PROPOSAL","NEGOTIATION","WON","LOST","ON_HOLD"].includes(b.status)) { sets.push(`"status"=$${i}::"ContactStatus"`); vals.push(b.status); i++; }
     if ("accountId" in b) {
       const aid = b.accountId ? String(b.accountId) : null;
       if (aid) { const own = await p.query(`select id from "accounts" where id=$1 and "companyId"=$2 limit 1`, [aid, cid]); if (!own.rows[0]) return NextResponse.json({ error: "Company not found" }, { status: 400 }); }

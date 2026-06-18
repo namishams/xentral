@@ -9,7 +9,7 @@ type Doc = { id: string; number: string; status: string; total: number; paid?: n
 type Task = { id: string; title: string; due: string | null };
 type Act = { id: string; type: string; subject: string | null; content: string | null; at: string };
 type Convo = { id: string; phone: string; body: string | null; at: string };
-type Contact = { id: string; firstName: string; lastName: string | null; title: string | null; email: string | null; phone: string | null; whatsApp: string | null; status: string; notes: string | null; accountId: string | null; accountName: string | null };
+type Contact = { id: string; firstName: string; lastName: string | null; title: string | null; email: string | null; phone: string | null; whatsApp: string | null; status: string; notes: string | null; accountId: string | null; accountName: string | null; leadSource?: string | null; assignedToId?: string | null; assignedToName?: string | null };
 type Payload = { contact: Contact; tasks: Task[]; deals: Deal[]; invoices: Doc[]; quotes: Doc[]; activities: Act[]; conversations: Convo[] };
 
 const initials = (n: string) => n.split(" ").filter(Boolean).map((w) => w[0]).slice(0, 2).join("").toUpperCase() || "?";
@@ -20,12 +20,13 @@ const invTone = (s: string): BadgeTone => { const u = (s || "").toUpperCase(); r
 const cap = (s: string) => s ? s.charAt(0).toUpperCase() + s.slice(1).toLowerCase().replace(/_/g, " ") : "—";
 
 export default function ContactDetailPage({ params }: { params: { id: string } }) {
-  type Form = { firstName: string; lastName: string; title: string; email: string; phone: string; whatsApp: string; notes: string; accountId: string };
+  type Form = { firstName: string; lastName: string; title: string; email: string; phone: string; whatsApp: string; notes: string; accountId: string; leadSource: string; assignedToId: string; status: string };
   const [d, setD] = React.useState<Payload | null>(null);
   const [loading, setLoading] = React.useState(true);
   const [form, setForm] = React.useState<Form | null>(null);
   const [clean, setClean] = React.useState<Form | null>(null);
   const [accounts, setAccounts] = React.useState<{ id: string; name: string }[]>([]);
+  const [owners, setOwners] = React.useState<{ id: string; name: string }[]>([]);
   const [note, setNote] = React.useState("");
   const [busy, setBusy] = React.useState(false);
   const [saved, setSaved] = React.useState(false);
@@ -33,12 +34,13 @@ export default function ContactDetailPage({ params }: { params: { id: string } }
     fetch(`/api/crm/contact/${params.id}`).then((r) => r.json()).then((j) => {
       if (j.error) { setD(null); setLoading(false); return; }
       setD(j);
-      const f: Form = { firstName: j.contact.firstName || "", lastName: j.contact.lastName || "", title: j.contact.title || "", email: j.contact.email || "", phone: j.contact.phone || "", whatsApp: j.contact.whatsApp || "", notes: j.contact.notes || "", accountId: j.contact.accountId || "" };
+      const f: Form = { firstName: j.contact.firstName || "", lastName: j.contact.lastName || "", title: j.contact.title || "", email: j.contact.email || "", phone: j.contact.phone || "", whatsApp: j.contact.whatsApp || "", notes: j.contact.notes || "", accountId: j.contact.accountId || "", leadSource: j.contact.leadSource || "", assignedToId: j.contact.assignedToId || "", status: j.contact.status || "NEW" };
       setForm(f); setClean(f); setLoading(false);
     }).catch(() => setLoading(false));
   }, [params.id]);
   React.useEffect(() => { load(); }, [load]);
   React.useEffect(() => { fetch("/api/crm/accounts").then((r) => r.json()).then((j) => setAccounts(Array.isArray(j.rows) ? j.rows : [])).catch(() => {}); }, []);
+  React.useEffect(() => { fetch("/api/books/owners").then((r) => r.json()).then((j) => setOwners(Array.isArray(j.rows) ? j.rows : [])).catch(() => {}); }, []);
   const dirty = !!form && !!clean && (Object.keys(form) as (keyof Form)[]).some((k) => form[k] !== clean[k]);
   async function patch(body: Record<string, unknown>) {
     setBusy(true);
@@ -138,6 +140,11 @@ export default function ContactDetailPage({ params }: { params: { id: string } }
                     </select>
                     {form.accountId ? <a href={`/companies/${form.accountId}`} style={{ display: "inline-block", marginTop: 5, fontSize: 12, color: color.brand.primary, textDecoration: "none", fontWeight: 600 }}>Open company →</a> : null}
                   </div>
+                  <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
+                    <div><label style={labelS}>Lead source</label><select value={form.leadSource} onChange={(e) => set("leadSource", e.target.value)} style={fieldS}><option value="">—</option>{["Website","Referral","WhatsApp","Marketplace","Event","Cold outreach","Advertising","Other"].map((x) => <option key={x} value={x}>{x}</option>)}</select></div>
+                    <div><label style={labelS}>Status</label><select value={form.status} onChange={(e) => set("status", e.target.value)} style={fieldS}>{["NEW","CONTACTED","QUALIFIED","PROPOSAL","NEGOTIATION","WON","LOST","ON_HOLD"].map((x) => <option key={x} value={x}>{cap(x)}</option>)}</select></div>
+                  </div>
+                  <div><label style={labelS}>Owner</label><select value={form.assignedToId} onChange={(e) => set("assignedToId", e.target.value)} style={fieldS}><option value="">Unassigned</option>{owners.map((o) => <option key={o.id} value={o.id}>{o.name}</option>)}</select></div>
                   <div><label style={labelS}>Notes</label><textarea value={form.notes} onChange={(e) => set("notes", e.target.value)} rows={3} style={{ ...fieldS, height: "auto", padding: 10, resize: "vertical" }} /></div>
                 </div>
               ) : null}
