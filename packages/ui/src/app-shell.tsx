@@ -75,6 +75,7 @@ const NAV: NavGroup[] = [
     group: "Finance",
     items: [
       { id: "books", label: "Finance overview", href: "/books", glyph: "◆" },
+      { id: "customers", label: "Customers", href: "/customers", glyph: "◍" },
       { id: "invoice", label: "Invoices", href: "/invoices", glyph: "▣" },
       { id: "payments", label: "Payments", href: "/payments", glyph: "◇" },
       { id: "receivables", label: "Receivables", href: "/receivables", glyph: "▤" },
