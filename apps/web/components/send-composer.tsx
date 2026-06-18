@@ -20,6 +20,7 @@ export function SendComposer({ kind, id, docNumber, onClose, onSent }: {
   const [subject, setSubject] = React.useState("");
   const [message, setMessage] = React.useState("");
   const [sendCopy, setSendCopy] = React.useState(false);
+  const [attachStatement, setAttachStatement] = React.useState(false);
   const [showCc, setShowCc] = React.useState(false);
   const [channel, setChannel] = React.useState<"email" | "whatsapp">("email");
   const [phone, setPhone] = React.useState("");
@@ -45,7 +46,7 @@ export function SendComposer({ kind, id, docNumber, onClose, onSent }: {
     if (!to.trim()) { setErr("Enter a recipient email."); return; }
     setBusy(true); setErr("");
     try {
-      const r = await fetch(`/api/books/${api}/${id}/send`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ to: to.trim(), cc: cc.trim(), bcc: bcc.trim(), subject, message, sendCopy }) });
+      const r = await fetch(`/api/books/${api}/${id}/send`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ to: to.trim(), cc: cc.trim(), bcc: bcc.trim(), subject, message, sendCopy, attachStatement }) });
       const d = await r.json().catch(() => ({}));
       if (r.ok) { onSent?.(d.to || to); onClose(); }
       else { setErr(d.error || "Could not send."); setBusy(false); }
@@ -104,6 +105,11 @@ export function SendComposer({ kind, id, docNumber, onClose, onSent }: {
             <label style={{ display: "inline-flex", alignItems: "center", gap: 8, marginTop: 12, fontSize: 12.5, color: color.ink.mid, cursor: "pointer" }}>
               <input type="checkbox" checked={sendCopy} onChange={(e) => setSendCopy(e.target.checked)} /> Send a copy to my mailbox
             </label>
+            {kind === "invoice" ? (
+              <label style={{ display: "flex", alignItems: "center", gap: 8, marginTop: 8, fontSize: 12.5, color: color.ink.mid, cursor: "pointer" }}>
+                <input type="checkbox" checked={attachStatement} onChange={(e) => setAttachStatement(e.target.checked)} /> Attach account statement (customer's open invoices)
+              </label>
+            ) : null}
             {err ? <div style={{ marginTop: 10, fontSize: 12.5, color: color.status.critical, background: `color-mix(in srgb, ${color.status.critical} 10%, ${color.surface.card})`, border: `1px solid ${color.status.critical}`, borderRadius: 8, padding: "8px 11px" }}>{err}</div> : null}
             </>)}
           </div>

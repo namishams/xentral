@@ -6,6 +6,7 @@ import nodemailer from "nodemailer";
 import { resolveSession } from "@xentral/kernel";
 import { generateDocumentPdf } from "../../../../../../lib/books-pdf";
 import { buildInvoicePdfData } from "../../../../../../lib/books-doc";
+import { generateStatementPdf } from "../../../../../../lib/books-statement";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -68,7 +69,7 @@ export async function POST(req: Request, { params }: { params: { id: string } })
       `select i.number, i.status::text as status, i."issueDate" as "issueDate", i."dueDate" as "dueDate",
               i.subtotal, i."discountTotal" as "discountTotal", i."vatTotal" as "vatTotal", i.total, i."amountPaid" as "amountPaid", i.currency, i.notes, i.terms,
               to_char(i."dueDate",'DD Mon YYYY') as due,
-              bc.name as customer, bc."legalName" as "clegalName", bc.email as email, bc.phone as "cphone",
+              i."customerId" as "customerId", bc.name as customer, bc."legalName" as "clegalName", bc.email as email, bc.phone as "cphone",
               bc."addressLine1" as "caddr1", bc."addressLine2" as "caddr2", bc.city as "ccity", bc.country as "ccountry", bc."vatNumber" as "cvat"
          from "invoices" i left join "billing_customers" bc on bc.id = i."customerId" where i.id = $1 and i."companyId" = $2`, [params.id, session.companyId]);
     inv = r.rows[0];
@@ -86,6 +87,7 @@ export async function POST(req: Request, { params }: { params: { id: string } })
   const ccAddr = (typeof __ov.cc === "string" && __ov.cc.trim()) ? __ov.cc.trim() : "";
   const bccAddr = (typeof __ov.bcc === "string" && __ov.bcc.trim()) ? __ov.bcc.trim() : "";
   const sendCopy = __ov.sendCopy === true || __ov.sendCopy === "true";
+  const attachStatement = __ov.attachStatement === true || __ov.attachStatement === "true";
   const customMsg = (typeof __ov.message === "string" && __ov.message.trim()) ? String(__ov.message) : "";
   const subjectFinal = (typeof __ov.subject === "string" && __ov.subject.trim()) ? __ov.subject.trim() : ("Invoice " + inv.number + " from " + (company.name || "Xentral"));
   const __esc = (x: string) => x.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/\n/g, "<br/>");
@@ -121,6 +123,14 @@ export async function POST(req: Request, { params }: { params: { id: string } })
     const pdf = await generateDocumentPdf(data);
     attachments = [{ filename: `${inv.number}.pdf`, content: pdf }];
   } catch { attachments = undefined; }
+  if (attachStatement && inv.customerId) {
+    try {
+      const orows = (await p.query(`select number, to_char("issueDate",'DD Mon YYYY') as date, to_char("dueDate",'DD Mon YYYY') as due, total, "amountPaid" as paid, (total - "amountPaid") as balance from "invoices" where "companyId"=$1 and "customerId"=$2 and status::text in ('SENT','PARTIALLY_PAID','OVERDUE') order by "issueDate" asc`, [session.companyId, inv.customerId])).rows as Record<string, unknown>[];
+      const out = orows.reduce((s2: number, r2) => s2 + (Number(r2.balance) || 0), 0);
+      const stmt = await generateStatementPdf({ companyName: company.name || "Xentral", customer: inv.customer || "Customer", currency: inv.currency || "AED", rows: orows.map((r2) => ({ number: String(r2.number), date: String(r2.date || ""), due: String(r2.due || ""), total: Number(r2.total) || 0, paid: Number(r2.paid) || 0, balance: Number(r2.balance) || 0 })), outstanding: out, accent });
+      attachments = [...(attachments || []), { filename: `Statement-${(inv.customer || "customer").replace(/[^a-z0-9]+/gi, "-")}.pdf`, content: stmt }];
+    } catch { /* statement best-effort */ }
+  }
 
   let status = "SENT"; let error: string | null = null;
   try {
