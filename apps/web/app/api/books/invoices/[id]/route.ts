@@ -27,6 +27,7 @@ export async function GET(_req: Request, { params }: { params: { id: string } })
     const inv = await p.query(
       `select i.id, i.number, i.status::text as status, i.total, i."amountPaid" as "amountPaid", i.subtotal, i."vatTotal" as "vatTotal", i.currency,
               to_char(i."issueDate",'DD Mon YYYY') as issued, to_char(i."dueDate",'YYYY-MM-DD') as "dueDateRaw", to_char(i."dueDate",'DD Mon YYYY') as due, i.notes,
+              to_char(i."issueDate",'YYYY-MM-DD') as "issueDateRaw", i."referenceNo" as "referenceNo", i."projectName" as "projectName", i."salespersonId" as "salespersonId", i."customerId" as "customerId",
               bc.name as customer, bc.email as "customerEmail"
          from "invoices" i left join "billing_customers" bc on bc.id = i."customerId"
         where i.id = $1 and i."companyId" = $2 limit 1`, [params.id, session.companyId]);

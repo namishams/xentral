@@ -68,6 +68,13 @@ export async function POST(req: Request) {
       `insert into "invoices" (id,"companyId","customerId","createdById",number,status,"issueDate","dueDate",currency,subtotal,"discountTotal","vatTotal",total,"amountPaid",notes,"createdAt","updatedAt")
        values ($1,$2,$3,$4,$5,'DRAFT',now(),$6,$7,$8,0,$9,$10,0,$11,now(),now())`,
       [id, session.companyId, customerId, session.userId, number, b.dueDate ? String(b.dueDate) : null, String(b.currency ?? "AED"), subtotal.toFixed(2), vatTotal.toFixed(2), total.toFixed(2), b.notes ? String(b.notes) : null]);
+    { const hs: string[] = []; const hv: unknown[] = []; let hi = 1;
+      if (b.issueDate) { hs.push(`"issueDate"=$${hi}::timestamptz`); hv.push(String(b.issueDate)); hi++; }
+      if (b.referenceNo) { hs.push(`"referenceNo"=$${hi}`); hv.push(String(b.referenceNo)); hi++; }
+      if (b.projectName) { hs.push(`"projectName"=$${hi}`); hv.push(String(b.projectName)); hi++; }
+      if (b.salespersonId) { hs.push(`"salespersonId"=$${hi}`); hv.push(String(b.salespersonId)); hi++; }
+      if (hs.length) { hv.push(id); await client.query(`update "invoices" set ${hs.join(", ")} where id=$${hi}`, hv); }
+    }
     for (const l of norm) {
       await client.query(
         `insert into "invoice_lines" (id,"invoiceId",position,name,description,qty,"unitPrice","vatRate","discountPct","lineTotal") values ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10)`,

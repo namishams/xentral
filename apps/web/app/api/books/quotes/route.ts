@@ -68,6 +68,13 @@ export async function POST(req: Request) {
       `insert into "quotes" (id,"companyId","customerId","createdById",number,status,"issueDate","validUntil",currency,subtotal,"discountTotal","vatTotal",total,"publicToken",notes,"createdAt","updatedAt")
        values ($1,$2,$3,$4,$5,'DRAFT',now(),$6,$7,$8,0,$9,$10,$11,$12,now(),now())`,
       [id, session.companyId, customerId, session.userId, number, b.validUntil ? String(b.validUntil) : null, String(b.currency ?? "AED"), subtotal.toFixed(2), vatTotal.toFixed(2), total.toFixed(2), newId(), b.notes ? String(b.notes) : null]);
+    { const hs: string[] = []; const hv: unknown[] = []; let hi = 1;
+      if (b.issueDate) { hs.push(`"issueDate"=$${hi}::timestamptz`); hv.push(String(b.issueDate)); hi++; }
+      if (b.referenceNo) { hs.push(`"referenceNo"=$${hi}`); hv.push(String(b.referenceNo)); hi++; }
+      if (b.projectName) { hs.push(`"projectName"=$${hi}`); hv.push(String(b.projectName)); hi++; }
+      if (b.salespersonId) { hs.push(`"salespersonId"=$${hi}`); hv.push(String(b.salespersonId)); hi++; }
+      if (hs.length) { hv.push(id); await client.query(`update "quotes" set ${hs.join(", ")} where id=$${hi}`, hv); }
+    }
     for (const l of norm) {
       await client.query(
         `insert into "quote_lines" (id,"quoteId",position,name,description,qty,"unitPrice","vatRate","discountPct","lineTotal") values ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10)`,
