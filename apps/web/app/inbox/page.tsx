@@ -54,7 +54,7 @@ export default function InboxPage() {
   // where the operator picks listing type (Shared / Exclusive / Best Offer) + price.
   const listOnMarketplace = () => {
     if (!active) return;
-    const params = new URLSearchParams({ waName: active.name || "", waPhone: active.phone || "" });
+    const params = new URLSearchParams({ waConv: active.id, waName: active.name || "", waPhone: active.phone || "" });
     window.location.href = `/admin?${params.toString()}`;
   };
 

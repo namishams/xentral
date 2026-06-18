@@ -53,6 +53,7 @@ export default function AdminPage() {
   const [imgs, setImgs] = React.useState<string[]>([]);
   const [aiMsg, setAiMsg] = React.useState("");
   const [extracted, setExtracted] = React.useState<Record<string, string | number | boolean> | null>(null);
+  const [prefillNote, setPrefillNote] = React.useState("");
   const fileRef = React.useRef<HTMLInputElement | null>(null);
 
   const load = React.useCallback(() => {
@@ -62,17 +63,50 @@ export default function AdminPage() {
   React.useEffect(() => { load(); }, [load]);
 
   // Prefill the Add-Lead form when arriving from a WhatsApp conversation
-  // (Inbox → "List on marketplace"). Opens the Marketplace tab + modal.
+  // (Inbox → "List on marketplace"). Opens the Marketplace tab + modal, then —
+  // if a conversation id is present — asks the AI to read the chat and fill the rest.
   React.useEffect(() => {
     if (typeof window === "undefined") return;
     const sp = new URLSearchParams(window.location.search);
-    const waName = sp.get("waName"); const waPhone = sp.get("waPhone");
-    if (!waName && !waPhone) return;
+    const waName = sp.get("waName"); const waPhone = sp.get("waPhone"); const waConv = sp.get("waConv");
+    if (!waName && !waPhone && !waConv) return;
     const parts = (waName || "").trim().split(/\s+/).filter(Boolean);
     setF({ ...blank(), name: waName || "WhatsApp lead", firstName: parts[0] || "", lastName: parts.slice(1).join(" "), phone: waPhone || "", hasWhatsApp: true, hasPhone: !!waPhone });
     setTab("Marketplace");
     setAdding(true);
     window.history.replaceState({}, "", "/admin");
+    if (!waConv) return;
+    setPrefillNote("✦ Reading the WhatsApp chat to fill the lead…");
+    fetch("/api/admin/ai-lead-from-chat", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ conversationId: waConv }) })
+      .then((r) => r.json()).then((j) => {
+        if (!j?.lead) { setPrefillNote(j?.error ? `AI: ${j.error}` : ""); return; }
+        const x = j.lead as Record<string, string | number | boolean>;
+        const sx = (k: string) => (x[k] == null ? "" : String(x[k]));
+        const reg = REGIONS.find((r) => r.toLowerCase() === sx("originRegion").toLowerCase()) || "Unknown";
+        const qual = QUALITIES.includes(sx("quality").toUpperCase()) ? sx("quality").toUpperCase() : "STANDARD";
+        const price = Math.round(Number(x.suggestedPrice) || 50);
+        setF((prev) => ({
+          ...prev,
+          name: sx("specialty") || prev.name,
+          category: sx("category") || prev.category,
+          originCountry: sx("originCountry") || prev.originCountry,
+          originRegion: reg,
+          quality: qual,
+          currentLocation: sx("currentLocation") || prev.currentLocation,
+          summary: sx("summary") || prev.summary,
+          firstName: sx("firstName") || prev.firstName,
+          lastName: sx("lastName") || prev.lastName,
+          phone: sx("phone") || prev.phone,
+          email: sx("email") || prev.email,
+          notes: sx("notes") || prev.notes,
+          hasPhone: prev.hasPhone || !!x.hasPhone,
+          hasWhatsApp: true,
+          hasEmail: prev.hasEmail || !!x.hasEmail,
+          initialPrice: String(price),
+          minPrice: String(Math.round(price * 0.6)),
+        }));
+        setPrefillNote("✦ AI filled this from the WhatsApp chat — review, then choose listing type & price.");
+      }).catch(() => setPrefillNote(""));
   }, []);
 
   async function act(body: Record<string, unknown>) {
@@ -83,7 +117,7 @@ export default function AdminPage() {
   const totals = d.totals || {}; const streams = d.streams || {}; const supply = d.supply || {};
 
   const leads = (d.leads || []).filter((l) => mFilter === "ALL" || l.status === mFilter);
-  function openAdd() { setF(blank()); setAdding(true); }
+  function openAdd() { setF(blank()); setPrefillNote(""); setAdding(true); }
   function openEdit(l: Lead) {
     setF({ ...blank(), id: l.id, name: l.name, category: l.category, originRegion: l.origin || "UAE", quality: l.quality || "STANDARD",
       initialPrice: String(l.price || 0), minPrice: String(l.floor || 0), maxPurchases: String(l.cap || 1), status: l.status || "AVAILABLE",
@@ -94,7 +128,7 @@ export default function AdminPage() {
   async function saveLead() {
     if (!f.name.trim()) return;
     const body = { kind: f.id ? "mkt.update" : "mkt.add", ...f, isExclusive: f.listingType === "exclusive" };
-    if (await act(body)) { setAdding(false); setF(blank()); }
+    if (await act(body)) { setAdding(false); setF(blank()); setPrefillNote(""); }
   }
   async function uploadCv(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0]; if (!file) return;
@@ -430,6 +464,7 @@ export default function AdminPage() {
               <button onClick={() => setAdding(false)} aria-label="Close" style={{ border: 0, background: "transparent", fontSize: 20, color: color.ink.soft, cursor: "pointer" }}>×</button>
             </div>
             <div style={{ padding: 22, display: "flex", flexDirection: "column", gap: 16, maxHeight: "76vh", overflowY: "auto" }}>
+              {prefillNote ? <div style={{ background: "rgba(34,211,166,0.10)", border: `1px solid ${color.status.positive}`, color: color.status.positive, borderRadius: 9, padding: "9px 13px", fontSize: 12.5, fontWeight: 600 }}>{prefillNote}</div> : null}
               <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
                 <div><label style={lbl}>Specialty / Job title *</label><input value={f.name} onChange={(e) => set("name", e.target.value)} placeholder="e.g. Registered Nurse" style={fieldS} autoFocus /></div>
                 <div><label style={lbl}>Category *</label><input value={f.category} onChange={(e) => set("category", e.target.value)} placeholder="e.g. Healthcare" style={fieldS} /></div>
