@@ -70,9 +70,9 @@ export function PageTitleRow({ title, subtitle, breadcrumb, badge, actions, icon
   React.useEffect(() => { if (typeof window !== "undefined") setKey(keyForPath(window.location.pathname)); }, []);
 
   const iconBadge = !showIcon ? null : (
-    <span aria-hidden="true" style={{ flexShrink: 0, width: 38, height: 38, borderRadius: 11, background: color.brand.primaryTint, color: color.brand.primary, display: "inline-flex", alignItems: "center", justifyContent: "center" }}>
+    <span aria-hidden="true" style={{ flexShrink: 0, width: 36, height: 36, borderRadius: 10, background: color.brand.primaryTint, color: color.brand.primary, display: "inline-flex", alignItems: "center", justifyContent: "center" }}>
       {icon ?? (
-        <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
           {key ? ICON[key] : ICON.grid}
         </svg>
       )}
@@ -80,7 +80,7 @@ export function PageTitleRow({ title, subtitle, breadcrumb, badge, actions, icon
   );
 
   return (
-    <div style={{ display: "flex", alignItems: subtitle || breadcrumb ? "flex-end" : "center", justifyContent: "space-between", marginBottom: 16, gap: 12 }}>
+    <div style={{ display: "flex", alignItems: subtitle || breadcrumb ? "flex-end" : "center", justifyContent: "space-between", marginBottom: 14, gap: 12 }}>
       <div style={{ display: "flex", alignItems: "center", gap: 12, minWidth: 0 }}>
         {iconBadge}
         <div style={{ minWidth: 0 }}>

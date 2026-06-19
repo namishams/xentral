@@ -3,9 +3,9 @@
 import * as React from "react";
 import { color } from "@xentral/config";
 
-const pill: React.CSSProperties = { display: "inline-flex", alignItems: "center", gap: 6, height: 30, padding: "0 11px", borderRadius: 8, border: `1px solid ${color.line.DEFAULT}`, background: color.surface.card, color: color.ink.mid, fontSize: 12.5, fontWeight: 500, whiteSpace: "nowrap", flexShrink: 0, textDecoration: "none", cursor: "pointer" };
-const iconBtn: React.CSSProperties = { width: 34, height: 34, borderRadius: 10, border: `1px solid ${color.line.DEFAULT}`, background: color.surface.card, color: color.ink.mid, display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", position: "relative", flexShrink: 0, transition: "background 120ms ease, border-color 120ms ease" };
-const menu: React.CSSProperties = { position: "absolute", right: 0, top: 40, minWidth: 210, background: color.surface.card, border: `1px solid ${color.line.DEFAULT}`, borderRadius: 10, boxShadow: "0 12px 32px -8px rgba(20,28,38,0.25)", zIndex: 60, padding: 6 };
+const pill: React.CSSProperties = { display: "inline-flex", alignItems: "center", gap: 6, height: 36, padding: "0 12px", borderRadius: 9, border: `1px solid ${color.line.DEFAULT}`, background: color.surface.card, color: color.ink.mid, fontSize: 12.5, fontWeight: 500, whiteSpace: "nowrap", flexShrink: 0, textDecoration: "none", cursor: "pointer" };
+const iconBtn: React.CSSProperties = { width: 36, height: 36, borderRadius: 9, border: `1px solid ${color.line.DEFAULT}`, background: color.surface.card, color: color.ink.mid, display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", position: "relative", flexShrink: 0, transition: "background 120ms ease, border-color 120ms ease" };
+const menu: React.CSSProperties = { position: "absolute", right: 0, top: 42, minWidth: 210, background: color.surface.card, border: `1px solid ${color.line.DEFAULT}`, borderRadius: 10, boxShadow: "0 12px 32px -8px rgba(20,28,38,0.25)", zIndex: 60, padding: 6 };
 const item: React.CSSProperties = { display: "block", padding: "9px 12px", fontSize: 13, color: color.ink.DEFAULT, textDecoration: "none", borderRadius: 7, whiteSpace: "nowrap" };
 
 /** Inline stroke icons (16px, currentColor). Crisp at the top-bar scale. */
@@ -35,7 +35,7 @@ export function HeaderSearch() {
   const [v, setV] = React.useState("");
   return (
     <span style={{ position: "relative", display: "inline-flex", alignItems: "center", flexShrink: 0 }}>
-      <span style={{ position: "absolute", left: 11, color: color.ink.soft, display: "inline-flex", pointerEvents: "none" }}><Icon name="search" size={15} /></span>
+      <span style={{ position: "absolute", left: 11, color: color.ink.soft, display: "inline-flex", pointerEvents: "none" }}><Icon name="search" size={16} /></span>
       <input value={v} onChange={(e) => setV(e.target.value)}
         onKeyDown={(e) => { if (e.key === "Enter" && v.trim()) window.location.href = "/contacts?q=" + encodeURIComponent(v.trim()); }}
         placeholder="Search contacts, companies, deals…" aria-label="Search"
@@ -50,9 +50,9 @@ export function HeaderTools() {
   const [noteOpen, setNote] = useToggle();
   return (
     <>
-      <a href="/billing" style={pill}><Icon name="growth" size={15} />Growth</a>
-      <a href="/credits" style={pill}><Icon name="credits" size={15} />AED 999</a>
-      <a href="/org/branches" style={pill}><Icon name="pin" size={15} />All locations <Icon name="chevron" /></a>
+      <a href="/billing" style={pill}><Icon name="growth" size={16} />Growth</a>
+      <a href="/credits" style={pill}><Icon name="credits" size={16} />AED 999</a>
+      <a href="/org/branches" style={pill}><Icon name="pin" size={16} />All locations <Icon name="chevron" /></a>
 
       {/* Notifications */}
       <span style={{ position: "relative", flexShrink: 0 }} onClick={(e) => e.stopPropagation()}>
@@ -101,7 +101,7 @@ export function HeaderAvatar({ label = "MF" }: { label?: string }) {
   return (
     <span style={{ position: "relative", flexShrink: 0 }} onClick={(e) => e.stopPropagation()}>
       <button onClick={() => setOpen((o) => !o)} aria-label="Account menu" aria-expanded={open}
-        style={{ width: 34, height: 34, borderRadius: "50%", overflow: "hidden", padding: 0, border: 0, background: showImg ? "transparent" : color.brand.primary, color: color.ink.onPrimary, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 12, fontWeight: 700, cursor: "pointer" }}>
+        style={{ width: 36, height: 36, borderRadius: "50%", overflow: "hidden", padding: 0, border: 0, background: showImg ? "transparent" : color.brand.primary, color: color.ink.onPrimary, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 12, fontWeight: 700, cursor: "pointer" }}>
         {showImg ? <img src={avatar!} alt="" onError={() => setImgOk(false)} style={{ width: "100%", height: "100%", objectFit: "cover" }} /> : init}
       </button>
       {open ? (

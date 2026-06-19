@@ -32,7 +32,7 @@ export const quickActions = {
 } as const;
 
 export const card = {
-  kpi: { height: 112, minWidth: 220, maxWidth: 320 },
+  kpi: { height: 96, minWidth: 220, maxWidth: 320 },
   medium: { height: 180, minWidth: 320 },
   large: { height: 280, minWidth: 480 },
   paddingX: 16,
@@ -52,7 +52,7 @@ export const table = {
 } as const;
 
 export const form = {
-  inputHeight: 40,
+  inputHeight: 36,
   textareaMinHeight: 96,
   labelFontSize: 14,
   fieldGap: 16,
@@ -76,5 +76,27 @@ export const dashboard = {
   section: { titleFontSize: 14, marginTop: 28, marginBottom: 14 },
 } as const;
 
-export const uiConstants = { header, aiSearch, quickActions, card, table, form, dashboard } as const;
+/**
+ * control — the single interactive-control sizing scale. Buttons, inputs,
+ * selects, pills, icon buttons, avatars and the header search all read this so
+ * every interactive element shares one height. No page hardcodes control sizes.
+ */
+export const control = {
+  height: 36,      // universal control height
+  heightSm: 30,    // dense variant (chips, table-inline)
+  radius: 8,
+  paddingX: 12,
+  fontSize: 13,
+} as const;
+
+/** icon — the canonical icon-size ladder. xs chevrons → xl page badges. */
+export const icon = {
+  xs: 12,
+  sm: 14,
+  md: 16,
+  lg: 18,
+  xl: 20,
+} as const;
+
+export const uiConstants = { header, aiSearch, quickActions, card, table, form, dashboard, control, icon } as const;
 export default uiConstants;
