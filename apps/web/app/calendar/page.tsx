@@ -132,12 +132,12 @@ export default function CalendarPage() {
           <div style={{ display: "grid", gridTemplateColumns: "repeat(7, 1fr)", borderBottom: `1px solid ${color.line.DEFAULT}` }}>
             {WEEK.map((w) => <div key={w} style={{ padding: "9px 10px", fontSize: 11, fontWeight: 700, letterSpacing: 0.4, color: color.ink.soft, textTransform: "uppercase", textAlign: "left" }}>{w}</div>)}
           </div>
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(7, 1fr)", gridAutoRows: "minmax(104px, 1fr)" }}>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(7, 1fr)", gridAutoRows: "112px" }}>
             {grid.map((d, idx) => {
               const key = ymd(d); const inMonth = d.getMonth() === cursor.getMonth(); const isToday = key === todayKey;
               const evs = byDay.get(key) ?? [];
               return (
-                <div key={idx} onClick={() => openNew(key)} style={{ borderRight: (idx % 7 !== 6) ? `1px solid ${color.line.DEFAULT}` : "none", borderBottom: idx < 35 ? `1px solid ${color.line.DEFAULT}` : "none", padding: 6, minHeight: 104, background: inMonth ? color.surface.card : color.surface.sunken, cursor: "pointer", position: "relative" }}>
+                <div key={idx} onClick={() => openNew(key)} style={{ borderRight: (idx % 7 !== 6) ? `1px solid ${color.line.DEFAULT}` : "none", borderBottom: idx < 35 ? `1px solid ${color.line.DEFAULT}` : "none", padding: 6, height: 112, overflow: "hidden", background: inMonth ? color.surface.card : color.surface.sunken, cursor: "pointer", position: "relative" }}>
                   <div style={{ display: "flex", justifyContent: "flex-end" }}>
                     <span style={{ fontSize: 12, fontWeight: isToday ? 700 : 500, width: 22, height: 22, borderRadius: "50%", display: "inline-flex", alignItems: "center", justifyContent: "center", background: isToday ? color.brand.primary : "transparent", color: isToday ? color.ink.onPrimary : inMonth ? color.ink.mid : color.ink.soft }}>{d.getDate()}</span>
                   </div>
