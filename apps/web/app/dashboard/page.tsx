@@ -30,57 +30,57 @@ const RECOMMENDATIONS: { label: string; count: number; tone: string; href: strin
 // Launchpad — ordered by the BUSINESS LIFECYCLE, not technical modules.
 // Lead → Customer → Quote → Order → Delivery → Invoice → Payment → Support.
 // Admin/settings are intentionally excluded — this is "what you always need".
-const SECTIONS: { title: string; tiles: { label: string; glyph: string; href: string }[] }[] = [
+const SECTIONS: { title: string; tiles: { label: string; icon: string; href: string }[] }[] = [
   {
     title: "Revenue",
     tiles: [
-      { label: "Leads", glyph: "✸", href: "/leads" },
-      { label: "Contacts", glyph: "◍", href: "/contacts" },
-      { label: "Companies", glyph: "▢", href: "/companies" },
-      { label: "Deals", glyph: "◇", href: "/deals" },
-      { label: "Pipelines", glyph: "≣", href: "/pipelines" },
-      { label: "Quotes", glyph: "▥", href: "/quotations" },
-      { label: "Forecasting", glyph: "◴", href: "/forecasting" },
+      { label: "Leads", icon: "target", href: "/leads" },
+      { label: "Contacts", icon: "user", href: "/contacts" },
+      { label: "Companies", icon: "building", href: "/companies" },
+      { label: "Deals", icon: "briefcase", href: "/deals" },
+      { label: "Pipelines", icon: "kanban", href: "/pipelines" },
+      { label: "Quotes", icon: "file", href: "/quotations" },
+      { label: "Forecasting", icon: "trending", href: "/forecasting" },
     ],
   },
   {
     title: "Operations",
     tiles: [
-      { label: "Orders", glyph: "▤", href: "/orders" },
-      { label: "Products", glyph: "▦", href: "/products" },
-      { label: "Inventory", glyph: "▥", href: "/inventory" },
-      { label: "Warehouses", glyph: "▢", href: "/warehouses" },
-      { label: "Procurement", glyph: "◰", href: "/procurement" },
-      { label: "Suppliers", glyph: "◰", href: "/suppliers" },
-      { label: "Projects", glyph: "▭", href: "/projects" },
+      { label: "Orders", icon: "cart", href: "/orders" },
+      { label: "Products", icon: "package", href: "/products" },
+      { label: "Inventory", icon: "layers", href: "/inventory" },
+      { label: "Warehouses", icon: "building", href: "/warehouses" },
+      { label: "Procurement", icon: "cart", href: "/procurement" },
+      { label: "Suppliers", icon: "truck", href: "/suppliers" },
+      { label: "Projects", icon: "clipboard", href: "/projects" },
     ],
   },
   {
     title: "Finance",
     tiles: [
-      { label: "Invoices", glyph: "▣", href: "/invoices" },
-      { label: "Payments", glyph: "◇", href: "/payments" },
-      { label: "Receivables", glyph: "▤", href: "/receivables" },
-      { label: "Payables", glyph: "▥", href: "/payables" },
-      { label: "VAT", glyph: "％", href: "/vat" },
-      { label: "Reports", glyph: "▦", href: "/reports" },
+      { label: "Invoices", icon: "receipt", href: "/invoices" },
+      { label: "Payments", icon: "card", href: "/payments" },
+      { label: "Receivables", icon: "landmark", href: "/receivables" },
+      { label: "Payables", icon: "landmark", href: "/payables" },
+      { label: "VAT", icon: "percent", href: "/vat" },
+      { label: "Reports", icon: "chart", href: "/reports" },
     ],
   },
   {
     title: "Communication",
     tiles: [
-      { label: "WhatsApp", glyph: "✆", href: "/inbox" },
-      { label: "Email", glyph: "@", href: "/email" },
-      { label: "Calls", glyph: "☎", href: "/calls" },
-      { label: "Meetings", glyph: "▭", href: "/meetings" },
-      { label: "Campaigns", glyph: "◫", href: "/campaigns" },
+      { label: "WhatsApp", icon: "message", href: "/inbox" },
+      { label: "Email", icon: "mail", href: "/email" },
+      { label: "Calls", icon: "phone", href: "/calls" },
+      { label: "Meetings", icon: "calendar", href: "/meetings" },
+      { label: "Campaigns", icon: "megaphone", href: "/campaigns" },
     ],
   },
 ];
 
 function Panel({ title, action, children }: { title: string; action?: React.ReactNode; children: React.ReactNode }) {
   return (
-    <section style={{ background: color.surface.card, border: `1px solid ${color.line.DEFAULT}`, borderRadius: d.panel.radius, padding: d.panel.padding, minHeight: d.panel.minHeight, boxShadow: shadow.card }}>
+    <section style={{ background: color.surface.card, border: `1px solid ${color.line.DEFAULT}`, borderRadius: d.panel.radius, padding: d.panel.padding, boxShadow: shadow.card }}>
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 14 }}>
         <h2 style={{ fontSize: d.panel.titleFontSize, fontWeight: 600, color: color.ink.DEFAULT, margin: 0 }}>{title}</h2>
         {action}
@@ -108,13 +108,13 @@ export default function DashboardPage() {
       </div>
 
       {/* Recommendations + Bookmarks */}
-      <div style={{ display: "grid", gridTemplateColumns: "minmax(0,2fr) minmax(0,1fr)", gap: d.panel.gap }}>
+      <div style={{ display: "grid", gridTemplateColumns: "minmax(0,2fr) minmax(0,1fr)", gap: d.panel.gap, alignItems: "start" }}>
         <Panel title="Recommendations">
           <div>
             {RECOMMENDATIONS.map((r, i) => (
               <a key={i} href={r.href} style={{ display: "flex", alignItems: "center", gap: 12, height: d.recommendation.rowHeight, borderTop: i === 0 ? "none" : `1px solid ${color.line.DEFAULT}`, textDecoration: "none" }}>
                 <span style={{ width: d.recommendation.accentWidth, height: 22, borderRadius: 2, background: r.tone, flexShrink: 0 }} />
-                <span style={{ fontSize: d.recommendation.iconSize, color: color.ink.soft, width: 22, textAlign: "center", flexShrink: 0 }} aria-hidden="true">◍</span>
+                <span aria-hidden="true" style={{ width: 7, height: 7, borderRadius: "50%", background: color.line.strong, flexShrink: 0 }} />
                 <span style={{ flex: 1, minWidth: 0, fontSize: d.recommendation.fontSize, color: color.ink.DEFAULT, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{r.label}</span>
                 <span style={{ fontSize: d.recommendation.countFontSize, fontWeight: 600, color: r.count > 0 ? color.ink.DEFAULT : color.ink.soft }}>{r.count}</span>
               </a>
@@ -133,7 +133,7 @@ export default function DashboardPage() {
         <div key={s.title}>
           <h2 style={{ fontSize: d.section.titleFontSize, fontWeight: 600, color: color.ink.DEFAULT, margin: `${d.section.marginTop}px 0 ${d.section.marginBottom}px`, borderBottom: `1px solid ${color.line.DEFAULT}`, paddingBottom: 8 }}>{s.title}</h2>
           <div style={{ display: "flex", flexWrap: "wrap", gap: d.actionTile.gap }}>
-            {s.tiles.map((t) => <ActionTile key={t.label} label={t.label} glyph={t.glyph} href={t.href} />)}
+            {s.tiles.map((t) => <ActionTile key={t.label} label={t.label} icon={t.icon} href={t.href} />)}
           </div>
         </div>
       ))}
