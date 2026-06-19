@@ -19,12 +19,12 @@ function pool(url: string): Pool {
 export async function GET() {
   const s = await resolveSession();
   if (!s) return NextResponse.json({ authenticated: false, superAdmin: false });
-  let companyName = "", credits = 0, userName = "", avatar: string | null = null, phone = "";
+  let companyName = "", credits = 0, userName = "", avatar: string | null = null, phone = "", themeAccent: string | null = null;
   const url = process.env.DATABASE_URL;
   if (url) {
     try {
-      const c = (await pool(url).query(`select name, coalesce(credits,0)::int as credits from companies where id=$1 limit 1`, [s.companyId])).rows[0];
-      if (c) { companyName = String(c.name || ""); credits = Number(c.credits) || 0; }
+      const c = (await pool(url).query(`select name, coalesce(credits,0)::int as credits, "themeAccent" from companies where id=$1 limit 1`, [s.companyId])).rows[0];
+      if (c) { companyName = String(c.name || ""); credits = Number(c.credits) || 0; themeAccent = c.themeAccent || null; }
       const u = (await pool(url).query(`select name, avatar, phone from users where id=$1 limit 1`, [s.userId])).rows[0];
       if (u) { userName = String(u.name || ""); avatar = u.avatar || null; phone = String(u.phone || ""); }
     } catch { /* ignore */ }
@@ -40,6 +40,7 @@ export async function GET() {
     userName,
     avatar,
     phone,
+    themeAccent,
   });
 }
 

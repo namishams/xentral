@@ -136,9 +136,19 @@ const NAV: NavGroup[] = [
 const SIDEBAR_WIDTH = 240;
 
 /** GlobalHeader — rich shell bar (mirrors the live app top bar). */
+function _bshade(h: string, mul: number) { const n = parseInt(h.slice(1), 16); const f = (x: number) => Math.max(0, Math.min(255, Math.round(x * mul))); return "#" + [f((n >> 16) & 255), f((n >> 8) & 255), f(n & 255)].map((x) => x.toString(16).padStart(2, "0")).join(""); }
+function _btint(h: string) { const n = parseInt(h.slice(1), 16); const f = (x: number) => Math.round(x + (255 - x) * 0.9); return "#" + [f((n >> 16) & 255), f((n >> 8) & 255), f(n & 255)].map((x) => x.toString(16).padStart(2, "0")).join(""); }
+
 export function GlobalHeader({ right }: { right?: React.ReactNode }) {
   const pill: React.CSSProperties = { display: "inline-flex", alignItems: "center", gap: 6, height: 30, padding: "0 10px", borderRadius: 8, border: `1px solid ${color.line.DEFAULT}`, background: color.surface.card, color: color.ink.mid, fontSize: 12.5, fontWeight: 500, whiteSpace: "nowrap", flexShrink: 0 };
   const iconBtn: React.CSSProperties = { width: 30, height: 30, borderRadius: 8, border: `1px solid ${color.line.DEFAULT}`, background: color.surface.card, color: color.ink.soft, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 14, cursor: "pointer", position: "relative", flexShrink: 0 };
+  React.useEffect(() => {
+    fetch("/api/me").then((r) => r.json()).then((d) => {
+      const a = d?.themeAccent; if (!a || !/^#[0-9a-fA-F]{6}$/.test(a)) return;
+      const rs = document.documentElement.style;
+      rs.setProperty("--brand-primary", a); rs.setProperty("--brand-primary-hover", _bshade(a, 0.88)); rs.setProperty("--brand-tint", _btint(a));
+    }).catch(() => {});
+  }, []);
   return (
     <header style={{ height: uiConstants.header.heightDesktop, flexShrink: 0, background: color.surface.card, borderBottom: `1px solid ${color.line.DEFAULT}`, display: "flex", alignItems: "center", gap: 8, padding: "0 16px", position: "sticky", top: 0, zIndex: 40 }}>
       <span style={{ flex: 1 }} />
