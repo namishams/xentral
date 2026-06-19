@@ -9,10 +9,12 @@ type Tenant = { id: string; name: string; credits: number; users: number; contac
 type Topup = { id: string; companyId: string; company: string; balance: number; amount: number; status: string; date: string };
 type Demo = { id: string; name: string; email: string; company: string; country: string; useCase: string; status: string; date: string };
 type Q = { id: string; question: string; answer: string | null; status: string; company: string; date: string };
+type Bid = { id: string; amount: number; status: string; company: string; companyId: string; balance: number; leadId: string; lead: string; kind: string };
+type Dispute = { id: string; reason: string; details: string | null; status: string; company: string; date: string; paid: number; purchaseId: string; lead: string };
 type Reseller = { id: string; company: string; approved: boolean; rate: number; earned: number; pending: number; paid: number };
 type Payout = { id: string; company: string; amount: number; status: string; method: string; date: string };
 type NumMap = Record<string, number>;
-type Feed = { ok?: boolean; totals?: NumMap; streams?: NumMap; supply?: NumMap; tenants?: Tenant[]; leads?: Lead[]; topups?: Topup[]; demos?: Demo[]; questions?: Q[]; resellers?: Reseller[]; payouts?: Payout[]; topCustomers?: Tenant[] };
+type Feed = { ok?: boolean; totals?: NumMap; streams?: NumMap; supply?: NumMap; tenants?: Tenant[]; leads?: Lead[]; topups?: Topup[]; demos?: Demo[]; questions?: Q[]; resellers?: Reseller[]; payouts?: Payout[]; bids?: Bid[]; disputes?: Dispute[]; topCustomers?: Tenant[] };
 
 type AddForm = {
   id?: string; name: string; category: string; originCountry: string; originRegion: string; quality: string;
@@ -32,7 +34,7 @@ const blank = (): AddForm => ({
 });
 
 const aed = (n: number) => `AED ${(Number(n) || 0).toLocaleString()}`;
-const TABS = ["Overview", "Marketplace", "AI Import", "Credits", "Companies", "Questions", "Demo Requests", "Resellers"] as const;
+const TABS = ["Overview", "Marketplace", "Bids", "Disputes", "AI Import", "Credits", "Companies", "Questions", "Demo Requests", "Resellers"] as const;
 const QTONE: Record<string, BadgeTone> = { AVAILABLE: "positive", SOLD: "neutral", DRAFT: "info", EXPIRED: "critical", HOT: "critical", WARM: "critical", STANDARD: "info" };
 const REGIONS = ["UAE", "GCC", "Asia/Africa", "Europe", "Americas", "Unknown"];
 const QUALITIES = ["HOT", "WARM", "STANDARD"];
@@ -355,7 +357,7 @@ export default function AdminPage() {
                   : (d.topups || []).map((t) => (
                     <div key={t.id} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "11px 14px", borderBottom: `1px solid ${color.line.DEFAULT}` }}>
                       <div><div style={{ fontWeight: 600, fontSize: 13 }}>{t.company || "—"}</div><div style={{ fontSize: 11.5, color: color.ink.soft }}>{aed(t.amount)} · {t.date} · balance {t.balance.toLocaleString()}</div></div>
-                      {String(t.status).toLowerCase() === "pending" ? <Button variant="primary" onClick={() => act({ kind: "credit.approve", id: t.id })} disabled={busy}>Approve</Button> : <span style={{ fontSize: 12, fontWeight: 600, color: color.status.positive }}>✓ {t.status}</span>}
+                      {String(t.status).toLowerCase() === "pending" ? <span style={{ display: "inline-flex", gap: 6 }}><Button variant="primary" onClick={() => act({ kind: "credit.approve", id: t.id })} disabled={busy}>Approve</Button><Button onClick={() => { if (window.confirm("Reject this top-up request?")) act({ kind: "credit.reject", id: t.id }); }} disabled={busy}>Reject</Button></span> : <span style={{ fontSize: 12, fontWeight: 600, color: String(t.status).toLowerCase() === "rejected" ? color.status.negative : color.status.positive }}>{String(t.status).toLowerCase() === "rejected" ? "✗" : "✓"} {t.status}</span>}
                     </div>
                   ))}
               </div>
@@ -368,6 +370,44 @@ export default function AdminPage() {
                   </div>
                 ))}
               </div>
+            </div>
+          )}
+
+          {tab === "Bids" && (
+            <div style={cardS}>
+              <div style={th}>Best-offer bids</div>
+              {(d.bids || []).length === 0 ? <div style={{ padding: 14, fontSize: 12.5, color: color.ink.soft }}>No bids yet.</div>
+                : (d.bids || []).map((bd) => { const st = String(bd.status).toUpperCase(); const open = st === "PENDING" || st === "OUTBID"; return (
+                  <div key={bd.id} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "11px 14px", borderBottom: `1px solid ${color.line.DEFAULT}`, gap: 10 }}>
+                    <div style={{ minWidth: 0 }}>
+                      <div style={{ fontWeight: 600, fontSize: 13, color: color.ink.DEFAULT }}>{bd.lead} · <span style={{ color: color.brand.primary }}>{aed(bd.amount)}</span></div>
+                      <div style={{ fontSize: 11.5, color: color.ink.soft }}>{bd.company || "—"} · balance {bd.balance.toLocaleString()} · {st}{bd.balance < bd.amount ? " · ⚠ low balance" : ""}</div>
+                    </div>
+                    {open ? <span style={{ display: "inline-flex", gap: 6, flexShrink: 0 }}>
+                      <Button variant="primary" onClick={() => { if (window.confirm(`Accept ${aed(bd.amount)} bid from ${bd.company}? This sells the lead and charges their credits.`)) act({ kind: "bid.accept", id: bd.id }); }} disabled={busy}>Accept</Button>
+                      <Button onClick={() => act({ kind: "bid.reject", id: bd.id })} disabled={busy}>Reject</Button>
+                    </span> : <StatusBadge tone={st === "ACCEPTED" ? "positive" : "neutral"} label={st.toLowerCase()} />}
+                  </div>
+                ); })}
+            </div>
+          )}
+
+          {tab === "Disputes" && (
+            <div style={cardS}>
+              <div style={th}>Open disputes</div>
+              {(d.disputes || []).length === 0 ? <div style={{ padding: 14, fontSize: 12.5, color: color.ink.soft }}>No open disputes.</div>
+                : (d.disputes || []).map((dp) => (
+                  <div key={dp.id} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "11px 14px", borderBottom: `1px solid ${color.line.DEFAULT}`, gap: 10 }}>
+                    <div style={{ minWidth: 0 }}>
+                      <div style={{ fontWeight: 600, fontSize: 13, color: color.ink.DEFAULT }}>{dp.lead} · <span style={{ color: color.status.critical }}>{dp.reason}</span></div>
+                      <div style={{ fontSize: 11.5, color: color.ink.soft }}>{dp.company || "—"} · paid {aed(dp.paid)} · {dp.date}{dp.details ? ` · ${dp.details}` : ""}</div>
+                    </div>
+                    <span style={{ display: "inline-flex", gap: 6, flexShrink: 0 }}>
+                      <Button variant="primary" onClick={() => { if (window.confirm(`Refund ${aed(dp.paid)} to ${dp.company} and resolve?`)) act({ kind: "dispute.resolve", id: dp.id, refund: true }); }} disabled={busy}>Refund &amp; resolve</Button>
+                      <Button onClick={() => act({ kind: "dispute.resolve", id: dp.id, refund: false })} disabled={busy}>Resolve (no refund)</Button>
+                    </span>
+                  </div>
+                ))}
             </div>
           )}
 

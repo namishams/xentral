@@ -3,7 +3,7 @@ import "../../../../lib/session"; // side-effect: register SessionPort resolver
 import { NextResponse } from "next/server";
 import { Pool } from "pg";
 import { resolveSession } from "@xentral/kernel";
-import { sendTopupStatusEmail, sendCreditAddedEmail } from "../../../../lib/email-templates";
+import { sendTopupStatusEmail, sendCreditAddedEmail, sendBidAcceptedEmail } from "../../../../lib/email-templates";
 
 async function notifyRecipient(p: Pool, companyId: string): Promise<{ email: string; name: string } | null> {
   try {
@@ -140,6 +140,51 @@ export async function POST(req: Request) {
     if (kind === "payout.approve") {
       const id = S(b.id); if (!id) return NextResponse.json({ error: "id required" }, { status: 400 });
       await p.query(`update "reseller_payouts" set status='paid', "processedAt"=now() where id=$1`, [id]);
+      return NextResponse.json({ ok: true });
+    }
+    if (kind === "credit.reject") {
+      const id = S(b.id); if (!id) return NextResponse.json({ error: "id required" }, { status: 400 });
+      const r = (await p.query(`select "companyId", amount from "credit_topup_requests" where id=$1`, [id])).rows[0];
+      if (!r) return NextResponse.json({ error: "Request not found" }, { status: 404 });
+      await p.query(`update "credit_topup_requests" set status='REJECTED', "updatedAt"=now() where id=$1`, [id]);
+      try { const u = await notifyRecipient(p, S(r.companyId)); if (u) await sendTopupStatusEmail({ to: u.email, name: u.name, amount: Nn(r.amount), status: "REJECTED", note: S(b.note) || undefined }); } catch { /* noop */ }
+      return NextResponse.json({ ok: true });
+    }
+    if (kind === "bid.reject") {
+      const id = S(b.id); if (!id) return NextResponse.json({ error: "id required" }, { status: 400 });
+      await p.query(`update "marketplace_bids" set status='REJECTED', "updatedAt"=now() where id=$1`, [id]);
+      return NextResponse.json({ ok: true });
+    }
+    if (kind === "bid.accept") {
+      const id = S(b.id); if (!id) return NextResponse.json({ error: "id required" }, { status: 400 });
+      const bid = (await p.query(`select amount::numeric as amount, "companyId" as "companyId", "leadId" as "leadId" from "marketplace_bids" where id=$1`, [id])).rows[0];
+      if (!bid) return NextResponse.json({ error: "Bid not found" }, { status: 404 });
+      const amount = Nn(bid.amount); const buyerId = S(bid.companyId); const leadId = S(bid.leadId);
+      const lead = (await p.query(`select status::text as status, specialty, "firstName","lastName",phone,email from "marketplace_leads" where id=$1`, [leadId])).rows[0];
+      if (!lead) return NextResponse.json({ error: "Lead not found" }, { status: 404 });
+      if (lead.status !== "AVAILABLE") return NextResponse.json({ error: "Lead no longer available" }, { status: 409 });
+      const comp = (await p.query(`select coalesce(credits,0)::int as credits from companies where id=$1`, [buyerId])).rows[0];
+      const before = Nn(comp?.credits);
+      if (before < amount) return NextResponse.json({ error: "Bidder has insufficient credits" }, { status: 402 });
+      const ch = await p.query(`update companies set credits=credits-$1 where id=$2 and credits>=$1`, [amount, buyerId]);
+      if (ch.rowCount !== 1) return NextResponse.json({ error: "Bidder has insufficient credits" }, { status: 402 });
+      await p.query(`update "marketplace_leads" set status='SOLD', "soldToId"=$2, "soldAt"=now(), "soldPrice"=$3, "purchaseCount"="purchaseCount"+1, "updatedAt"=now() where id=$1`, [leadId, buyerId, amount]);
+      const purchaseId = newId("mpu");
+      await p.query(`insert into "marketplace_purchases" (id,"leadId","companyId","pricePaid","purchasedAt") values ($1,$2,$3,$4, now())`, [purchaseId, leadId, buyerId, amount]);
+      await p.query(`insert into "credit_transactions" (id,"companyId",amount,type,description,"balanceBefore","balanceAfter","createdAt") values ($1,$2,$3,'PURCHASE',$4,$5,$6, now())`, [newId("ctx"), buyerId, -amount, `Winning bid: ${S(lead.specialty)}`, before, before - amount]);
+      await p.query(`update "marketplace_bids" set status='ACCEPTED', "updatedAt"=now() where id=$1`, [id]);
+      await p.query(`update "marketplace_bids" set status='LOST', "updatedAt"=now() where "leadId"=$1 and id<>$2 and status in ('PENDING','OUTBID')`, [leadId, id]);
+      try { const ex = await p.query(`select id from contacts where "purchaseId"=$1 limit 1`, [purchaseId]); if (!ex.rowCount) await p.query(`insert into contacts (id,"firstName","lastName",email,phone,status,"companyId","purchaseId","createdAt","updatedAt") values ($1,$2,$3,$4,$5,'NEW',$6,$7, now(), now())`, [newId("con"), S(lead.firstName) || S(lead.specialty), S(lead.lastName), S(lead.email) || null, S(lead.phone) || null, buyerId, purchaseId]); } catch { /* noop */ }
+      try { const u = await notifyRecipient(p, buyerId); const cn = (await p.query(`select name from companies where id=$1`, [buyerId])).rows[0]; if (u) await sendBidAcceptedEmail({ to: u.email, name: u.name, companyName: String(cn?.name || "your workspace"), leadSpecialty: S(lead.specialty) || "Lead", amount, purchaseId }); } catch { /* noop */ }
+      return NextResponse.json({ ok: true, purchaseId });
+    }
+    if (kind === "dispute.resolve") {
+      const id = S(b.id); if (!id) return NextResponse.json({ error: "id required" }, { status: 400 });
+      const refund = !!b.refund;
+      const d = (await p.query(`select d."companyId" as "companyId", mp."pricePaid"::numeric as paid from "lead_disputes" d left join "marketplace_purchases" mp on mp.id=d."purchaseId" where d.id=$1`, [id])).rows[0];
+      if (!d) return NextResponse.json({ error: "Dispute not found" }, { status: 404 });
+      await p.query(`update "lead_disputes" set status='RESOLVED', resolution=$2, "updatedAt"=now() where id=$1`, [id, S(b.resolution) || (refund ? "Refunded" : "Reviewed — no refund")]);
+      if (refund && Nn(d.paid) > 0) await adjustCredits(p, S(d.companyId), Nn(d.paid), "DISPUTE_REFUND", "Dispute resolved — credits refunded");
       return NextResponse.json({ ok: true });
     }
     return NextResponse.json({ error: "Unknown action" }, { status: 400 });

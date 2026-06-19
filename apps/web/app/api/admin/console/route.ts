@@ -66,6 +66,12 @@ export async function GET() {
     from "reseller_payouts" po left join "reseller_profiles" rp on rp.id=po."resellerId" left join companies c on c.id=rp."companyId" order by po."requestedAt" desc limit 50`))
     .map((r) => ({ ...r, amount: N(r.amount) }));
 
+  const bids = (await q(p, `select b.id, b.amount::numeric as amount, b.status::text as status, c.name as company, b."companyId" as "companyId", coalesce(c.credits,0)::int as balance, l.id as "leadId", coalesce(nullif(l.title,''), l.specialty, 'Lead') as lead, l.listing_type as kind from "marketplace_bids" b left join companies c on c.id=b."companyId" left join "marketplace_leads" l on l.id=b."leadId" where b.status in ('PENDING','OUTBID','ACCEPTED') order by b.amount desc limit 200`))
+    .map((r) => ({ ...r, amount: N(r.amount), balance: N(r.balance) }));
+
+  const disputes = (await q(p, `select d.id, d.reason, d.details, d.status::text as status, c.name as company, to_char(d."createdAt",'DD Mon YYYY') as date, mp."pricePaid"::numeric as paid, mp.id as "purchaseId", coalesce(nullif(l.title,''), l.specialty, 'Lead') as lead from "lead_disputes" d left join companies c on c.id=d."companyId" left join "marketplace_purchases" mp on mp.id=d."purchaseId" left join "marketplace_leads" l on l.id=mp."leadId" where lower(d.status::text) in ('open','under_review') order by d."createdAt" desc limit 100`))
+    .map((r) => ({ ...r, paid: N(r.paid) }));
+
   const subsRows = await q(p, `select status::text as status, count(*)::int as n from "subscriptions" group by status::text`);
   const subsActive = subsRows.filter((r) => ["ACTIVE", "TRIALING", "active", "trialing"].includes(String(r.status))).reduce((a, r) => a + N(r.n), 0);
 
@@ -78,9 +84,11 @@ export async function GET() {
     pendingDemos: demos.filter((d) => String(d.status).toLowerCase() === "pending" || String(d.status).toLowerCase() === "new").length,
     openQuestions: questions.filter((x) => String(x.status).toLowerCase() === "open").length,
     pendingPayouts: payouts.filter((x) => String(x.status).toLowerCase() === "pending").length,
+    openDisputes: disputes.length,
+    pendingBids: bids.filter((x) => String(x.status).toLowerCase() === "pending").length,
   };
   const streams = { marketplaceGmv: supply.gmv, creditsOutstanding: totals.credits, subscriptions: subsActive };
   const topCustomers = [...tenants].sort((a, b) => b.spent - a.spent).slice(0, 5);
 
-  return NextResponse.json({ ok: true, totals, streams, supply, tenants, leads, topups, demos, questions, resellers, payouts, topCustomers });
+  return NextResponse.json({ ok: true, totals, streams, supply, tenants, leads, topups, demos, questions, resellers, payouts, bids, disputes, topCustomers });
 }
