@@ -40,7 +40,7 @@ export default function OperatorLogin() {
       <div className="relative w-full max-w-[420px]">
         <div className="rounded-[20px] px-9 py-10 border" style={{ background: "#111a26", borderColor: "rgba(255,255,255,0.08)", boxShadow: "0 30px 70px -20px rgba(0,0,0,0.6)" }}>
           <div className="flex items-center justify-center gap-2.5 mb-5">
-            <span className="inline-flex items-center justify-center" style={{ width: 40, height: 40, borderRadius: 10, background: "#0064d9" }}><XentralMark size={24} /></span>
+            <span className="inline-flex items-center justify-center"><XentralMark size={34} /></span>
             <span className="text-white font-bold text-[18px] tracking-tight">Xentral <span className="font-medium text-[#8aa0b6]">Admin</span></span>
           </div>
           <h1 className="text-[20px] font-bold text-white text-center tracking-tight">Operator sign-in</h1>

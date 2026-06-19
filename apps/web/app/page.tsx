@@ -28,9 +28,9 @@ export default function BuildConsole() {
     <main style={{ paddingTop: 28, paddingBottom: 48 }}>
       <PageContainer>
         <header style={{ marginBottom: 24 }}>
-          <div style={{ fontSize: 12, fontWeight: 700, letterSpacing: 1, color: c.brand.primary }}>NEXT.XENTRAL.AE · LIVE BUILD CONSOLE</div>
-          <h1 style={{ fontSize: 28, fontWeight: 700, color: c.ink.DEFAULT, margin: "6px 0 4px" }}>Xentral — Modular Rebuild</h1>
-          <p style={{ fontSize: 14, color: c.ink.mid }}>Follow the modular build live. Updated as packages, components and modules land. The production app stays on app.xentral.ae.</p>
+          <div style={{ fontSize: 12, fontWeight: 700, letterSpacing: 1, color: c.brand.primary }}>XENTRAL · UAE BUSINESS OPERATING PLATFORM</div>
+          <h1 style={{ fontSize: 28, fontWeight: 700, color: c.ink.DEFAULT, margin: "6px 0 4px" }}>Xentral — UAE Business Operating Platform & Lead Marketplace</h1>
+          <p style={{ fontSize: 14, color: c.ink.mid }}>The modular business operating platform for the UAE: CRM, WhatsApp lead intake, marketplace, books and ERP.</p>
           <div style={{ display: "flex", gap: 10, marginTop: 10, flexWrap: "wrap" }}>
             <a href="/dashboard" style={{ display: "inline-flex", height: 34, padding: "0 16px", alignItems: "center", borderRadius: 8, background: c.brand.primary, color: c.ink.onPrimary, fontSize: 13, fontWeight: 600, textDecoration: "none" }}>Mission Control page →</a>
             <a href="/invoice" style={{ display: "inline-flex", height: 34, padding: "0 16px", alignItems: "center", borderRadius: 8, background: "var(--surface-card)", border: `1px solid ${c.line.DEFAULT}`, color: c.ink.DEFAULT, fontSize: 13, fontWeight: 600, textDecoration: "none" }}>Invoice record page →</a>

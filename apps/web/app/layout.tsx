@@ -3,12 +3,12 @@ import "../lib/live-data";
 import "../lib/session";
 
 export const metadata: Metadata = {
-  title: "Xentral — Modular Build Console",
-  description: "Live view of the modular rebuild (next.xentral.ae).",
+  title: "Xentral — UAE Business Operating Platform & Lead Marketplace",
+  description: "The modular business operating platform for the UAE — CRM, WhatsApp lead intake, marketplace, books & ERP.",
   icons: {
-    icon: [{ url: "/favicon.ico", sizes: "any" }, { url: "/icon.svg", type: "image/svg+xml" }, { url: "/icon-32.png", type: "image/png", sizes: "32x32" }, { url: "/icon-192.png", type: "image/png", sizes: "192x192" }],
+    icon: [{ url: "/icon.svg", type: "image/svg+xml" }, { url: "/icon-192.png", type: "image/png", sizes: "192x192" }],
     apple: [{ url: "/apple-icon.png", sizes: "180x180" }],
-    shortcut: "/favicon.ico",
+    shortcut: "/icon.svg",
   },
   robots: { index: false, follow: false, nocache: true, googleBot: { index: false, follow: false } },
 };
