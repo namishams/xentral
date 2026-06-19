@@ -73,6 +73,8 @@ export async function POST(req: Request) {
       if (b.referenceNo) { hs.push(`"referenceNo"=$${hi}`); hv.push(String(b.referenceNo)); hi++; }
       if (b.projectName) { hs.push(`"projectName"=$${hi}`); hv.push(String(b.projectName)); hi++; }
       if (b.salespersonId) { hs.push(`"salespersonId"=$${hi}`); hv.push(String(b.salespersonId)); hi++; }
+      if (b.subject) { hs.push(`subject=$${hi}`); hv.push(String(b.subject)); hi++; }
+      if (b.terms) { hs.push(`terms=$${hi}`); hv.push(String(b.terms)); hi++; }
       if (hs.length) { hv.push(id); await client.query(`update "quotes" set ${hs.join(", ")} where id=$${hi}`, hv); }
     }
     for (const l of norm) {

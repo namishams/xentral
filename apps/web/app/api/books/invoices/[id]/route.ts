@@ -26,7 +26,7 @@ export async function GET(_req: Request, { params }: { params: { id: string } })
     const p = pool(url);
     const inv = await p.query(
       `select i.id, i.number, i.status::text as status, i.total, i."amountPaid" as "amountPaid", i.subtotal, i."vatTotal" as "vatTotal", i.currency,
-              to_char(i."issueDate",'DD Mon YYYY') as issued, to_char(i."dueDate",'YYYY-MM-DD') as "dueDateRaw", to_char(i."dueDate",'DD Mon YYYY') as due, i.notes,
+              to_char(i."issueDate",'DD Mon YYYY') as issued, to_char(i."dueDate",'YYYY-MM-DD') as "dueDateRaw", to_char(i."dueDate",'DD Mon YYYY') as due, i.notes, i.subject as subject, i.terms as terms,
               to_char(i."issueDate",'YYYY-MM-DD') as "issueDateRaw", i."referenceNo" as "referenceNo", i."projectName" as "projectName", i."salespersonId" as "salespersonId", i."customerId" as "customerId",
               bc.name as customer, bc.email as "customerEmail", i."publicToken" as token
          from "invoices" i left join "billing_customers" bc on bc.id = i."customerId"
@@ -61,6 +61,8 @@ export async function PATCH(req: Request, { params }: { params: { id: string } }
     if (typeof b.status === "string" && STATUSES.includes(b.status)) { sets.push(`status = $${i}::"InvoiceStatus"`); vals.push(b.status); i++; }
     if ("dueDate" in b) { sets.push(`"dueDate" = $${i}::timestamptz`); vals.push(b.dueDate ? String(b.dueDate) : null); i++; }
     if ("notes" in b) { sets.push(`notes = $${i}`); vals.push(b.notes == null ? null : String(b.notes)); i++; }
+    if ("subject" in b) { sets.push(`subject = $${i}`); vals.push(b.subject == null ? null : String(b.subject)); i++; }
+    if ("terms" in b) { sets.push(`terms = $${i}`); vals.push(b.terms == null ? null : String(b.terms)); i++; }
 
     if (hasLines) {
       const raw = (b.lines as Record<string, unknown>[]).filter((l) => String(l.name ?? "").trim() || Number(l.unitPrice) > 0);

@@ -41,6 +41,8 @@ export function BooksBuilder({ kind, editId }: { kind: Kind; editId?: string }) 
   const [projectName, setProjectName] = React.useState("");
   const [salespersonId, setSalespersonId] = React.useState("");
   const [notes, setNotes] = React.useState("");
+  const [subject, setSubject] = React.useState("");
+  const [terms, setTerms] = React.useState("");
   const [lines, setLines] = React.useState<Line[]>([blankLine()]);
   const [saving, setSaving] = React.useState("");
   const [loading, setLoading] = React.useState(editing);
@@ -59,7 +61,7 @@ export function BooksBuilder({ kind, editId }: { kind: Kind; editId?: string }) 
         const doc = d[cfg.detailKey] || {};
         setCustomerId(doc.customerId || ""); setCustomerName(doc.customer || ""); setMode("existing");
         setCurrency(doc.currency || "AED"); setIssueDate(doc.issueDateRaw || ""); setDate(doc[cfg.dateRaw] || "");
-        setReferenceNo(doc.referenceNo || ""); setProjectName(doc.projectName || ""); setSalespersonId(doc.salespersonId || ""); setNotes(doc.notes || "");
+        setReferenceNo(doc.referenceNo || ""); setProjectName(doc.projectName || ""); setSalespersonId(doc.salespersonId || ""); setNotes(doc.notes || ""); setSubject(doc.subject || ""); setTerms(doc.terms || "");
         const ls = (d.lines || []).map((l: Record<string, unknown>) => ({ itemId: "", name: String(l.name ?? ""), qty: String(Number(l.qty) || 0), unitPrice: String(Number(l.unitPrice) || 0), vatRate: String(l.vatRate == null ? 5 : Number(l.vatRate)), discountPct: String(Number(l.discountPct) || 0) }));
         setLines(ls.length ? ls : [blankLine()]); setLoading(false);
       }).catch(() => { setErr("Could not load"); setLoading(false); });
@@ -102,7 +104,7 @@ export function BooksBuilder({ kind, editId }: { kind: Kind; editId?: string }) 
     if (!canSave) { setErr(issues[0] || "Complete the form"); return; }
     setSaving(send ? "send" : "save"); setErr("");
     const linePayload = lines.filter((l) => l.name.trim() || (parseFloat(l.unitPrice) || 0) > 0).map((l) => ({ name: l.name, qty: parseFloat(l.qty) || 0, unitPrice: parseFloat(l.unitPrice) || 0, vatRate: parseFloat(l.vatRate) || 0, discountPct: parseFloat(l.discountPct) || 0 }));
-    const body: Record<string, unknown> = { currency, notes, issueDate: issueDate || null, [cfg.dateKey]: date || null, referenceNo: referenceNo || null, projectName: projectName || null, salespersonId: salespersonId || null, lines: linePayload };
+    const body: Record<string, unknown> = { currency, notes, subject: subject || null, terms: terms || null, issueDate: issueDate || null, [cfg.dateKey]: date || null, referenceNo: referenceNo || null, projectName: projectName || null, salespersonId: salespersonId || null, lines: linePayload };
     if (mode === "existing") body.customerId = customerId; else body.customerName = customerName.trim();
     try {
       let res: Response; let docId = editId;
@@ -177,6 +179,7 @@ export function BooksBuilder({ kind, editId }: { kind: Kind; editId?: string }) 
               <div><label style={lbl}>Salesperson</label><select value={salespersonId} onChange={(e) => { onBind(); setSalespersonId(e.target.value); }} style={{ ...cell, height: 38 }}><option value="">Unassigned</option>{owners.map((o) => <option key={o.id} value={o.id}>{o.name}</option>)}</select></div>
               <div><label style={lbl}>Project name</label><Input placeholder="Optional" value={projectName} onChange={(e) => { onBind(); setProjectName(e.target.value); }} style={{ width: "100%" }} /></div>
             </div>
+            <div style={{ marginTop: 14 }}><label style={lbl}>Subject</label><Input placeholder="Short subject shown on the document (e.g. Website redesign — Phase 1)" value={subject} onChange={(e) => { onBind(); setSubject(e.target.value); }} style={{ width: "100%" }} /></div>
           </section>
 
           {/* Line items */}
@@ -219,10 +222,12 @@ export function BooksBuilder({ kind, editId }: { kind: Kind; editId?: string }) 
             })}
           </section>
 
-          {/* Notes */}
+          {/* Notes + Terms */}
           <section style={cardS}>
-            <label style={lbl}>Notes (printed on the document)</label>
+            <label style={lbl}>Customer notes (printed on the document)</label>
             <textarea value={notes} onChange={(e) => { onBind(); setNotes(e.target.value); }} rows={3} placeholder="e.g. Thank you for your business." style={{ ...cell, height: "auto", padding: 9, resize: "vertical" }} />
+            <label style={{ ...lbl, marginTop: 14 }}>Terms &amp; conditions</label>
+            <textarea value={terms} onChange={(e) => { onBind(); setTerms(e.target.value); }} rows={3} placeholder="Payment terms, warranty, validity, jurisdiction…" style={{ ...cell, height: "auto", padding: 9, resize: "vertical" }} />
           </section>
         </div>
 
@@ -251,7 +256,7 @@ export function BooksBuilder({ kind, editId }: { kind: Kind; editId?: string }) 
                 <div style={{ textAlign: "right" }}><div style={{ fontSize: 14, fontWeight: 800, color: accent }}>{cfg.noun.toUpperCase()}</div><div style={{ fontSize: 10.5, color: "#5b6b7b" }}>Draft</div></div>
               </div>
               <div style={{ fontSize: 10, color: "#8a97a5", textTransform: "uppercase" }}>Bill to</div>
-              <div style={{ fontSize: 12.5, fontWeight: 600, marginBottom: 10 }}>{custLabel}</div>
+              <div style={{ fontSize: 12.5, fontWeight: 600, marginBottom: subject ? 4 : 10 }}>{custLabel}</div>{subject ? <div style={{ fontSize: 11.5, color: "#5b6b7b", marginBottom: 10 }}><span style={{ color: "#8a97a5" }}>Subject: </span>{subject}</div> : null}
               <div style={{ borderTop: "1px solid #eef1f5" }}>
                 {lines.filter((l) => l.name.trim() || parseFloat(l.unitPrice)).slice(0, 6).map((l, i) => { const net = (parseFloat(l.qty) || 0) * (parseFloat(l.unitPrice) || 0) * (1 - (parseFloat(l.discountPct) || 0) / 100); return (
                   <div key={i} style={{ display: "flex", justifyContent: "space-between", gap: 8, padding: "5px 0", fontSize: 11.5, borderBottom: "1px solid #f4f6f9" }}><span style={{ minWidth: 0, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{l.name || "—"} <span style={{ color: "#8a97a5" }}>×{parseFloat(l.qty) || 0}</span></span><span style={{ fontVariantNumeric: "tabular-nums" }}>{fmt(net)}</span></div>

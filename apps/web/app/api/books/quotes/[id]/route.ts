@@ -26,7 +26,7 @@ export async function GET(_req: Request, { params }: { params: { id: string } })
     const p = pool(url);
     const q = await p.query(
       `select q.id, q.number, q.status::text as status, q.total, q.subtotal, q."vatTotal" as "vatTotal", q.currency,
-              to_char(q."issueDate",'DD Mon YYYY') as issued, to_char(q."validUntil",'DD Mon YYYY') as valid, to_char(q."validUntil",'YYYY-MM-DD') as "validRaw", q.notes, q."publicToken" as token,
+              to_char(q."issueDate",'DD Mon YYYY') as issued, to_char(q."validUntil",'DD Mon YYYY') as valid, to_char(q."validUntil",'YYYY-MM-DD') as "validRaw", q.notes, q.subject as subject, q.terms as terms, q."publicToken" as token,
               q."invoiceId" as "invoiceId", q."sentAt" as "sentAt", q."invoiceId" is not null as converted,
               to_char(q."issueDate",'YYYY-MM-DD') as "issueDateRaw", q."referenceNo" as "referenceNo", q."projectName" as "projectName", q."salespersonId" as "salespersonId", q."customerId" as "customerId",
               bc.name as customer, bc.email as "customerEmail",
@@ -62,6 +62,8 @@ export async function PATCH(req: Request, { params }: { params: { id: string } }
     if ("validUntil" in b) { sets.push(`"validUntil" = $${i}::timestamptz`); vals.push(b.validUntil ? String(b.validUntil) : null); i++; }
     if ("issueDate" in b) { sets.push(`"issueDate" = $${i}::timestamptz`); vals.push(b.issueDate ? String(b.issueDate) : null); i++; }
     if ("notes" in b) { sets.push(`notes = $${i}`); vals.push(b.notes == null ? null : String(b.notes)); i++; }
+    if ("subject" in b) { sets.push(`subject = $${i}`); vals.push(b.subject == null ? null : String(b.subject)); i++; }
+    if ("terms" in b) { sets.push(`terms = $${i}`); vals.push(b.terms == null ? null : String(b.terms)); i++; }
     if ("referenceNo" in b) { sets.push(`"referenceNo" = $${i}`); vals.push(b.referenceNo == null || String(b.referenceNo).trim() === "" ? null : String(b.referenceNo)); i++; }
     if ("projectName" in b) { sets.push(`"projectName" = $${i}`); vals.push(b.projectName == null || String(b.projectName).trim() === "" ? null : String(b.projectName)); i++; }
     if ("salespersonId" in b) { sets.push(`"salespersonId" = $${i}`); vals.push(b.salespersonId ? String(b.salespersonId) : null); i++; }
