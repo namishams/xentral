@@ -31,3 +31,4 @@ export { HeaderSearch, HeaderAvatar } from "./header-menu";
 export { AiLauncher, AskAiButton, AiInlineBar, HeaderAiField, AiCommandBand } from "./ai-launcher";
 export { Panel, PanelHeader, PanelBody, PanelFooter, FactStrip } from "./panel";
 export { ExportMenu } from "./export-menu";
+export { ImportButton } from "./import-button";
