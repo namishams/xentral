@@ -190,11 +190,7 @@ export function MarketplaceClient({ initialRows, startSaved }: { initialRows: Ma
   const hot = stats?.hot ?? ALL.filter((l) => l.quality === "hot").length;
 
   return (
-    <AppShell active="marketplace" headerRight={
-      <span style={{ display: "inline-flex", alignItems: "center", gap: 8 }}>
-        <button onClick={() => setTopup({ amount: String(bank?.minAmount ?? 1000), reference: "", sent: false })} style={{ display: "inline-flex", alignItems: "center", gap: 6, fontSize: 12.5, fontWeight: 700, color: color.brand.primary, background: color.brand.primaryTint, border: 0, borderRadius: 8, padding: "5px 11px", cursor: "pointer" }}>👛 {credits == null ? "Credits" : aed(credits)} ＋</button>
-      </span>
-    }>
+    <AppShell active="marketplace">
       <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 16, marginBottom: 14, flexWrap: "wrap" }}>
         <div>
           <div style={{ display: "flex", alignItems: "center", gap: 12, flexWrap: "wrap" }}>
