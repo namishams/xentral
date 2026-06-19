@@ -1,6 +1,7 @@
 import "server-only";
 import "../../../../lib/session"; // side-effect: register SessionPort resolver into the shared app kernel instance
 import { NextResponse } from "next/server";
+import { logAudit } from "../../../..//lib/audit";
 import { randomUUID } from "crypto";
 import { Pool } from "pg";
 import { resolveSession } from "@xentral/kernel";
@@ -80,6 +81,7 @@ export async function POST(req: Request) {
         s("email"), s("phone"), s("mobile"), trn, taxTreatment, s("placeOfSupply"), s("currency") || "AED", s("paymentTerms") || "due_on_receipt", s("priceListId"),
         s("addressLine1"), s("addressLine2"), s("city"), s("country") || "United Arab Emirates", s("shipAddressLine1"), s("shipAddressLine2"), s("shipCity"), s("shipCountry"),
         b.portalEnabled === true, s("notes")]);
+    await logAudit("customer.create", { targetType: "customer", targetId: id });
     return NextResponse.json({ ok: true, id });
   } catch (e) {
     return NextResponse.json({ error: (e as Error).message || "Create failed" }, { status: 500 });

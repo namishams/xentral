@@ -1,6 +1,7 @@
 import "server-only";
 import "../../../../../lib/session";
 import { NextResponse } from "next/server";
+import { logAudit } from "../../../../..//lib/audit";
 import { Pool } from "pg";
 import { writeFile, mkdir, unlink } from "fs/promises";
 import { join } from "path";
@@ -55,6 +56,7 @@ export async function POST(req: Request) {
   } catch (e) {
     return NextResponse.json({ error: (e as Error).message || "Save failed" }, { status: 500 });
   }
+  await logAudit("company.logo.update", { targetType: "company" });
   return NextResponse.json({ logo: fileUrl });
 }
 

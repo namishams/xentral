@@ -1,6 +1,7 @@
 import "server-only";
 import "../../../../lib/session";
 import { NextResponse } from "next/server";
+import { logAudit } from "../../../..//lib/audit";
 import { Pool } from "pg";
 import { resolveSession } from "@xentral/kernel";
 
@@ -71,6 +72,7 @@ export async function PATCH(req: Request) {
          values ($1,$2,$3,$4,$5,$6,$7,$8,$9,now(),now())`,
         [newId(), session.companyId, fromName, from || null, host || null, port, user || null, secure, pass]);
     }
+    await logAudit("email_settings.update", { targetType: "settings" });
     return NextResponse.json({ ok: true });
   } catch (e) {
     return NextResponse.json({ error: (e as Error).message || "Save failed" }, { status: 500 });

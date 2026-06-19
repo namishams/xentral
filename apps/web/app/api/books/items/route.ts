@@ -1,6 +1,7 @@
 import "server-only";
 import "../../../../lib/session";
 import { NextResponse } from "next/server";
+import { logAudit } from "../../../..//lib/audit";
 import { randomUUID } from "crypto";
 import { Pool } from "pg";
 import { resolveSession } from "@xentral/kernel";
@@ -59,6 +60,7 @@ export async function POST(req: Request) {
         typeof b.recurring === "boolean" ? b.recurring : false,
         typeof b.active === "boolean" ? b.active : true,
         session.companyId]);
+    await logAudit("item.create", { targetType: "item", targetId: id });
     return NextResponse.json({ ok: true, id });
   } catch (e) {
     return NextResponse.json({ error: (e as Error).message || "Create failed" }, { status: 500 });

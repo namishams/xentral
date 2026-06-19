@@ -1,6 +1,7 @@
 import "server-only";
 import "../../../../lib/session";
 import { NextResponse } from "next/server";
+import { logAudit } from "../../../..//lib/audit";
 import { randomUUID } from "crypto";
 import { Pool } from "pg";
 import { resolveSession } from "@xentral/kernel";
@@ -51,6 +52,7 @@ export async function POST(req: Request) {
     await p.query(
       `insert into "item_categories" (id,"companyId",name,code,"itemType",industry,"vatRate","createdAt") values ($1,$2,$3,$4,$5,$6,$7,now())`,
       [id, session.companyId, name, b.code == null ? null : String(b.code), itemType, b.industry == null || b.industry === "" ? null : String(b.industry), vatRate]);
+    await logAudit("category.create", { targetType: "category", targetId: id, meta: { name } });
     return NextResponse.json({ ok: true, id });
   } catch (e) {
     return NextResponse.json({ error: (e as Error).message || "Create failed" }, { status: 500 });

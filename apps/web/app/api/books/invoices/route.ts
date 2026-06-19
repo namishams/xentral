@@ -1,6 +1,7 @@
 import "server-only";
 import "../../../../lib/session"; // side-effect: register SessionPort resolver into the shared app kernel instance
 import { NextResponse } from "next/server";
+import { logAudit } from "../../../..//lib/audit";
 import { Pool } from "pg";
 import { resolveSession } from "@xentral/kernel";
 export const runtime = "nodejs";
@@ -83,6 +84,7 @@ export async function POST(req: Request) {
         [newId(), id, l.pos, l.name, l.description, l.qty, l.up, l.vat, l.disc, l.net.toFixed(2)]);
     }
     await client.query("commit");
+    await logAudit("invoice.create", { targetType: "invoice", targetId: id, meta: { number } });
     return NextResponse.json({ id, number }, { status: 201 });
   } catch {
     await client.query("rollback").catch(() => {});

@@ -1,6 +1,7 @@
 import "server-only";
 import "../../../../../lib/session";
 import { NextResponse } from "next/server";
+import { logAudit } from "../../../../..//lib/audit";
 import { Pool } from "pg";
 import { resolveSession } from "@xentral/kernel";
 
@@ -70,6 +71,7 @@ export async function DELETE(_req: Request, { params }: { params: { id: string }
   if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   try {
     const r = await pool(url).query(`delete from "catalog_items" where id = $1 and "companyId" = $2`, [params.id, session.companyId]);
+    if (r.rowCount) await logAudit("item.delete", { targetType: "item", targetId: params.id });
     if (r.rowCount === 0) return NextResponse.json({ error: "Not found" }, { status: 404 });
     return NextResponse.json({ ok: true });
   } catch {

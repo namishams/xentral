@@ -1,6 +1,7 @@
 import "server-only";
 import "../../../../lib/session";
 import { NextResponse } from "next/server";
+import { logAudit } from "../../../..//lib/audit";
 import { randomUUID } from "crypto";
 import { Pool } from "pg";
 import { resolveSession } from "@xentral/kernel";
@@ -53,6 +54,7 @@ export async function POST(req: Request) {
       `insert into "crm_lists" (id,"companyId",name,description,color,"entityType",kind,"isPinned","createdAt","updatedAt")
        values ($1,$2,$3,$4,$5,$6,$7,$8,now(),now())`,
       [id, session.companyId, name, b.description == null ? null : String(b.description), b.color == null ? null : String(b.color), entityType, kind, b.isPinned === true]);
+    await logAudit("list.create", { targetType: "list", targetId: id, meta: { name } });
     return NextResponse.json({ ok: true, id });
   } catch (e) { return NextResponse.json({ error: (e as Error).message || "Create failed" }, { status: 500 }); }
 }
@@ -71,6 +73,7 @@ export async function DELETE(req: Request) {
     if (!own.rowCount) return NextResponse.json({ error: "Not found" }, { status: 404 });
     await p.query(`delete from "crm_list_members" where "listId" = $1`, [id]);
     await p.query(`delete from "crm_lists" where id = $1 and "companyId" = $2`, [id, session.companyId]);
+    await logAudit("list.delete", { targetType: "list", targetId: id });
     return NextResponse.json({ ok: true });
   } catch (e) { return NextResponse.json({ error: (e as Error).message || "Failed" }, { status: 500 }); }
 }
