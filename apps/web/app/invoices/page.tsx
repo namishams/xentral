@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import { color } from "@xentral/config";
-import { AppShell, PageTitleRow, KPICard, Button, DataTable, StatusBadge, Panel, PanelHeader, PanelBody, EmptyState, type Column, type BadgeTone } from "@xentral/ui";
+import { AppShell, PageTitleRow, ExportMenu, KPICard, Button, DataTable, StatusBadge, Panel, PanelHeader, PanelBody, EmptyState, type Column, type BadgeTone } from "@xentral/ui";
 
 type Row = { id: string; number: string; customer: string; status: string; total: number | string; amountPaid: number | string; currency: string; issued: string | null; due: string | null; overdue?: number };
 
@@ -68,7 +68,7 @@ export default function InvoicesPage() {
 
   return (
     <AppShell active="invoice">
-      <PageTitleRow title="Invoices" subtitle={`${all.length} invoice${all.length === 1 ? "" : "s"} · ${aed(outstanding)} outstanding`} actions={<Button variant="primary" onClick={() => { window.location.href = "/invoices/new"; }}>+ New invoice</Button>} />
+      <PageTitleRow title="Invoices" subtitle={`${all.length} invoice${all.length === 1 ? "" : "s"} · ${aed(outstanding)} outstanding`} actions={<><ExportMenu entity="invoices" /><Button variant="primary" onClick={() => { window.location.href = "/invoices/new"; }}>+ New invoice</Button></>} />
 
       <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(160px, 1fr))", gap: 10, marginBottom: 16 }}>
         <KPICard label="Total billed" value={aedShort(billed)} note={`${all.length} invoices`} noteTone={color.ink.soft} />

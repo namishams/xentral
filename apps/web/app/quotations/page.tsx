@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import { color } from "@xentral/config";
-import { AppShell, PageTitleRow, KPICard, Button, DataTable, StatusBadge, Panel, PanelHeader, PanelBody, EmptyState, type Column, type BadgeTone } from "@xentral/ui";
+import { AppShell, PageTitleRow, ExportMenu, KPICard, Button, DataTable, StatusBadge, Panel, PanelHeader, PanelBody, EmptyState, type Column, type BadgeTone } from "@xentral/ui";
 
 type Row = { id: string; number: string; customer: string; status: string; total: number | string; currency: string; issued: string | null; valid: string | null; expired?: number };
 
@@ -68,7 +68,7 @@ export default function QuotationsPage() {
 
   return (
     <AppShell active="quotations">
-      <PageTitleRow title="Offers" subtitle={`${all.length} offer${all.length === 1 ? "" : "s"} · ${aed(pipeline)} in pipeline`} actions={<Button variant="primary" onClick={() => { window.location.href = "/quotations/new"; }}>+ New quote</Button>} />
+      <PageTitleRow title="Offers" subtitle={`${all.length} offer${all.length === 1 ? "" : "s"} · ${aed(pipeline)} in pipeline`} actions={<><ExportMenu entity="quotes" /><Button variant="primary" onClick={() => { window.location.href = "/quotations/new"; }}>+ New quote</Button></>} />
 
       <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(160px, 1fr))", gap: 10, marginBottom: 16 }}>
         <KPICard label="Pipeline" value={aedShort(pipeline)} note={`${openCount} awaiting reply`} noteTone={color.status.info} />

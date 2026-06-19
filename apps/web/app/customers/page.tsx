@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import { color } from "@xentral/config";
-import { AppShell, PageTitleRow, KPICard, Button, DataTable, Panel, PanelHeader, PanelBody, EmptyState, type Column } from "@xentral/ui";
+import { AppShell, PageTitleRow, ExportMenu, KPICard, Button, DataTable, Panel, PanelHeader, PanelBody, EmptyState, type Column } from "@xentral/ui";
 
 type Row = { id: string; name: string; email: string | null; invoiceCount: number; outstanding: number | string; billed?: number | string; paid?: number | string; currency: string };
 
@@ -32,7 +32,7 @@ export default function CustomersListPage() {
   return (
     <AppShell active="customers">
       <PageTitleRow title="Customers" subtitle={`${rows.length} billing customer${rows.length === 1 ? "" : "s"}${totalOutstanding > 0 ? ` · ${aed(totalOutstanding, cur)} outstanding` : ""}`}
-        actions={<div style={{ display: "flex", gap: 8 }}><Button onClick={() => { window.location.href = "/quotations/new"; }}>New quote</Button><Button variant="primary" onClick={() => { window.location.href = "/customers/new"; }}>+ New customer</Button></div>} />
+        actions={<div style={{ display: "flex", gap: 8 }}><ExportMenu entity="customers" /><Button onClick={() => { window.location.href = "/quotations/new"; }}>New quote</Button><Button variant="primary" onClick={() => { window.location.href = "/customers/new"; }}>+ New customer</Button></div>} />
 
       <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(160px, 1fr))", gap: 10, marginBottom: 16 }}>
         <KPICard label="Customers" value={String(rows.length)} note="billed" noteTone={color.ink.soft} />

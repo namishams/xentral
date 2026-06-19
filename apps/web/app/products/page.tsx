@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import { color } from "@xentral/config";
-import { AppShell, PageTitleRow, KPICard, Input, Button, DataTable, StatusBadge, EmptyState, Modal, type Column } from "@xentral/ui";
+import { AppShell, PageTitleRow, ExportMenu, KPICard, Input, Button, DataTable, StatusBadge, EmptyState, Modal, type Column } from "@xentral/ui";
 
 type ApiRow = { id: string; name: string; description: string; sku: string; category: string; unitPrice: number; vatRate: number; kind: string; recurring?: boolean; active: boolean };
 type Row = { id: string; name: string; description: string; sku: string; kind: string; price: number; vat: number; category: string; recurring: boolean; active: boolean };
@@ -149,7 +149,7 @@ export default function ProductsPage() {
       <PageTitleRow title="Items & Services" subtitle={`${all.length} items · ${cats.length} categories`} actions={
         <span style={{ display: "inline-flex", gap: 8 }}>
           <Button variant="secondary" onClick={() => { setCatErr(""); setCatOpen(true); }}>Manage categories</Button>
-          <Button variant="secondary" onClick={() => setBulkOpen(true)}>Import</Button>
+          <ExportMenu entity="items" /><Button variant="secondary" onClick={() => setBulkOpen(true)}>Import</Button>
           <Button variant="primary" onClick={openNew}>+ New item</Button>
         </span>
       } />
