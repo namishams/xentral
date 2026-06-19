@@ -49,7 +49,7 @@ export default function ProcurementPage() {
   }
 
   const lab: React.CSSProperties = { display: "block", fontSize: 10.5, fontWeight: 700, letterSpacing: 0.3, color: color.ink.soft, textTransform: "uppercase", marginBottom: 5 };
-  const inS: React.CSSProperties = { width: "100%", boxSizing: "border-box", height: 34, border: `1px solid ${color.line.strong}`, borderRadius: 7, padding: "0 9px", fontSize: 13, color: color.ink.DEFAULT, background: color.surface.card, outline: "none" };
+  const inS: React.CSSProperties = { width: "100%", boxSizing: "border-box", height: 36, border: `1px solid ${color.line.strong}`, borderRadius: 7, padding: "0 9px", fontSize: 13, color: color.ink.DEFAULT, background: color.surface.card, outline: "none" };
 
   const COLS: Column<PO>[] = [
     { key: "number", header: "PO", width: 130, render: (r) => <span style={{ fontWeight: 600, color: color.brand.primary }}>{r.number}</span> },

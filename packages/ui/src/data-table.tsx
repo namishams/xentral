@@ -94,7 +94,7 @@ export function DataTable<T>({
           <span style={{ fontSize: 11.5, color: color.ink.soft }}>{sorted.length === rows.length ? `${rows.length}` : `${sorted.length} of ${rows.length}`} {rows.length === 1 ? "row" : "rows"}</span>
           <div style={{ marginLeft: "auto", display: "flex", alignItems: "center", gap: 8 }}>
             {searchable && (
-              <div style={{ display: "flex", alignItems: "center", gap: 6, height: 32, padding: "0 10px", borderRadius: 8, border: `1px solid ${color.line.strong}`, background: color.surface.page }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 6, height: 36, padding: "0 10px", borderRadius: 8, border: `1px solid ${color.line.strong}`, background: color.surface.page }}>
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke={color.ink.soft} strokeWidth="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
                 <input value={q} onChange={(e) => setQ(e.target.value)} placeholder={searchPlaceholder} style={{ width: 180, border: 0, outline: "none", background: "transparent", fontSize: 12.5, color: color.ink.DEFAULT, fontFamily: "inherit" }} />
               </div>

@@ -171,7 +171,7 @@ export function BooksBuilder({ kind, editId }: { kind: Kind; editId?: string }) 
               <div>
                 <label style={lbl}>Customer *</label>
                 {mode === "existing" ? (
-                  <select value={customerId} onChange={(e) => { onBind(); setCustomerId(e.target.value); }} style={{ ...cell, height: 38, borderColor: !hasCustomer ? color.status.critical : color.line.strong }}>
+                  <select value={customerId} onChange={(e) => { onBind(); setCustomerId(e.target.value); }} style={{ ...cell, height: 36, borderColor: !hasCustomer ? color.status.critical : color.line.strong }}>
                     {customers.length === 0 ? <option value="">No customers yet</option> : null}
                     {customers.map((c) => <option key={c.id} value={c.id}>{c.name}{c.email ? ` · ${c.email}` : ""}</option>)}
                   </select>
@@ -184,13 +184,13 @@ export function BooksBuilder({ kind, editId }: { kind: Kind; editId?: string }) 
                   <span style={{ fontSize: 11.5, color: color.ink.soft, alignSelf: "center" }}>CRM-synced — no duplicates.</span>
                 </div>
               </div>
-              <div><label style={lbl}>{cfg.noun} date</label><input type="date" value={issueDate} onChange={(e) => { onBind(); setIssueDate(e.target.value); }} style={{ ...cell, height: 38 }} /></div>
-              <div><label style={lbl}>Terms / {cfg.dateLabel}</label><select value={payTerms} onChange={(e) => { onBind(); applyTerms(e.target.value); }} style={{ ...cell, height: 38, marginBottom: 6 }}><option value="">Custom date</option><option value="0">Due on receipt</option><option value="15">Net 15</option><option value="30">Net 30</option><option value="45">Net 45</option><option value="60">Net 60</option></select><input type="date" value={date} onChange={(e) => { onBind(); setDate(e.target.value); setPayTerms(""); }} style={{ ...cell, height: 38 }} /></div>
+              <div><label style={lbl}>{cfg.noun} date</label><input type="date" value={issueDate} onChange={(e) => { onBind(); setIssueDate(e.target.value); }} style={{ ...cell, height: 36 }} /></div>
+              <div><label style={lbl}>Terms / {cfg.dateLabel}</label><select value={payTerms} onChange={(e) => { onBind(); applyTerms(e.target.value); }} style={{ ...cell, height: 36, marginBottom: 6 }}><option value="">Custom date</option><option value="0">Due on receipt</option><option value="15">Net 15</option><option value="30">Net 30</option><option value="45">Net 45</option><option value="60">Net 60</option></select><input type="date" value={date} onChange={(e) => { onBind(); setDate(e.target.value); setPayTerms(""); }} style={{ ...cell, height: 36 }} /></div>
             </div>
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr 1fr", gap: 14, marginTop: 14 }}>
-              <div><label style={lbl}>Currency</label><input value={currency} onChange={(e) => { onBind(); setCurrency(e.target.value); }} style={{ ...cell, height: 38 }} /></div>
+              <div><label style={lbl}>Currency</label><input value={currency} onChange={(e) => { onBind(); setCurrency(e.target.value); }} style={{ ...cell, height: 36 }} /></div>
               <div><label style={lbl}>Reference #</label><Input placeholder="PO / internal ref" value={referenceNo} onChange={(e) => { onBind(); setReferenceNo(e.target.value); }} style={{ width: "100%" }} /></div>
-              <div><label style={lbl}>Salesperson</label><select value={salespersonId} onChange={(e) => { onBind(); setSalespersonId(e.target.value); }} style={{ ...cell, height: 38 }}><option value="">Unassigned</option>{owners.map((o) => <option key={o.id} value={o.id}>{o.name}</option>)}</select></div>
+              <div><label style={lbl}>Salesperson</label><select value={salespersonId} onChange={(e) => { onBind(); setSalespersonId(e.target.value); }} style={{ ...cell, height: 36 }}><option value="">Unassigned</option>{owners.map((o) => <option key={o.id} value={o.id}>{o.name}</option>)}</select></div>
               <div><label style={lbl}>Project name</label><Input placeholder="Optional" value={projectName} onChange={(e) => { onBind(); setProjectName(e.target.value); }} style={{ width: "100%" }} /></div>
             </div>
             <div style={{ marginTop: 14 }}><label style={lbl}>Subject</label><Input placeholder="Short subject shown on the document (e.g. Website redesign — Phase 1)" value={subject} onChange={(e) => { onBind(); setSubject(e.target.value); }} style={{ width: "100%" }} /></div>
@@ -214,7 +214,7 @@ export function BooksBuilder({ kind, editId }: { kind: Kind; editId?: string }) 
               return (
                 <div key={i} style={{ marginBottom: 10, paddingBottom: 10, borderBottom: i < lines.length - 1 ? `1px solid ${color.line.DEFAULT}` : "none" }}>
                   {items.length > 0 ? (
-                    <select value={l.itemId} onChange={(e) => pickItem(i, e.target.value)} style={{ ...cell, height: 32, marginBottom: 6, fontSize: 12.5, color: l.itemId ? color.ink.DEFAULT : color.ink.soft }}>
+                    <select value={l.itemId} onChange={(e) => pickItem(i, e.target.value)} style={{ ...cell, height: 36, marginBottom: 6, fontSize: 12.5, color: l.itemId ? color.ink.DEFAULT : color.ink.soft }}>
                       <option value="">Custom line… (or pick from catalog)</option>
                       {items.map((it) => <option key={it.id} value={it.id}>{it.name} — {currency} {fmt(Number(it.unitPrice) || 0)}</option>)}
                     </select>
