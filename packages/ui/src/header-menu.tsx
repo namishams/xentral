@@ -91,16 +91,18 @@ export function HeaderTools() {
 export function HeaderAvatar({ label = "MF" }: { label?: string }) {
   const [open, setOpen] = useToggle();
   const [avatar, setAvatar] = React.useState<string | null>(null);
+  const [imgOk, setImgOk] = React.useState(true);
   const [name, setName] = React.useState(label);
   React.useEffect(() => {
-    fetch("/api/me").then((r) => r.json()).then((d) => { if (d.avatar) setAvatar(d.avatar); if (d.userName) setName(d.userName); }).catch(() => {});
+    fetch("/api/me").then((r) => r.json()).then((d) => { if (d.avatar) { setAvatar(d.avatar); setImgOk(true); } if (d.userName) setName(d.userName); }).catch(() => {});
   }, []);
   const init = (name || "MF").split(/[\s@.]+/).filter(Boolean).map((w) => w[0]).slice(0, 2).join("").toUpperCase() || "MF";
+  const showImg = !!avatar && imgOk;
   return (
     <span style={{ position: "relative", flexShrink: 0 }} onClick={(e) => e.stopPropagation()}>
       <button onClick={() => setOpen((o) => !o)} aria-label="Account menu" aria-expanded={open}
-        style={{ width: 34, height: 34, borderRadius: "50%", overflow: "hidden", padding: 0, border: 0, background: avatar ? "transparent" : color.brand.primary, color: color.ink.onPrimary, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 12, fontWeight: 700, cursor: "pointer" }}>
-        {avatar ? <img src={avatar} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} /> : init}
+        style={{ width: 34, height: 34, borderRadius: "50%", overflow: "hidden", padding: 0, border: 0, background: showImg ? "transparent" : color.brand.primary, color: color.ink.onPrimary, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 12, fontWeight: 700, cursor: "pointer" }}>
+        {showImg ? <img src={avatar!} alt="" onError={() => setImgOk(false)} style={{ width: "100%", height: "100%", objectFit: "cover" }} /> : init}
       </button>
       {open ? (
         <div style={menu}>

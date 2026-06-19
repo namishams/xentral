@@ -93,8 +93,15 @@ export function buildInvoicePdfData(invoice: InvoiceLike, settings: SettingsLike
 function designerFields(settings: SettingsLike) {
   const tc = (settings?.templateConfig ?? {}) as Record<string, unknown>;
   const toPath = (url: string | null | undefined) => {
-    if (!url || !url.startsWith("/billing/")) return null;
-    return require("path").join(process.cwd(), "public", url.split("?")[0]);
+    if (!url) return null;
+    const clean = url.split("?")[0] ?? url;
+    const path = require("path");
+    if (clean.startsWith("/api/uploads/")) {
+      const root = process.env.UPLOAD_DIR || path.join(process.cwd(), "..", "..", "uploads");
+      return path.join(root, clean.slice("/api/uploads/".length));
+    }
+    if (clean.startsWith("/billing/")) return path.join(process.cwd(), "public", clean);
+    return null;
   };
   const accent = (typeof tc.accentColor === "string" && tc.accentColor) || (typeof tc.accent === "string" ? tc.accent : null);
   const style = (typeof tc.templateStyle === "string" && tc.templateStyle) || (typeof tc.style === "string" ? tc.style : null);
