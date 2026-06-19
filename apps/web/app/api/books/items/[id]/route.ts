@@ -62,3 +62,23 @@ export async function PATCH(req: Request, { params }: { params: { id: string } }
     return NextResponse.json({ error: "Update failed" }, { status: 500 });
   }
 }
+
+export async function DELETE(_req: Request, { params }: { params: { id: string } }) {
+  const url = process.env.DATABASE_URL;
+  if (process.env.XENTRAL_LIVE_DATA !== "1" || !url) return NextResponse.json({ error: "Live data not enabled" }, { status: 503 });
+  const session = await resolveSession();
+  if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  try {
+    const r = await pool(url).query(`delete from "catalog_items" where id = $1 and "companyId" = $2`, [params.id, session.companyId]);
+    if (r.rowCount === 0) return NextResponse.json({ error: "Not found" }, { status: 404 });
+    return NextResponse.json({ ok: true });
+  } catch {
+    // If referenced by invoices/quotes, soft-delete (deactivate) instead of hard delete.
+    try {
+      await pool(url).query(`update "catalog_items" set "isActive" = false, "updatedAt" = now() where id = $1 and "companyId" = $2`, [params.id, session.companyId]);
+      return NextResponse.json({ ok: true, deactivated: true });
+    } catch {
+      return NextResponse.json({ error: "Delete failed" }, { status: 500 });
+    }
+  }
+}
