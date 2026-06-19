@@ -35,14 +35,14 @@ export async function GET(_req: Request, { params }: { params: { id: string } })
     if (!q) return NextResponse.json({ error: "Not found" }, { status: 404 });
     const lines = (await p.query(`select name, description, qty, "unitPrice", "vatRate", "discountPct", "lineTotal" from "quote_lines" where "quoteId" = $1 order by position asc`, [params.id])).rows;
     const settings = (await p.query(`select * from "billing_settings" where "companyId" = $1 limit 1`, [cid])).rows[0] || null;
-    const company = (await p.query(`select name from "companies" where id = $1 limit 1`, [cid])).rows[0] || { name: "Xentral" };
+    const company = (await p.query(`select name, logo, "themeAccent" from "companies" where id = $1 limit 1`, [cid])).rows[0] || { name: "Xentral" };
 
     const data = buildQuotePdfData({
       number: q.number, issueDate: q.issueDate, validUntil: q.validUntil, status: q.status, currency: q.currency || "AED",
       subtotal: q.subtotal, discountTotal: q.discountTotal, vatTotal: q.vatTotal, total: q.total, notes: q.notes, terms: q.terms,
       customer: { name: q.cname || "Customer", legalName: q.clegalName, email: q.cemail, phone: q.cphone, addressLine1: q.caddr1, addressLine2: q.caddr2, city: q.ccity, country: q.ccountry, vatNumber: q.cvat },
       lines,
-    }, settings, company.name || "Xentral");
+    }, { ...(settings || {}), companyLogo: company.logo, themeAccent: company.themeAccent }, company.name || "Xentral");
     const pdf = await generateDocumentPdf(data);
     return new NextResponse(new Uint8Array(pdf), {
       headers: { "Content-Type": "application/pdf", "Content-Disposition": `inline; filename="${q.number}.pdf"`, "Cache-Control": "no-store" },

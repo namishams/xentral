@@ -12,7 +12,7 @@ type SettingsLike = {
   website?: string | null; bankName?: string | null; accountName?: string | null;
   iban?: string | null; swift?: string | null; paymentInstructions?: string | null;
   footerNotes?: string | null; defaultTerms?: string | null;
-  logoUrl?: string | null; signatureUrl?: string | null; templateConfig?: unknown;
+  logoUrl?: string | null; signatureUrl?: string | null; templateConfig?: unknown; companyLogo?: string | null; themeAccent?: string | null;
 } | null;
 
 type CustomerLike = {
@@ -103,10 +103,10 @@ function designerFields(settings: SettingsLike) {
     if (clean.startsWith("/billing/")) return path.join(process.cwd(), "public", clean);
     return null;
   };
-  const accent = (typeof tc.accentColor === "string" && tc.accentColor) || (typeof tc.accent === "string" ? tc.accent : null);
+  const accent = (typeof tc.accentColor === "string" && tc.accentColor) || (typeof tc.accent === "string" ? tc.accent : null) || (typeof settings?.themeAccent === "string" ? settings.themeAccent : null);
   const style = (typeof tc.templateStyle === "string" && tc.templateStyle) || (typeof tc.style === "string" ? tc.style : null);
   return {
-    logoPath: toPath(settings?.logoUrl),
+    logoPath: toPath(settings?.logoUrl || settings?.companyLogo),
     signaturePath: tc.showSignature === false ? null : toPath(settings?.signatureUrl),
     signatureName: typeof tc.signatureName === "string" ? tc.signatureName : null,
     accentColor: accent,

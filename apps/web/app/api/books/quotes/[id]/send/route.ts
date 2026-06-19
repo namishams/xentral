@@ -40,7 +40,7 @@ export async function GET(req: Request, { params }: { params: { id: string } }) 
   try {
     const r = await p.query(`select d.number, bc.name as customer, bc.email as email, bc.phone as phone, d."publicToken" as token from "quotes" d left join "billing_customers" bc on bc.id = d."customerId" where d.id = $1 and d."companyId" = $2`, [params.id, session.companyId]);
     const doc = r.rows[0]; if (!doc) return NextResponse.json({ error: "Not found" }, { status: 404 });
-    const company = (await p.query(`select name from "companies" where id = $1 limit 1`, [session.companyId])).rows[0] || { name: "Xentral" };
+    const company = (await p.query(`select name, logo, "themeAccent" from "companies" where id = $1 limit 1`, [session.companyId])).rows[0] || { name: "Xentral" };
     const subject = "Offer " + doc.number + " from " + company.name;
     const message = "Dear " + (doc.customer || "customer") + ",\n\nPlease find our quotation " + doc.number + " attached. You can review and accept it online via the button in the email.\n\nThank you.";
     const host = req.headers.get("x-forwarded-host") || req.headers.get("host") || "app.xentral.ae";
@@ -71,7 +71,8 @@ export async function POST(req: Request, { params }: { params: { id: string } })
          from "quotes" q left join "billing_customers" bc on bc.id = q."customerId" where q.id = $1 and q."companyId" = $2`, [params.id, session.companyId]);
     q = r.rows[0];
     settings = (await p.query(`select * from "billing_settings" where "companyId" = $1`, [session.companyId])).rows[0] || {};
-    company = (await p.query(`select name from "companies" where id = $1 limit 1`, [session.companyId])).rows[0] || { name: "Xentral" };
+    company = (await p.query(`select name, logo, "themeAccent" from "companies" where id = $1 limit 1`, [session.companyId])).rows[0] || { name: "Xentral" };
+    if (settings && company) { settings.companyLogo = company.logo; settings.themeAccent = company.themeAccent; }
   } catch { return NextResponse.json({ error: "Lookup failed" }, { status: 500 }); }
   if (!q) return NextResponse.json({ error: "Quote not found" }, { status: 404 });
   // recipient validated after override parse

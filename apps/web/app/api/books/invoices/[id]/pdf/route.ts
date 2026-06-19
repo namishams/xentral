@@ -35,14 +35,14 @@ export async function GET(_req: Request, { params }: { params: { id: string } })
     if (!inv) return NextResponse.json({ error: "Not found" }, { status: 404 });
     const lines = (await p.query(`select name, description, qty, "unitPrice", "vatRate", "discountPct", "lineTotal" from "invoice_lines" where "invoiceId" = $1 order by position asc`, [params.id])).rows;
     const settings = (await p.query(`select * from "billing_settings" where "companyId" = $1 limit 1`, [cid])).rows[0] || null;
-    const company = (await p.query(`select name from "companies" where id = $1 limit 1`, [cid])).rows[0] || { name: "Xentral" };
+    const company = (await p.query(`select name, logo, "themeAccent" from "companies" where id = $1 limit 1`, [cid])).rows[0] || { name: "Xentral" };
 
     const data = buildInvoicePdfData({
       number: inv.number, issueDate: inv.issueDate, dueDate: inv.dueDate, status: inv.status, currency: inv.currency || "AED",
       subtotal: inv.subtotal, discountTotal: inv.discountTotal, vatTotal: inv.vatTotal, total: inv.total, amountPaid: inv.amountPaid, notes: inv.notes, terms: inv.terms,
       customer: { name: inv.cname || "Customer", legalName: inv.clegalName, email: inv.cemail, phone: inv.cphone, addressLine1: inv.caddr1, addressLine2: inv.caddr2, city: inv.ccity, country: inv.ccountry, vatNumber: inv.cvat },
       lines,
-    }, settings, company.name || "Xentral");
+    }, { ...(settings || {}), companyLogo: company.logo, themeAccent: company.themeAccent }, company.name || "Xentral");
     const pdf = await generateDocumentPdf(data);
     return new NextResponse(new Uint8Array(pdf), {
       headers: { "Content-Type": "application/pdf", "Content-Disposition": `inline; filename="${inv.number}.pdf"`, "Cache-Control": "no-store" },

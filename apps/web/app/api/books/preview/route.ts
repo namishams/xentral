@@ -27,7 +27,7 @@ export async function GET(req: Request) {
   const cid = session.companyId; const p = pool(url);
 
   const settings = (await p.query(`select * from "billing_settings" where "companyId" = $1 limit 1`, [cid])).rows[0] || null;
-  const company = (await p.query(`select name from "companies" where id = $1 limit 1`, [cid])).rows[0] || { name: "Xentral" };
+  const company = (await p.query(`select name, logo, "themeAccent" from "companies" where id = $1 limit 1`, [cid])).rows[0] || { name: "Xentral" };
 
   const sample = {
     number: kind === "INVOICE" ? `${settings?.invoicePrefix ?? "INV"}-2026-00042` : `${settings?.quotePrefix ?? "QUO"}-2026-00042`,
@@ -53,8 +53,8 @@ export async function GET(req: Request) {
 
   try {
     const data = kind === "INVOICE"
-      ? buildInvoicePdfData(sample, settings, company.name ?? "Xentral")
-      : buildQuotePdfData(sample, settings, company.name ?? "Xentral");
+      ? buildInvoicePdfData(sample, { ...(settings || {}), companyLogo: company.logo, themeAccent: company.themeAccent }, company.name ?? "Xentral")
+      : buildQuotePdfData(sample, { ...(settings || {}), companyLogo: company.logo, themeAccent: company.themeAccent }, company.name ?? "Xentral");
     const pdf = await generateDocumentPdf(data);
     return new NextResponse(new Uint8Array(pdf), {
       headers: { "Content-Type": "application/pdf", "Content-Disposition": `inline; filename="preview-${kind.toLowerCase()}.pdf"`, "Cache-Control": "no-store" },
