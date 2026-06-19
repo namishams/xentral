@@ -2,74 +2,69 @@
 
 import * as React from "react";
 import { color } from "@xentral/config";
-import { AppShell, PageTitleRow, KPICard, Input, Button, DataTable, EmptyState, type Column } from "@xentral/ui";
-import { listWarehouses, type WarehouseRow } from "@xentral/module-erp";
+import { AppShell, PageTitleRow, KPICard, Button, Input, EmptyState, Modal } from "@xentral/ui";
 
-const ALL = listWarehouses();
-function capColor(pct: number): string {
-  return pct >= 90 ? color.status.negative : pct >= 75 ? color.status.critical : color.status.positive;
-}
-function CapMeter({ pct }: { pct: number }) {
-  const c = capColor(pct);
-  return (
-    <span style={{ display: "inline-flex", alignItems: "center", gap: 9, minWidth: 130 }}>
-      <span style={{ position: "relative", flex: 1, height: 6, borderRadius: 3, background: color.surface.sunken, overflow: "hidden" }}>
-        <span style={{ position: "absolute", inset: 0, width: `${pct}%`, background: c, borderRadius: 3 }} />
-      </span>
-      <span style={{ fontSize: 12.5, fontWeight: 700, color: c, minWidth: 34, textAlign: "right", fontVariantNumeric: "tabular-nums" }}>{pct}%</span>
-    </span>
-  );
-}
-function Box() {
-  return <span style={{ display: "inline-flex", width: 28, height: 28, borderRadius: 8, background: color.brand.primaryTint, color: color.brand.primary, fontSize: 14, alignItems: "center", justifyContent: "center", flexShrink: 0 }} aria-hidden="true">▦</span>;
-}
-
-const COLUMNS: Column<WarehouseRow>[] = [
-  { key: "name", header: "Warehouse", render: (r) => (
-    <span style={{ display: "inline-flex", alignItems: "center", gap: 10, minWidth: 0 }}>
-      <Box />
-      <span style={{ minWidth: 0 }}>
-        <span style={{ display: "block", fontWeight: 600, color: color.ink.DEFAULT, lineHeight: "16px" }}>{r.name}</span>
-        <span style={{ display: "block", fontSize: 11.5, color: color.ink.soft, lineHeight: "15px" }}>{r.location}</span>
-      </span>
-    </span>
-  ) },
-  { key: "items", header: "Items", width: 110, align: "right", render: (r) => <span style={{ color: color.ink.mid, fontVariantNumeric: "tabular-nums" }}>{r.items.toLocaleString()}</span> },
-  { key: "capacity", header: "Capacity", width: 200, render: (r) => <CapMeter pct={r.capacityPct} /> },
-];
+type W = { id: string; code: string; name: string; location: string; created: string };
 
 export default function WarehousesPage() {
-  const [q, setQ] = React.useState("");
-  const rows = ALL.filter((r) => (r.name + r.location).toLowerCase().includes(q.toLowerCase()));
-  const totalItems = ALL.reduce((s, r) => s + r.items, 0);
-  const avgCap = ALL.length ? Math.round(ALL.reduce((s, r) => s + r.capacityPct, 0) / ALL.length) : 0;
-  const nearFull = ALL.filter((r) => r.capacityPct >= 90).length;
-  const healthy = ALL.filter((r) => r.capacityPct < 75).length;
+  const [rows, setRows] = React.useState<W[]>([]);
+  const [loading, setLoading] = React.useState(true);
+  const [open, setOpen] = React.useState(false);
+  const [saving, setSaving] = React.useState(false);
+  const [err, setErr] = React.useState("");
+  const [f, setF] = React.useState({ name: "", code: "", location: "" });
+
+  const load = React.useCallback(() => { setLoading(true); fetch("/api/erp/warehouses").then((r) => r.json()).then((d) => { setRows(d.rows ?? []); setLoading(false); }).catch(() => setLoading(false)); }, []);
+  React.useEffect(() => { load(); }, [load]);
+
+  async function create() {
+    if (!f.name.trim()) { setErr("Name is required"); return; }
+    setSaving(true); setErr("");
+    const r = await fetch("/api/erp/warehouses", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(f) });
+    setSaving(false);
+    const d = await r.json().catch(() => ({}));
+    if (!r.ok) { setErr(d.error || "Failed"); return; }
+    setOpen(false); setF({ name: "", code: "", location: "" }); load();
+  }
+
+  const lab: React.CSSProperties = { display: "block", fontSize: 10.5, fontWeight: 700, letterSpacing: 0.3, color: color.ink.soft, textTransform: "uppercase", marginBottom: 5 };
 
   return (
     <AppShell active="warehouses">
-      <PageTitleRow title="Warehouses" subtitle={`${ALL.length} locations · ${totalItems.toLocaleString()} items`} actions={<Button variant="primary">+ New warehouse</Button>} />
+      <PageTitleRow title="Warehouses" subtitle={`${rows.length} stock location${rows.length === 1 ? "" : "s"}`}
+        actions={<Button variant="primary" onClick={() => { setErr(""); setOpen(true); }}>+ New warehouse</Button>} />
 
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(150px, 1fr))", gap: 10, marginBottom: 16 }}>
-        <KPICard label="Warehouses" value={String(ALL.length)} note="locations" noteTone={color.brand.primary} />
-        <KPICard label="Items stored" value={totalItems.toLocaleString()} note="across sites" noteTone={color.ink.soft} />
-        <KPICard label="Avg capacity" value={`${avgCap}%`} note="utilisation" noteTone={avgCap >= 85 ? color.status.critical : color.status.positive} />
-        <KPICard label="Near full" value={String(nearFull)} note="90%+ used" noteTone={color.status.negative} />
-        <KPICard label="Healthy" value={String(healthy)} note="under 75%" noteTone={color.status.positive} />
-        <KPICard label="Cities" value={String(new Set(ALL.map((r) => r.location.split(",").pop()?.trim())).size)} note="coverage" noteTone={color.ink.soft} />
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(160px, 1fr))", gap: 10, marginBottom: 18 }}>
+        <KPICard label="Locations" value={String(rows.length)} note="active" noteTone={color.brand.primary} />
+        <KPICard label="With code" value={String(rows.filter((r) => r.code).length)} note="coded" noteTone={color.ink.soft} />
       </div>
 
-      <div style={{ display: "flex", gap: 10, alignItems: "center", flexWrap: "wrap", marginBottom: 14 }}>
-        <Input placeholder="Search warehouse or location…" value={q} onChange={(e) => setQ(e.target.value)} style={{ width: 300 }} />
-      </div>
+      {loading ? <div style={{ padding: 30, textAlign: "center", color: color.ink.soft, fontSize: 13 }}>Loading…</div>
+        : rows.length === 0 ? <EmptyState title="No warehouses yet" hint="Add stock locations to track inventory by site." action={<Button variant="primary" onClick={() => setOpen(true)}>+ New warehouse</Button>} />
+          : (
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(260px, 1fr))", gap: 12 }}>
+              {rows.map((w) => (
+                <div key={w.id} style={{ border: `1px solid ${color.line.DEFAULT}`, borderRadius: 12, padding: "14px 16px", background: color.surface.card }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 6 }}>
+                    <span style={{ width: 34, height: 34, borderRadius: 9, background: color.brand.primaryTint, color: color.brand.primary, display: "inline-flex", alignItems: "center", justifyContent: "center", fontWeight: 800 }}>▤</span>
+                    <div style={{ minWidth: 0 }}><div style={{ fontSize: 14, fontWeight: 700, color: color.ink.DEFAULT, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{w.name}</div>{w.code ? <div style={{ fontSize: 11.5, color: color.ink.soft, fontFamily: "ui-monospace, monospace" }}>{w.code}</div> : null}</div>
+                  </div>
+                  <div style={{ fontSize: 12.5, color: color.ink.mid }}>{w.location || "No location set"}</div>
+                </div>
+              ))}
+            </div>
+          )}
 
-      {rows.length === 0 ? (
-        <EmptyState title="No warehouses match your search" hint="Try a different name or location." action={<Button variant="primary" onClick={() => setQ("")}>Clear search</Button>} />
-      ) : (
-        <DataTable columns={COLUMNS} rows={rows} getKey={(r) => r.id} rowHref={(r) => `/warehouses/${r.id}`} />
-      )}
-
-      <p style={{ fontSize: 11, color: color.ink.soft, textAlign: "center", marginTop: 18 }}>Command center · capacity meter · locked DataTable · tokens-only, theme-aware</p>
+      <Modal open={open} onClose={() => setOpen(false)} title="New warehouse" size="sm"
+        footer={<><Button variant="secondary" onClick={() => setOpen(false)}>Cancel</Button><Button variant="primary" onClick={create} disabled={saving}>{saving ? "Creating…" : "Create"}</Button></>}>
+        <div style={{ display: "grid", gap: 12 }}>
+          {err && <div style={{ fontSize: 13, color: color.status.negative, background: "#FEF2F2", border: `1px solid ${color.status.negative}33`, borderRadius: 8, padding: "8px 10px" }}>{err}</div>}
+          <div><label style={lab}>Name *</label><Input value={f.name} onChange={(e) => setF({ ...f, name: e.target.value })} placeholder="e.g. Dubai Main Store" autoFocus /></div>
+          <div><label style={lab}>Code</label><Input value={f.code} onChange={(e) => setF({ ...f, code: e.target.value })} placeholder="WH-DXB" /></div>
+          <div><label style={lab}>Location</label><Input value={f.location} onChange={(e) => setF({ ...f, location: e.target.value })} placeholder="Jebel Ali, Dubai" /></div>
+        </div>
+      </Modal>
+      <p style={{ fontSize: 11, color: color.ink.soft, textAlign: "center", marginTop: 18 }}>Warehouses · stock locations · tenant-scoped</p>
     </AppShell>
   );
 }
