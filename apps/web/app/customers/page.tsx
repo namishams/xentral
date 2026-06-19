@@ -32,7 +32,7 @@ export default function CustomersListPage() {
   return (
     <AppShell active="customers">
       <PageTitleRow title="Customers" subtitle={`${rows.length} billing customer${rows.length === 1 ? "" : "s"}${totalOutstanding > 0 ? ` · ${aed(totalOutstanding, cur)} outstanding` : ""}`}
-        actions={<div style={{ display: "flex", gap: 8 }}><Button onClick={() => { window.location.href = "/quotations/new"; }}>New quote</Button><Button variant="primary" onClick={() => { window.location.href = "/invoices/new"; }}>+ New invoice</Button></div>} />
+        actions={<div style={{ display: "flex", gap: 8 }}><Button onClick={() => { window.location.href = "/quotations/new"; }}>New quote</Button><Button variant="primary" onClick={() => { window.location.href = "/customers/new"; }}>+ New customer</Button></div>} />
 
       <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(160px, 1fr))", gap: 10, marginBottom: 16 }}>
         <KPICard label="Customers" value={String(rows.length)} note="billed" noteTone={color.ink.soft} />
@@ -44,7 +44,7 @@ export default function CustomersListPage() {
       <div style={{ display: "grid", gridTemplateColumns: "minmax(0,1fr) 300px", gap: 16, alignItems: "start" }}>
         <div>
           {loading ? <div style={{ padding: 30, textAlign: "center", color: color.ink.soft, fontSize: 13 }}>Loading…</div>
-            : rows.length === 0 ? <EmptyState title="No customers yet" hint="Customers are created automatically when you invoice them." action={<Button variant="primary" onClick={() => { window.location.href = "/invoices/new"; }}>+ New invoice</Button>} />
+            : rows.length === 0 ? <EmptyState title="No customers yet" hint="Add a customer with tax treatment, or they\u2019re created automatically when you invoice." action={<Button variant="primary" onClick={() => { window.location.href = "/customers/new"; }}>+ New customer</Button>} />
               : <DataTable<Row> columns={COLS} rows={rows} getKey={(r) => r.id} rowHref={(r) => `/customers/${r.id}`} searchable searchPlaceholder="Search customers…" title="All customers" initialSort={{ key: "outstanding", dir: "desc" }} maxHeight={620} />}
         </div>
 
