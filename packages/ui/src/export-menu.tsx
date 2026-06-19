@@ -28,7 +28,8 @@ export function ExportMenu({ entity, label = "Export" }: { entity: string; label
       {open && (
         <div style={{ position: "absolute", right: 0, top: 42, minWidth: 214, background: color.surface.card, border: `1px solid ${color.line.DEFAULT}`, borderRadius: 10, boxShadow: "0 12px 32px -8px rgba(20,28,38,0.25)", zIndex: 60, padding: 6 }}>
           <div style={cap}>Download</div>
-          <a href={`/api/export/${entity}?format=csv`} style={item}>CSV (Excel-compatible)</a>
+          <a href={`/api/export/${entity}?format=xlsx`} style={item}>Excel (.xlsx)</a>
+          <a href={`/api/export/${entity}?format=csv`} style={item}>CSV (.csv)</a>
           <div style={{ height: 1, background: color.line.DEFAULT, margin: "5px 6px" }} />
           <div style={cap}>Send to cloud</div>
           {CLOUDS.map((c) => <a key={c.id} href={`/settings/integrations?connect=${c.id}&export=${entity}`} style={item}>{c.label}</a>)}

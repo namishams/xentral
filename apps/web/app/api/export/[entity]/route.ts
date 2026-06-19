@@ -3,6 +3,7 @@ import "../../../../lib/session";
 import { NextResponse } from "next/server";
 import { Pool } from "pg";
 import { resolveSession } from "@xentral/kernel";
+import { buildXlsx } from "../../../../lib/xlsx";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -37,7 +38,7 @@ function csvCell(v: unknown): string {
   return /[",\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
 }
 
-export async function GET(_req: Request, { params }: { params: { entity: string } }) {
+export async function GET(req: Request, { params }: { params: { entity: string } }) {
   const url = process.env.DATABASE_URL;
   if (process.env.XENTRAL_LIVE_DATA !== "1" || !url) return NextResponse.json({ error: "Live data not enabled" }, { status: 503 });
   const session = await resolveSession();
@@ -46,6 +47,11 @@ export async function GET(_req: Request, { params }: { params: { entity: string 
   if (!spec) return NextResponse.json({ error: "Unknown export" }, { status: 404 });
   try {
     const { rows } = await pool(url).query(spec.sql, [session.companyId]);
+    const date2 = new Date().toISOString().slice(0, 10);
+    if (new URL(req.url).searchParams.get("format") === "xlsx") {
+      const buf = buildXlsx(spec.filename, spec.headers, rows as Record<string, unknown>[]);
+      return new Response(new Uint8Array(buf), { headers: { "Content-Type": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "Content-Disposition": `attachment; filename="${spec.filename}-${date2}.xlsx"` } });
+    }
     const lines = [spec.headers.map(csvCell).join(",")];
     for (const r of rows) lines.push(spec.headers.map((h) => csvCell((r as Record<string, unknown>)[h])).join(","));
     const csv = "﻿" + lines.join("\r\n");
