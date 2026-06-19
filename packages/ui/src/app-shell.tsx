@@ -39,6 +39,7 @@ const NAV: NavGroup[] = [
       { id: "contacts", label: "Contacts", href: "/contacts", glyph: "◍" },
       { id: "companies", label: "Companies", href: "/companies", glyph: "▢" },
       { id: "deals", label: "Deals", href: "/deals", glyph: "◇" },
+      { id: "lists", label: "Lists & Segments", href: "/org/lists", glyph: "≣" },
       { id: "pipelines", label: "Pipelines", href: "/pipelines", glyph: "≣" },
       { id: "quotations", label: "Quotes", href: "/quotations", glyph: "▥" },
       { id: "forecasting", label: "Forecasting", href: "/forecasting", glyph: "◴" },
@@ -80,6 +81,7 @@ const NAV: NavGroup[] = [
     items: [
       { id: "books", label: "Finance overview", href: "/books", glyph: "◆" },
       { id: "customers", label: "Customers", href: "/customers", glyph: "◍" },
+      { id: "tax", label: "Tax Center", href: "/books/tax", glyph: "%" },
       { id: "invoice", label: "Invoices", href: "/invoices", glyph: "▣" },
       { id: "payments", label: "Payments", href: "/payments", glyph: "◇" },
       { id: "receivables", label: "Receivables", href: "/receivables", glyph: "▤" },

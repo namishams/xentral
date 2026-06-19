@@ -4,7 +4,7 @@ import * as React from "react";
 import { color } from "@xentral/config";
 
 const pill: React.CSSProperties = { display: "inline-flex", alignItems: "center", gap: 6, height: 30, padding: "0 11px", borderRadius: 8, border: `1px solid ${color.line.DEFAULT}`, background: color.surface.card, color: color.ink.mid, fontSize: 12.5, fontWeight: 500, whiteSpace: "nowrap", flexShrink: 0, textDecoration: "none", cursor: "pointer" };
-const iconBtn: React.CSSProperties = { width: 32, height: 32, borderRadius: 8, border: `1px solid ${color.line.DEFAULT}`, background: color.surface.card, color: color.ink.mid, display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", position: "relative", flexShrink: 0 };
+const iconBtn: React.CSSProperties = { width: 34, height: 34, borderRadius: 10, border: `1px solid ${color.line.DEFAULT}`, background: color.surface.card, color: color.ink.mid, display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", position: "relative", flexShrink: 0, transition: "background 120ms ease, border-color 120ms ease" };
 const menu: React.CSSProperties = { position: "absolute", right: 0, top: 40, minWidth: 210, background: color.surface.card, border: `1px solid ${color.line.DEFAULT}`, borderRadius: 10, boxShadow: "0 12px 32px -8px rgba(20,28,38,0.25)", zIndex: 60, padding: 6 };
 const item: React.CSSProperties = { display: "block", padding: "9px 12px", fontSize: 13, color: color.ink.DEFAULT, textDecoration: "none", borderRadius: 7, whiteSpace: "nowrap" };
 
@@ -56,7 +56,7 @@ export function HeaderTools() {
 
       {/* Notifications */}
       <span style={{ position: "relative", flexShrink: 0 }} onClick={(e) => e.stopPropagation()}>
-        <button onClick={() => setNote((o) => !o)} aria-label="Notifications" style={iconBtn}><Icon name="bell" /></button>
+        <button onClick={() => setNote((o) => !o)} aria-label="Notifications" style={iconBtn}><Icon name="bell" /><span aria-hidden style={{ position: "absolute", top: 7, right: 8, width: 7, height: 7, borderRadius: "50%", background: color.status.positive, border: `1.5px solid ${color.surface.card}` }} /></button>
         {noteOpen ? (
           <div style={menu}>
             <div style={{ padding: "8px 12px 6px", fontSize: 11, fontWeight: 700, letterSpacing: 0.4, color: color.ink.soft, textTransform: "uppercase" }}>Notifications</div>
@@ -93,7 +93,7 @@ export function HeaderAvatar({ label = "MF" }: { label?: string }) {
   return (
     <span style={{ position: "relative", flexShrink: 0 }} onClick={(e) => e.stopPropagation()}>
       <button onClick={() => setOpen((o) => !o)} aria-label="Account menu" aria-expanded={open}
-        style={{ width: 32, height: 32, borderRadius: "50%", border: 0, background: color.brand.primary, color: color.ink.onPrimary, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 12, fontWeight: 700, cursor: "pointer" }}>{label}</button>
+        style={{ width: 34, height: 34, borderRadius: "50%", border: 0, background: color.brand.primary, color: color.ink.onPrimary, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 12, fontWeight: 700, cursor: "pointer" }}>{label}</button>
       {open ? (
         <div style={menu}>
           <div style={{ padding: "8px 12px 6px", fontSize: 11, fontWeight: 700, letterSpacing: 0.4, color: color.ink.soft, textTransform: "uppercase" }}>Workspace</div>

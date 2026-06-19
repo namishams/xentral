@@ -36,6 +36,9 @@ export default function ProductsPage() {
     }).catch(() => setLoading(false));
   }, []);
   React.useEffect(() => { load(); }, [load]);
+  const [cats, setCats] = React.useState<string[]>([]);
+  const loadCats = React.useCallback(() => { fetch("/api/books/item-categories").then((r) => r.json()).then((d) => setCats((d.rows ?? []).map((c: { name: string }) => c.name))).catch(() => {}); }, []);
+  React.useEffect(() => { loadCats(); }, [loadCats]);
 
   const filtered = all.filter((r) => (kindFilter === "ALL" || (r.kind || "").toUpperCase() === kindFilter)
     && ((r.name || "") + (r.sku || "") + (r.category || "")).toLowerCase().includes(q.toLowerCase()));
@@ -62,6 +65,11 @@ export default function ProductsPage() {
     setSaving(false);
     const d = await res.json().catch(() => ({}));
     if (!res.ok) { setErr(d.error || "Save failed"); return; }
+    const cat = draft.category.trim();
+    if (cat && !cats.some((c) => c.toLowerCase() === cat.toLowerCase())) {
+      await fetch("/api/books/item-categories", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ name: cat }) }).catch(() => {});
+      loadCats();
+    }
     setDraft(null); load();
   }
 
@@ -178,7 +186,8 @@ export default function ProductsPage() {
               </div>
               <div>
                 <label style={fieldLabel}>Category</label>
-                <Input value={draft.category} onChange={(e) => setDraft({ ...draft, category: e.target.value })} placeholder="optional" />
+                <Input value={draft.category} list="item-cats" onChange={(e) => setDraft({ ...draft, category: e.target.value })} placeholder="pick or type new" />
+                <datalist id="item-cats">{cats.map((c) => <option key={c} value={c} />)}</datalist>
               </div>
             </div>
             <div>

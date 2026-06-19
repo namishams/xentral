@@ -43,6 +43,7 @@ export function BooksBuilder({ kind, editId }: { kind: Kind; editId?: string }) 
   const [notes, setNotes] = React.useState("");
   const [subject, setSubject] = React.useState("");
   const [terms, setTerms] = React.useState("");
+  const [sel, setSel] = React.useState<string[]>([]);
   const [lines, setLines] = React.useState<Line[]>([blankLine()]);
   const [saving, setSaving] = React.useState("");
   const [loading, setLoading] = React.useState(editing);
@@ -93,6 +94,17 @@ export function BooksBuilder({ kind, editId }: { kind: Kind; editId?: string }) 
     const line: Line = { itemId: it.id, name: it.name, qty: "1", unitPrice: String(Number(it.unitPrice) || 0), vatRate: String(Number(it.vatRate) || 5), discountPct: "0" };
     setTouched(true);
     setLines((ls) => { const empty = ls.findIndex((l) => !l.name.trim() && !parseFloat(l.unitPrice)); if (empty >= 0) { const n = [...ls]; n[empty] = line; return n; } return [...ls, line]; });
+  }
+  function addSelected() {
+    const chosen = items.filter((x) => sel.includes(x.id));
+    if (!chosen.length) { setPicker(false); return; }
+    setTouched(true);
+    setLines((ls) => {
+      const base = ls.filter((l) => l.name.trim() || parseFloat(l.unitPrice));
+      const add = chosen.map((it): Line => ({ itemId: it.id, name: it.name, qty: "1", unitPrice: String(Number(it.unitPrice) || 0), vatRate: String(Number(it.vatRate) || 5), discountPct: "0" }));
+      return base.length ? [...base, ...add] : add;
+    });
+    setSel([]); setPicker(false);
   }
 
   const hasCustomer = mode === "existing" ? !!customerId : !!customerName.trim();
@@ -187,7 +199,7 @@ export function BooksBuilder({ kind, editId }: { kind: Kind; editId?: string }) 
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
               <h2 style={{ fontSize: 14, fontWeight: 700, color: color.ink.DEFAULT, margin: 0 }}>Line items</h2>
               <div style={{ display: "flex", gap: 8 }}>
-                <Button onClick={() => { setPq(""); setPicker(true); }}>≣ Add from catalog</Button>
+                <Button onClick={() => { setPq(""); setSel([]); setPicker(true); }}>≣ Add from catalog</Button>
                 <Button variant="primary" onClick={addLine}>+ Add line</Button>
               </div>
             </div>
@@ -286,14 +298,23 @@ export function BooksBuilder({ kind, editId }: { kind: Kind; editId?: string }) 
             <Input placeholder="Search items…" value={pq} onChange={(e) => setPq(e.target.value)} style={{ width: "100%", marginBottom: 10 }} />
             <div style={{ overflowY: "auto", border: `1px solid ${color.line.DEFAULT}`, borderRadius: 9 }}>
               {filteredItems.length === 0 ? <div style={{ padding: 20, textAlign: "center", color: color.ink.soft, fontSize: 13 }}>{items.length === 0 ? "No catalog items yet. Add some under Products." : "No matches."}</div>
-                : filteredItems.map((it) => (
-                  <button key={it.id} onClick={() => { addFromCatalog(it); setPicker(false); }} style={{ width: "100%", textAlign: "left", display: "flex", justifyContent: "space-between", alignItems: "center", gap: 12, padding: "10px 14px", border: 0, borderBottom: `1px solid ${color.line.DEFAULT}`, background: color.surface.card, cursor: "pointer" }}>
-                    <span style={{ minWidth: 0 }}><span style={{ display: "block", fontSize: 13.5, fontWeight: 600, color: color.ink.DEFAULT, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{it.name}</span>{it.description ? <span style={{ display: "block", fontSize: 12, color: color.ink.soft, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{it.description}</span> : null}</span>
+                : filteredItems.map((it) => { const on = sel.includes(it.id); return (
+                  <button key={it.id} onClick={() => setSel((cur) => cur.includes(it.id) ? cur.filter((x) => x !== it.id) : [...cur, it.id])} style={{ width: "100%", textAlign: "left", display: "flex", justifyContent: "space-between", alignItems: "center", gap: 12, padding: "10px 14px", border: 0, borderBottom: `1px solid ${color.line.DEFAULT}`, background: on ? color.brand.primaryTint : color.surface.card, cursor: "pointer" }}>
+                    <span style={{ display: "inline-flex", alignItems: "center", gap: 11, minWidth: 0 }}>
+                      <span aria-hidden style={{ width: 18, height: 18, flexShrink: 0, borderRadius: 5, border: `1.5px solid ${on ? color.brand.primary : color.line.strong}`, background: on ? color.brand.primary : "transparent", color: "#fff", display: "inline-flex", alignItems: "center", justifyContent: "center", fontSize: 12 }}>{on ? "✓" : ""}</span>
+                      <span style={{ minWidth: 0 }}><span style={{ display: "block", fontSize: 13.5, fontWeight: 600, color: color.ink.DEFAULT, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{it.name}</span>{it.description ? <span style={{ display: "block", fontSize: 12, color: color.ink.soft, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{it.description}</span> : null}</span>
+                    </span>
                     <span style={{ flexShrink: 0, fontSize: 13, fontWeight: 600, color: color.brand.primary }}>{currency} {fmt(Number(it.unitPrice) || 0)}</span>
                   </button>
-                ))}
+                ); })}
             </div>
-            <p style={{ fontSize: 11.5, color: color.ink.soft, marginTop: 10 }}>Tip: you can also pick a catalog item directly on each line.</p>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: 12, gap: 10 }}>
+              <span style={{ fontSize: 12, color: color.ink.soft }}>{sel.length} selected</span>
+              <span style={{ display: "inline-flex", gap: 8 }}>
+                <Button onClick={() => setPicker(false)}>Cancel</Button>
+                <Button variant="primary" onClick={addSelected} disabled={sel.length === 0}>{sel.length > 1 ? `Add ${sel.length} items` : "Add item"}</Button>
+              </span>
+            </div>
           </div>
         </div>
       ) : null}
