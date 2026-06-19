@@ -24,7 +24,7 @@ export async function GET() {
   if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   try {
     const { rows } = await pool(url).query(
-      `select c.id, c.name, coalesce(c.code,'') as code, coalesce(c."itemType",'') as "itemType", c."vatRate" as "vatRate",
+      `select c.id, c.name, coalesce(c.code,'') as code, coalesce(c."itemType",'') as "itemType", coalesce(c.industry,'') as industry, c."vatRate" as "vatRate",
               (select count(*)::int from "catalog_items" ci where ci."companyId" = $1 and ci.category = c.name) as "itemCount"
          from "item_categories" c where c."companyId" = $1 order by c."sortOrder" asc nulls last, c.name asc limit 500`, [session.companyId]);
     return NextResponse.json({ rows });
@@ -49,8 +49,8 @@ export async function POST(req: Request) {
     if (ex.rows[0]) return NextResponse.json({ ok: true, id: ex.rows[0].id, existed: true });
     const id = randomUUID();
     await p.query(
-      `insert into "item_categories" (id,"companyId",name,code,"itemType","vatRate","createdAt") values ($1,$2,$3,$4,$5,$6,now())`,
-      [id, session.companyId, name, b.code == null ? null : String(b.code), itemType, vatRate]);
+      `insert into "item_categories" (id,"companyId",name,code,"itemType",industry,"vatRate","createdAt") values ($1,$2,$3,$4,$5,$6,$7,now())`,
+      [id, session.companyId, name, b.code == null ? null : String(b.code), itemType, b.industry == null || b.industry === "" ? null : String(b.industry), vatRate]);
     return NextResponse.json({ ok: true, id });
   } catch (e) {
     return NextResponse.json({ error: (e as Error).message || "Create failed" }, { status: 500 });

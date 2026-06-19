@@ -67,7 +67,7 @@ const NAV: NavGroup[] = [
     group: "Operations",
     items: [
       { id: "orders", label: "Orders", href: "/orders", glyph: "▤" },
-      { id: "products", label: "Products", href: "/products", glyph: "▦" },
+      { id: "products", label: "Items & Services", href: "/products", glyph: "▦" },
       { id: "inventory", label: "Inventory", href: "/inventory", glyph: "▥" },
       { id: "warehouses", label: "Warehouses", href: "/warehouses", glyph: "▢" },
       { id: "procurement", label: "Procurement", href: "/procurement", glyph: "◰" },

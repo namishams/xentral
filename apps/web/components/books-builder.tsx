@@ -44,6 +44,8 @@ export function BooksBuilder({ kind, editId }: { kind: Kind; editId?: string }) 
   const [subject, setSubject] = React.useState("");
   const [terms, setTerms] = React.useState("");
   const [sel, setSel] = React.useState<string[]>([]);
+  const [payTerms, setPayTerms] = React.useState("");
+  function applyTerms(t: string) { setPayTerms(t); if (t === "") return; const base = issueDate ? new Date(issueDate) : new Date(); base.setDate(base.getDate() + (parseInt(t, 10) || 0)); setDate(base.toISOString().slice(0, 10)); }
   const [lines, setLines] = React.useState<Line[]>([blankLine()]);
   const [saving, setSaving] = React.useState("");
   const [loading, setLoading] = React.useState(editing);
@@ -183,7 +185,7 @@ export function BooksBuilder({ kind, editId }: { kind: Kind; editId?: string }) 
                 </div>
               </div>
               <div><label style={lbl}>{cfg.noun} date</label><input type="date" value={issueDate} onChange={(e) => { onBind(); setIssueDate(e.target.value); }} style={{ ...cell, height: 38 }} /></div>
-              <div><label style={lbl}>{cfg.dateLabel}</label><input type="date" value={date} onChange={(e) => { onBind(); setDate(e.target.value); }} style={{ ...cell, height: 38 }} /></div>
+              <div><label style={lbl}>Terms / {cfg.dateLabel}</label><select value={payTerms} onChange={(e) => { onBind(); applyTerms(e.target.value); }} style={{ ...cell, height: 38, marginBottom: 6 }}><option value="">Custom date</option><option value="0">Due on receipt</option><option value="15">Net 15</option><option value="30">Net 30</option><option value="45">Net 45</option><option value="60">Net 60</option></select><input type="date" value={date} onChange={(e) => { onBind(); setDate(e.target.value); setPayTerms(""); }} style={{ ...cell, height: 38 }} /></div>
             </div>
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr 1fr", gap: 14, marginTop: 14 }}>
               <div><label style={lbl}>Currency</label><input value={currency} onChange={(e) => { onBind(); setCurrency(e.target.value); }} style={{ ...cell, height: 38 }} /></div>

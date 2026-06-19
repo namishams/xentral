@@ -6,10 +6,12 @@ import { AppShell, PageTitleRow, KPICard, Input, Button, DataTable, StatusBadge,
 
 type ApiRow = { id: string; name: string; description: string; sku: string; category: string; unitPrice: number; vatRate: number; kind: string; recurring?: boolean; active: boolean };
 type Row = { id: string; name: string; description: string; sku: string; kind: string; price: number; vat: number; category: string; recurring: boolean; active: boolean };
+type Cat = { id: string; name: string; industry: string; itemType: string; itemCount: number };
 const aed = (n: number) => `AED ${Math.round(Number(n) || 0).toLocaleString()}`;
 
 type Draft = { id?: string; name: string; kind: string; sku: string; category: string; description: string; unitPrice: string; vatRate: string; recurring: boolean; active: boolean };
 const EMPTY: Draft = { name: "", kind: "SERVICE", sku: "", category: "", description: "", unitPrice: "", vatRate: "5", recurring: false, active: true };
+const INDUSTRIES = ["Real Estate", "Healthcare", "Retail", "Hospitality", "Construction", "Education", "Professional Services", "Logistics", "Manufacturing", "Technology"];
 
 const fieldLabel: React.CSSProperties = { display: "block", fontSize: 12, fontWeight: 600, color: color.ink.mid, marginBottom: 5 };
 const selectStyle: React.CSSProperties = { width: "100%", height: 38, padding: "0 10px", borderRadius: 8, border: `1px solid ${color.line.DEFAULT}`, background: "#fff", color: color.ink.DEFAULT, fontSize: 14 };
@@ -19,6 +21,7 @@ export default function ProductsPage() {
   const [loading, setLoading] = React.useState(true);
   const [q, setQ] = React.useState("");
   const [kindFilter, setKindFilter] = React.useState<"ALL" | "SERVICE" | "PRODUCT">("ALL");
+  const [catFilter, setCatFilter] = React.useState<string>("ALL");
 
   const [draft, setDraft] = React.useState<Draft | null>(null);
   const [saving, setSaving] = React.useState(false);
@@ -28,6 +31,12 @@ export default function ProductsPage() {
   const [bulkText, setBulkText] = React.useState("");
   const [bulkBusy, setBulkBusy] = React.useState(false);
 
+  const [cats, setCats] = React.useState<Cat[]>([]);
+  const [catOpen, setCatOpen] = React.useState(false);
+  const [catDraft, setCatDraft] = React.useState({ name: "", industry: "", itemType: "" });
+  const [catBusy, setCatBusy] = React.useState(false);
+  const [catErr, setCatErr] = React.useState("");
+
   const load = React.useCallback(() => {
     setLoading(true);
     fetch("/api/books/items?all=1").then((r) => r.json()).then((d) => {
@@ -35,16 +44,16 @@ export default function ProductsPage() {
       setLoading(false);
     }).catch(() => setLoading(false));
   }, []);
-  React.useEffect(() => { load(); }, [load]);
-  const [cats, setCats] = React.useState<string[]>([]);
-  const loadCats = React.useCallback(() => { fetch("/api/books/item-categories").then((r) => r.json()).then((d) => setCats((d.rows ?? []).map((c: { name: string }) => c.name))).catch(() => {}); }, []);
-  React.useEffect(() => { loadCats(); }, [loadCats]);
+  const loadCats = React.useCallback(() => { fetch("/api/books/item-categories").then((r) => r.json()).then((d) => setCats(d.rows ?? [])).catch(() => {}); }, []);
+  React.useEffect(() => { load(); loadCats(); }, [load, loadCats]);
 
-  const filtered = all.filter((r) => (kindFilter === "ALL" || (r.kind || "").toUpperCase() === kindFilter)
+  const filtered = all.filter((r) =>
+    (kindFilter === "ALL" || (r.kind || "").toUpperCase() === kindFilter)
+    && (catFilter === "ALL" || (r.category || "") === catFilter)
     && ((r.name || "") + (r.sku || "") + (r.category || "")).toLowerCase().includes(q.toLowerCase()));
   const services = all.filter((r) => (r.kind || "").toUpperCase() === "SERVICE").length;
 
-  function openNew() { setErr(""); setDraft({ ...EMPTY }); }
+  function openNew() { setErr(""); setDraft({ ...EMPTY, category: catFilter !== "ALL" ? catFilter : "" }); }
   function openEdit(r: Row) {
     setErr("");
     setDraft({ id: r.id, name: r.name, kind: (r.kind || "SERVICE").toUpperCase(), sku: r.sku, category: r.category, description: r.description, unitPrice: String(r.price), vatRate: String(r.vat), recurring: r.recurring, active: r.active });
@@ -66,7 +75,7 @@ export default function ProductsPage() {
     const d = await res.json().catch(() => ({}));
     if (!res.ok) { setErr(d.error || "Save failed"); return; }
     const cat = draft.category.trim();
-    if (cat && !cats.some((c) => c.toLowerCase() === cat.toLowerCase())) {
+    if (cat && !cats.some((c) => c.name.toLowerCase() === cat.toLowerCase())) {
       await fetch("/api/books/item-categories", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ name: cat }) }).catch(() => {});
       loadCats();
     }
@@ -80,7 +89,22 @@ export default function ProductsPage() {
     else { const d = await res.json().catch(() => ({})); alert(d.error || "Delete failed"); }
   }
 
-  // Bulk: name, price, vat, kind, description (comma / semicolon / tab separated)
+  async function createCat() {
+    if (!catDraft.name.trim()) { setCatErr("Name is required"); return; }
+    setCatBusy(true); setCatErr("");
+    const r = await fetch("/api/books/item-categories", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(catDraft) });
+    setCatBusy(false);
+    const d = await r.json().catch(() => ({}));
+    if (!r.ok) { setCatErr(d.error || "Failed"); return; }
+    setCatDraft({ name: "", industry: "", itemType: "" }); loadCats();
+  }
+  async function removeCat(c: Cat) {
+    if (!confirm(`Delete category "${c.name}"? Items keep their label.`)) return;
+    const r = await fetch(`/api/books/item-categories?id=${c.id}`, { method: "DELETE" });
+    if (r.ok) loadCats();
+  }
+
+  // Bulk import (name, price, vat, kind, description)
   const parseBulk = (text: string) => text.split(/\r?\n/).map((l) => l.trim()).filter(Boolean)
     .filter((l, i) => !(i === 0 && /name/i.test(l) && /price/i.test(l)))
     .map((line) => {
@@ -94,7 +118,6 @@ export default function ProductsPage() {
     });
   const bulkRows = parseBulk(bulkText);
   const bulkValid = bulkRows.filter((r) => r.name && !isNaN(parseFloat(r.unitPrice)) && parseFloat(r.unitPrice) >= 0);
-
   async function runBulk() {
     setBulkBusy(true);
     const r = await fetch("/api/books/items/bulk", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ items: bulkRows }) });
@@ -106,12 +129,12 @@ export default function ProductsPage() {
 
   const COLS: Column<Row>[] = [
     { key: "name", header: "Item", render: (r) => <span><span style={{ fontWeight: 600, color: color.ink.DEFAULT }}>{r.name}</span>{r.sku ? <span style={{ color: color.ink.soft, fontSize: 12, marginLeft: 8 }}>{r.sku}</span> : null}</span> },
-    { key: "kind", header: "Type", width: 110, render: (r) => <StatusBadge tone={(r.kind || "").toUpperCase() === "SERVICE" ? "info" : "neutral"} label={(r.kind || "").toLowerCase() || "—"} /> },
-    { key: "category", header: "Category", render: (r) => <span style={{ color: color.ink.mid }}>{r.category || "—"}</span> },
-    { key: "vat", header: "VAT", width: 70, align: "right", render: (r) => <span style={{ color: color.ink.mid }}>{Number(r.vat) || 0}%</span> },
-    { key: "price", header: "Unit price", width: 120, align: "right", render: (r) => <span style={{ fontWeight: 600 }}>{aed(r.price)}</span> },
-    { key: "active", header: "Status", width: 90, render: (r) => <StatusBadge tone={r.active ? "positive" : "neutral"} label={r.active ? "active" : "inactive"} /> },
-    { key: "id", header: "", width: 130, align: "right", render: (r) => (
+    { key: "kind", header: "Type", width: 104, render: (r) => <StatusBadge tone={(r.kind || "").toUpperCase() === "SERVICE" ? "info" : "neutral"} label={(r.kind || "").toLowerCase() || "—"} /> },
+    { key: "category", header: "Category", render: (r) => <span style={{ color: r.category ? color.ink.mid : color.ink.soft }}>{r.category || "—"}</span> },
+    { key: "vat", header: "VAT", width: 66, align: "right", render: (r) => <span style={{ color: color.ink.mid }}>{Number(r.vat) || 0}%</span> },
+    { key: "price", header: "Unit price", width: 116, align: "right", render: (r) => <span style={{ fontWeight: 600 }}>{aed(r.price)}</span> },
+    { key: "active", header: "Status", width: 86, render: (r) => <StatusBadge tone={r.active ? "positive" : "neutral"} label={r.active ? "active" : "inactive"} /> },
+    { key: "id", header: "", width: 120, align: "right", render: (r) => (
       <span style={{ display: "inline-flex", gap: 6, justifyContent: "flex-end" }}>
         <button onClick={() => openEdit(r)} style={{ fontSize: 12, fontWeight: 600, color: color.brand.primary, background: "transparent", border: "none", cursor: "pointer", padding: "4px 6px" }}>Edit</button>
         <button onClick={() => remove(r)} style={{ fontSize: 12, fontWeight: 600, color: color.status.negative, background: "transparent", border: "none", cursor: "pointer", padding: "4px 6px" }}>Delete</button>
@@ -119,10 +142,13 @@ export default function ProductsPage() {
     ) },
   ];
 
+  const chip = (active: boolean): React.CSSProperties => ({ padding: "5px 12px", borderRadius: 999, fontSize: 12.5, fontWeight: 600, cursor: "pointer", whiteSpace: "nowrap", border: `1px solid ${active ? color.brand.primary : color.line.strong}`, background: active ? color.brand.primary : color.surface.card, color: active ? color.ink.onPrimary : color.ink.mid });
+
   return (
     <AppShell active="products">
-      <PageTitleRow title="Items & Services" subtitle={`${all.length} catalog items`} actions={
+      <PageTitleRow title="Items & Services" subtitle={`${all.length} items · ${cats.length} categories`} actions={
         <span style={{ display: "inline-flex", gap: 8 }}>
+          <Button variant="secondary" onClick={() => { setCatErr(""); setCatOpen(true); }}>Manage categories</Button>
           <Button variant="secondary" onClick={() => setBulkOpen(true)}>Import</Button>
           <Button variant="primary" onClick={openNew}>+ New item</Button>
         </span>
@@ -132,7 +158,14 @@ export default function ProductsPage() {
         <KPICard label="Items" value={String(all.length)} note="in catalog" noteTone={color.brand.primary} />
         <KPICard label="Services" value={String(services)} note="service items" noteTone={color.status.info} />
         <KPICard label="Products" value={String(all.length - services)} note="goods" noteTone={color.ink.soft} />
-        <KPICard label="Active" value={String(all.filter((r) => r.active).length)} note="sellable" noteTone={color.status.positive} />
+        <KPICard label="Categories" value={String(cats.length)} note="for organisation" noteTone={color.status.positive} />
+      </div>
+
+      {/* Category filter chips */}
+      <div style={{ display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap", marginBottom: 12 }}>
+        <span style={chip(catFilter === "ALL")} onClick={() => setCatFilter("ALL")}>All categories</span>
+        {cats.map((c) => <span key={c.id} style={chip(catFilter === c.name)} onClick={() => setCatFilter(c.name)}>{c.name}{c.industry ? ` · ${c.industry}` : ""} <span style={{ opacity: 0.7 }}>{c.itemCount}</span></span>)}
+        {cats.length === 0 ? <span style={{ fontSize: 12, color: color.ink.soft }}>No categories yet — “Manage categories” to organise by industry (e.g. Real Estate, Healthcare).</span> : null}
       </div>
 
       <div style={{ display: "flex", gap: 10, alignItems: "center", flexWrap: "wrap", marginBottom: 14 }}>
@@ -145,11 +178,11 @@ export default function ProductsPage() {
       </div>
 
       {loading ? <div style={{ padding: 30, textAlign: "center", color: color.ink.soft, fontSize: 13 }}>Loading…</div>
-        : filtered.length === 0 ? <EmptyState title={all.length === 0 ? "No items yet" : "No matches"} hint={all.length === 0 ? "Add services and products you sell. They become line items on quotes and invoices." : "Try a different search or type filter."} action={<Button variant="primary" onClick={all.length === 0 ? openNew : () => { setQ(""); setKindFilter("ALL"); }}>{all.length === 0 ? "+ New item" : "Clear filters"}</Button>} />
+        : filtered.length === 0 ? <EmptyState title={all.length === 0 ? "No items yet" : "No matches"} hint={all.length === 0 ? "Add services and products you sell. Group them with categories by industry — they become line items on quotes and invoices." : "Try a different search, type or category."} action={<Button variant="primary" onClick={all.length === 0 ? openNew : () => { setQ(""); setKindFilter("ALL"); setCatFilter("ALL"); }}>{all.length === 0 ? "+ New item" : "Clear filters"}</Button>} />
           : <DataTable columns={COLS} rows={filtered} getKey={(r) => r.id} />}
-      <p style={{ fontSize: 11, color: color.ink.soft, textAlign: "center", marginTop: 18 }}>Items &amp; Services · live catalog · tenant-scoped</p>
+      <p style={{ fontSize: 11, color: color.ink.soft, textAlign: "center", marginTop: 18 }}>Items &amp; Services · categories &amp; live catalog · tenant-scoped</p>
 
-      {/* New / Edit modal */}
+      {/* New / Edit item modal */}
       <Modal open={!!draft} onClose={() => setDraft(null)} title={draft?.id ? "Edit item" : "New item"} size="md"
         footer={<>
           <Button variant="secondary" onClick={() => setDraft(null)}>Cancel</Button>
@@ -187,7 +220,7 @@ export default function ProductsPage() {
               <div>
                 <label style={fieldLabel}>Category</label>
                 <Input value={draft.category} list="item-cats" onChange={(e) => setDraft({ ...draft, category: e.target.value })} placeholder="pick or type new" />
-                <datalist id="item-cats">{cats.map((c) => <option key={c} value={c} />)}</datalist>
+                <datalist id="item-cats">{cats.map((c) => <option key={c.id} value={c.name} />)}</datalist>
               </div>
             </div>
             <div>
@@ -204,6 +237,32 @@ export default function ProductsPage() {
             </div>
           </div>
         )}
+      </Modal>
+
+      {/* Manage categories modal */}
+      <Modal open={catOpen} onClose={() => setCatOpen(false)} title="Categories" size="md"
+        footer={<Button variant="secondary" onClick={() => setCatOpen(false)}>Done</Button>}>
+        <div style={{ display: "grid", gap: 14 }}>
+          <p style={{ fontSize: 12.5, color: color.ink.mid, margin: 0 }}>Organise items & services into categories by industry — e.g. <strong>Real Estate</strong>, <strong>Healthcare</strong> — so larger catalogs stay tidy.</p>
+          <div style={{ display: "grid", gridTemplateColumns: "1.4fr 1.2fr 0.9fr auto", gap: 8, alignItems: "end" }}>
+            <div><label style={fieldLabel}>New category</label><Input value={catDraft.name} onChange={(e) => setCatDraft({ ...catDraft, name: e.target.value })} placeholder="e.g. Property listings" /></div>
+            <div><label style={fieldLabel}>Industry</label><Input value={catDraft.industry} list="industries" onChange={(e) => setCatDraft({ ...catDraft, industry: e.target.value })} placeholder="optional" /><datalist id="industries">{INDUSTRIES.map((i) => <option key={i} value={i} />)}</datalist></div>
+            <div><label style={fieldLabel}>For</label><select value={catDraft.itemType} onChange={(e) => setCatDraft({ ...catDraft, itemType: e.target.value })} style={selectStyle}><option value="">Any</option><option value="SERVICE">Services</option><option value="PRODUCT">Products</option></select></div>
+            <Button variant="primary" onClick={createCat} disabled={catBusy}>{catBusy ? "…" : "Add"}</Button>
+          </div>
+          {catErr && <div style={{ fontSize: 12.5, color: color.status.negative }}>{catErr}</div>}
+          <div style={{ border: `1px solid ${color.line.DEFAULT}`, borderRadius: 9, maxHeight: 280, overflowY: "auto" }}>
+            {cats.length === 0 ? <div style={{ padding: 18, textAlign: "center", fontSize: 13, color: color.ink.soft }}>No categories yet.</div>
+              : cats.map((c) => (
+                <div key={c.id} style={{ display: "flex", alignItems: "center", gap: 10, padding: "9px 12px", borderBottom: `1px solid ${color.line.DEFAULT}` }}>
+                  <span style={{ flex: 1, minWidth: 0, fontSize: 13.5, fontWeight: 600, color: color.ink.DEFAULT }}>{c.name}</span>
+                  {c.industry ? <StatusBadge tone="info" label={c.industry} /> : null}
+                  <span style={{ fontSize: 12, color: color.ink.soft, width: 60, textAlign: "right" }}>{c.itemCount} item{c.itemCount === 1 ? "" : "s"}</span>
+                  <button onClick={() => removeCat(c)} aria-label="Delete" style={{ width: 28, height: 28, borderRadius: 7, border: `1px solid ${color.line.strong}`, background: color.surface.card, color: color.status.negative, cursor: "pointer" }}>×</button>
+                </div>
+              ))}
+          </div>
+        </div>
       </Modal>
 
       {/* Bulk import modal */}
