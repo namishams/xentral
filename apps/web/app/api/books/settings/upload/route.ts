@@ -16,9 +16,10 @@ function pool(url: string): Pool {
   _pool = m ? new Pool({ user: m[1], password: m[2], host: m[3], port: Number(m[4]), database: m[5], max: 4 }) : new Pool({ connectionString: url, max: 4 });
   return _pool;
 }
+function uploadRoot(): string { return process.env.UPLOAD_DIR || join(process.cwd(), "..", "..", "uploads"); }
 const newId = () => "bs" + Date.now().toString(36) + Math.random().toString(36).slice(2, 10);
 
-/** Books designer — logo / signature upload (png/jpg, max 2 MB) */
+/** Books designer — logo / signature upload (png/jpg, max 2 MB). Stored persistently, served via /api/uploads. */
 export async function POST(req: Request) {
   const url = process.env.DATABASE_URL;
   if (process.env.XENTRAL_LIVE_DATA !== "1" || !url) return NextResponse.json({ error: "Live data not enabled" }, { status: 503 });
@@ -33,11 +34,11 @@ export async function POST(req: Request) {
   const ext = (file.name.split(".").pop() ?? "").toLowerCase();
   if (!["png", "jpg", "jpeg"].includes(ext)) return NextResponse.json({ error: "Only PNG and JPG are supported" }, { status: 400 });
 
-  const dir = join(process.cwd(), "public", "billing");
+  const dir = join(uploadRoot(), "billing");
   await mkdir(dir, { recursive: true });
   const filename = `${session.companyId}-${kind}.${ext === "jpeg" ? "jpg" : ext}`;
   await writeFile(join(dir, filename), Buffer.from(await file.arrayBuffer()));
-  const fileUrl = `/billing/${filename}?v=${Date.now()}`;
+  const fileUrl = `/api/uploads/billing/${filename}?v=${Date.now()}`;
   const colName = kind === "logo" ? "logoUrl" : "signatureUrl";
 
   try {

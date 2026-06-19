@@ -16,6 +16,7 @@ function pool(url: string): Pool {
   _pool = m ? new Pool({ user: m[1], password: m[2], host: m[3], port: Number(m[4]), database: m[5], max: 4 }) : new Pool({ connectionString: url, max: 4 });
   return _pool;
 }
+function uploadRoot(): string { return process.env.UPLOAD_DIR || join(process.cwd(), "..", "..", "uploads"); }
 const newId = () => "at" + Date.now().toString(36) + Math.random().toString(36).slice(2, 10);
 const DOC_TYPES = ["QUOTE", "INVOICE", "CUSTOMER"];
 
@@ -38,7 +39,7 @@ export async function GET(req: Request) {
   } catch { return NextResponse.json([]); }
 }
 
-/** Upload an attachment (max 10 MB). */
+/** Upload an attachment (max 10 MB). Stored in the persistent upload dir and served via /api/uploads. */
 export async function POST(req: Request) {
   const url = process.env.DATABASE_URL;
   if (process.env.XENTRAL_LIVE_DATA !== "1" || !url) return NextResponse.json({ error: "Live data not enabled" }, { status: 503 });
@@ -55,10 +56,10 @@ export async function POST(req: Request) {
 
   const safeName = (file.name || "file").replace(/[^\w.\-]+/g, "_").slice(0, 120);
   const stored = `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}-${safeName}`;
-  const dir = join(process.cwd(), "public", "attachments", session.companyId);
+  const dir = join(uploadRoot(), "attachments", session.companyId);
   await mkdir(dir, { recursive: true });
   await writeFile(join(dir, stored), Buffer.from(await file.arrayBuffer()));
-  const filePath = `/attachments/${session.companyId}/${stored}`;
+  const filePath = `/api/uploads/attachments/${session.companyId}/${stored}`;
 
   const id = newId();
   try {

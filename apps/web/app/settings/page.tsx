@@ -10,6 +10,7 @@ const CATS: Cat[] = [
   { icon: "❑", title: "Books & invoice designer", desc: "Company identity, TRN, bank details & invoice look.", href: "/books/settings" },
   { icon: "▸", title: "Billing & plans", desc: "Subscription, payment method (Telr) & usage.", href: "/billing", tag: "Telr" },
   { icon: "✦", title: "AI Hub", desc: "Providers, API keys, agent models & auto-reply.", href: "/settings/ai-hub", tag: "Live" },
+  { icon: "@", title: "Email", desc: "Sender name, From address & SMTP for outgoing mail.", href: "/settings/email" },
   { icon: "⇄", title: "Integrations", desc: "Connect Google, Slack, WhatsApp and more.", href: "/settings/integrations" },
   { icon: "☷", title: "Users & roles", desc: "Invite teammates, assign roles and seats.", href: "/users" },
   { icon: "◷", title: "Roles & permissions", desc: "Define what each role can see and do.", href: "/roles" },
@@ -73,7 +74,7 @@ export default function SettingsPage() {
           <Row label="e-Invoicing" right={<StatusBadge tone="warning" label="PINT-AE ready" />} />
         </Panel>
         <Panel title="Branding">
-          <Row label="Logo" right={<Button onClick={() => { window.location.href = "/settings/integrations"; }}>Manage branding</Button>} />
+          <Row label="Logo" right={<Button onClick={() => { window.location.href = "/settings/company"; }}>Manage branding</Button>} />
           <Row label="Theme" right={<span style={{ fontSize: 13, color: color.ink.mid }}>Light · Dark (auto)</span>} />
           <Row label="Brand colour" right={<span style={{ display: "inline-flex", alignItems: "center", gap: 8 }}><span style={{ width: 16, height: 16, borderRadius: 4, background: color.brand.primary, display: "inline-block" }} /><span style={{ fontSize: 13, color: color.ink.mid }}>{color.brand.primary}</span></span>} />
         </Panel>
