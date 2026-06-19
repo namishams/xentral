@@ -3,6 +3,14 @@ import "../../../../lib/session"; // side-effect: register SessionPort resolver
 import { NextResponse } from "next/server";
 import { Pool } from "pg";
 import { resolveSession } from "@xentral/kernel";
+import { sendTopupStatusEmail, sendCreditAddedEmail } from "../../../../lib/email-templates";
+
+async function notifyRecipient(p: Pool, companyId: string): Promise<{ email: string; name: string } | null> {
+  try {
+    const r = await p.query(`select email, name from "users" where "companyId" = $1 order by (role in ('ADMIN','SUPER_ADMIN')) desc, "createdAt" asc limit 1`, [companyId]);
+    const u = r.rows[0]; return u?.email ? { email: String(u.email), name: String(u.name || "there") } : null;
+  } catch { return null; }
+}
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -101,6 +109,7 @@ export async function POST(req: Request) {
       const companyId = S(b.companyId); const delta = Nn(b.delta);
       if (!companyId || !delta) return NextResponse.json({ error: "companyId and delta required" }, { status: 400 });
       const after = await adjustCredits(p, companyId, delta, delta > 0 ? "ADMIN_GRANT" : "ADMIN_DEDUCT", "Manual adjustment by operator");
+      if (delta > 0) { try { const c = (await p.query(`select name from companies where id=$1`, [companyId])).rows[0]; const u = await notifyRecipient(p, companyId); if (u) await sendCreditAddedEmail({ to: u.email, name: u.name, companyName: String(c?.name || "your workspace"), amount: delta, newBalance: after }); } catch { /* noop */ } }
       return NextResponse.json({ ok: true, credits: after });
     }
     if (kind === "credit.approve") {
@@ -110,6 +119,7 @@ export async function POST(req: Request) {
       if (String(r.status).toLowerCase() === "approved") return NextResponse.json({ ok: true, already: true });
       const after = await adjustCredits(p, S(r.companyId), Nn(r.amount), "TOPUP_APPROVED", "Top-up request approved");
       await p.query(`update "credit_topup_requests" set status='APPROVED', "updatedAt"=now() where id=$1`, [id]);
+      try { const u = await notifyRecipient(p, S(r.companyId)); if (u) await sendTopupStatusEmail({ to: u.email, name: u.name, amount: Nn(r.amount), status: "APPROVED" }); } catch { /* noop */ }
       return NextResponse.json({ ok: true, credits: after });
     }
     if (kind === "demo.status") {

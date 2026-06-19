@@ -4,6 +4,7 @@ import { NextResponse } from "next/server";
 import { randomUUID } from "crypto";
 import { Pool } from "pg";
 import { resolveSession } from "@xentral/kernel";
+import { sendDisputeConfirmationEmail } from "../../../../../../lib/email-templates";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -37,6 +38,10 @@ export async function POST(req: Request, { params }: { params: { id: string } })
     await p.query(
       `insert into "lead_disputes" (id, "purchaseId", "companyId", reason, details, status, "createdAt", "updatedAt") values ($1,$2,$3,$4,$5,'OPEN', now(), now())`,
       [id, params.id, session.companyId, reason, b.details == null ? null : String(b.details)]);
+    try {
+      const info = (await p.query(`select u.email, u.name, l.specialty from "marketplace_purchases" mp join "marketplace_leads" l on l.id = mp."leadId" join "users" u on u.id = $2 where mp.id = $1 limit 1`, [params.id, session.userId])).rows[0];
+      if (info?.email) await sendDisputeConfirmationEmail({ to: String(info.email), name: String(info.name || "there"), leadSpecialty: String(info.specialty || "Lead"), reason, purchaseId: params.id });
+    } catch { /* noop */ }
     return NextResponse.json({ success: true, id });
   } catch (e) { return NextResponse.json({ error: (e as Error).message || "Failed" }, { status: 500 }); }
 }

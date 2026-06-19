@@ -4,6 +4,7 @@ import { NextResponse } from "next/server";
 import { randomUUID } from "crypto";
 import { Pool } from "pg";
 import { resolveSession } from "@xentral/kernel";
+import { sendOutbidEmail, sendBidPlacedEmail } from "../../../../../lib/email-templates";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -59,7 +60,7 @@ export async function POST(req: Request, { params }: { params: { id: string } })
   const message = b.message == null ? null : String(b.message);
   const p = pool(url); const leadId = params.id;
   try {
-    const lr = await p.query(`select status::text as status, listing_type, min_bid, bids_close_at from "marketplace_leads" where id = $1 limit 1`, [leadId]);
+    const lr = await p.query(`select status::text as status, listing_type, min_bid, bids_close_at, specialty from "marketplace_leads" where id = $1 limit 1`, [leadId]);
     const lead = lr.rows[0];
     if (!lead) return NextResponse.json({ error: "Lead not found" }, { status: 404 });
     if (lead.status !== "AVAILABLE") return NextResponse.json({ error: "Lead no longer available" }, { status: 409 });
@@ -85,11 +86,24 @@ export async function POST(req: Request, { params }: { params: { id: string } })
         [randomUUID(), amount, message, leadId, session.companyId]);
     }
 
-    // If this is now the highest, mark competitors OUTBID
+    // If this is now the highest, mark competitors OUTBID and e-mail them.
+    const spec = String(lead.specialty || "Lead");
     const high = await p.query(`select max(amount)::numeric as m from "marketplace_bids" where "leadId" = $1 and "companyId" <> $2 and status = 'PENDING'`, [leadId, session.companyId]);
     if (high.rows[0]?.m != null && amount > Number(high.rows[0].m)) {
+      let outbid: { email: string; name: string; amount: number }[] = [];
+      try {
+        outbid = (await p.query(
+          `select distinct on (b."companyId") u.email, u.name, b.amount from "marketplace_bids" b
+             join "users" u on u."companyId" = b."companyId"
+            where b."leadId" = $1 and b."companyId" <> $2 and b.status = 'PENDING' and u.email is not null
+            order by b."companyId", (u.role in ('ADMIN','SUPER_ADMIN')) desc, u."createdAt" asc`, [leadId, session.companyId])
+        ).rows.map((r) => ({ email: String(r.email), name: String(r.name || "there"), amount: Number(r.amount) }));
+      } catch { /* noop */ }
       await p.query(`update "marketplace_bids" set status = 'OUTBID', "updatedAt" = now() where "leadId" = $1 and "companyId" <> $2 and status = 'PENDING'`, [leadId, session.companyId]);
+      for (const o of outbid) { try { await sendOutbidEmail({ to: o.email, name: o.name, leadSpecialty: spec, yourBid: o.amount, newHighBid: amount, leadId }); } catch { /* noop */ } }
     }
+    // Confirm the bid to the bidder.
+    try { const me = (await p.query(`select email, name from "users" where id = $1`, [session.userId])).rows[0]; if (me?.email) await sendBidPlacedEmail({ to: String(me.email), name: String(me.name || "there"), leadSpecialty: spec, amount, leadId }); } catch { /* noop */ }
 
     const cnt = await p.query(`select count(*)::int as n from "marketplace_bids" where "leadId" = $1`, [leadId]);
     return NextResponse.json({ ok: true, success: true, amount, bidCount: Number(cnt.rows[0].n) });
