@@ -29,6 +29,7 @@ export type MarketLead = {
   maskedName: string;
   maskedPhone: string;
   channels: { phone: boolean; whatsapp: boolean; email: boolean; linkedin: boolean; cv: boolean; dataflow: boolean };
+  listedAt?: string; decayInterval?: number; minPrice?: number; // raw decay (live only — drives the live countdown)
 };
 
 export function getMarketCategories(): { id: string; label: string }[] {
@@ -109,6 +110,9 @@ export async function loadMarketLeads(scope?: TenantScope): Promise<MarketLead[]
       price: mpCurrentPrice(r.initialPrice, r.minPrice, r.decayAmount, r.decayInterval, r.listedAt),
       basePrice: r.initialPrice,
       dropAmount: r.decayAmount,
+      listedAt: r.listedAt,
+      decayInterval: r.decayInterval,
+      minPrice: r.minPrice,
       dropInLabel: mpNextDropLabel(r.decayInterval, r.listedAt),
       dropAtLabel: mpDropAtLabel(r.decayInterval, r.listedAt),
       maskedName: mpMaskName(r.firstName, r.lastName),

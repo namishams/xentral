@@ -5,7 +5,7 @@ import { color } from "@xentral/config";
 import { AppShell, Button, Input } from "@xentral/ui";
 import { getMarketCategories, type MarketLead, type LeadQuality } from "@xentral/module-marketplace";
 
-const aed = (n: number) => `AED ${n.toLocaleString()}`;
+const aed = (n: number) => `AED ${Math.round(n).toLocaleString()}`;
 const QUALITY: Record<LeadQuality, { label: string; bg: string; fg: string }> = {
   hot: { label: "🔥 Hot", bg: "#fdecea", fg: color.status.negative },
   warm: { label: "⚡ Warm", bg: "#fbe8d4", fg: color.status.critical },
@@ -14,59 +14,98 @@ const QUALITY: Record<LeadQuality, { label: string; bg: string; fg: string }> = 
 
 type Question = { id: string; question: string; answer: string | null; createdAt: string };
 type BidCtx = { bidCount: number; highBid: number; myBid: number | null; myRank: number | null; minBid: number | null; closeAt: string | null; listingType: string | null };
+type Bank = { bankName: string; accountName: string; iban: string; swift: string; currency: string; minAmount: number };
+
+/* live dutch-auction calc — drives the per-second countdown + price drop */
+function liveCalc(l: MarketLead): { price: number; countdown: string; remainMs: number; atFloor: boolean } {
+  if (!l.listedAt || !l.decayInterval) return { price: l.price, countdown: l.dropInLabel, remainMs: 0, atFloor: false };
+  const since = Date.now() - new Date(l.listedAt).getTime();
+  const drops = Math.floor(since / 3600000 / Math.max(1, l.decayInterval));
+  const floor = l.minPrice ?? Math.round(l.basePrice * 0.5);
+  const price = Math.max(floor, l.basePrice - drops * l.dropAmount);
+  const intervalMs = Math.max(1, l.decayInterval) * 3600000;
+  const remainMs = intervalMs - (since % intervalMs);
+  const ts = Math.max(0, Math.floor(remainMs / 1000));
+  const h = Math.floor(ts / 3600), m = Math.floor((ts % 3600) / 60), s = ts % 60;
+  const countdown = h > 0 ? `${h}h ${m}m` : `${m}m ${s}s`;
+  return { price, countdown, remainMs, atFloor: price <= floor };
+}
 
 function Chip({ label, on }: { label: string; on: boolean }) {
   return (
-    <span style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 5, height: 30, borderRadius: 7, fontSize: 12, fontWeight: 600,
+    <span style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 5, height: 30, borderRadius: 7, fontSize: 11.5, fontWeight: 600,
       border: `1px solid ${on ? color.status.positive + "55" : color.line.DEFAULT}`,
-      background: on ? "color-mix(in srgb, " + color.status.positive + " 10%, " + color.surface.card + ")" : color.surface.page,
-      color: on ? color.status.positive : color.ink.soft, opacity: on ? 1 : 0.6 }}>⌁ {label}</span>
+      background: on ? "color-mix(in srgb, " + color.status.positive + " 9%, " + color.surface.card + ")" : color.surface.page,
+      color: on ? color.status.positive : color.ink.soft, opacity: on ? 1 : 0.55 }}>{on ? "🔓" : "🔒"} {label}</span>
   );
 }
 
-function Card({ l, onBuy, busy, watched, onWatch, onBid, onAsk }: { l: MarketLead; onBuy: (id: string) => void; busy: boolean; watched: boolean; onWatch: (id: string) => void; onBid: (l: MarketLead) => void; onAsk: (l: MarketLead) => void }) {
+function Card({ l, onBuy, busy, watched, onWatch, onBid, onAsk, credits }: { l: MarketLead; onBuy: (id: string, price: number) => void; busy: boolean; watched: boolean; onWatch: (id: string) => void; onBid: (l: MarketLead) => void; onAsk: (l: MarketLead) => void; credits: number | null }) {
   const q = QUALITY[l.quality];
-  const off = Math.round((1 - l.price / l.basePrice) * 100);
+  const [live, setLive] = React.useState(() => liveCalc(l));
+  const [flash, setFlash] = React.useState(false);
+  const prev = React.useRef(live.price);
+  React.useEffect(() => {
+    const tick = () => { const n = liveCalc(l); if (n.price !== prev.current) { setFlash(true); prev.current = n.price; setTimeout(() => setFlash(false), 1100); } setLive(n); };
+    tick(); const id = setInterval(tick, 1000); return () => clearInterval(id);
+  }, [l]);
+  const price = live.price;
+  const off = Math.round((1 - price / l.basePrice) * 100);
+  const critical = live.remainMs > 0 && live.remainMs < 60000;
+  const urgent = live.remainMs > 0 && live.remainMs < 300000;
+  const enough = credits == null || credits >= price;
+  const strip = critical ? { bg: "#fdecea", fg: color.status.negative, t: "Price dropping in under 1 minute!" }
+    : urgent ? { bg: "#fbe8d4", fg: color.status.critical, t: `Price drops in ${live.countdown} — act fast` }
+      : { bg: color.brand.primaryTint, fg: color.brand.primary, t: "⚡ Verified · Dispute protection · Instant unlock" };
+
   return (
-    <div style={{ background: color.surface.card, border: `1px solid ${color.line.DEFAULT}`, borderRadius: 12, overflow: "hidden", display: "flex", flexDirection: "column", boxShadow: "0 1px 2px rgba(16,24,40,0.04)" }}>
-      <div style={{ background: color.brand.primaryTint, color: color.brand.primary, fontSize: 11.5, fontWeight: 600, padding: "7px 16px", display: "flex", alignItems: "center", gap: 6 }}>⚡ Verified · Dispute protection · Instant unlock</div>
-      <div style={{ padding: "14px 16px 16px", display: "flex", flexDirection: "column", gap: 12 }}>
+    <div style={{ background: color.surface.card, border: `2px solid ${flash ? color.brand.primary : critical ? color.status.negative + "66" : color.line.DEFAULT}`, borderRadius: 14, overflow: "hidden", display: "flex", flexDirection: "column", boxShadow: "0 1px 2px rgba(16,24,40,0.04)", transition: "border-color .3s" }}>
+      <div style={{ height: 28, display: "flex", alignItems: "center", gap: 6, padding: "0 14px", fontSize: 11, fontWeight: 600, background: strip.bg, color: strip.fg }}>{critical ? "🔥" : ""}<span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{strip.t}</span></div>
+      <div style={{ padding: "12px 14px 14px", display: "flex", flexDirection: "column", gap: 11 }}>
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8 }}>
-          <span style={{ display: "inline-flex", gap: 8, alignItems: "center", flexWrap: "wrap" }}>
-            <span style={{ fontSize: 11, fontWeight: 700, background: q.bg, color: q.fg, borderRadius: 6, padding: "3px 8px" }}>{q.label}</span>
-            <span style={{ fontSize: 11, fontWeight: 600, background: color.brand.primaryTint, color: color.brand.primary, borderRadius: 6, padding: "3px 8px" }}>{l.freshLabel}</span>
-            <span style={{ fontSize: 11.5, color: color.ink.soft }}>👥 {l.spots} spots</span>
+          <span style={{ display: "inline-flex", gap: 6, alignItems: "center", flexWrap: "wrap" }}>
+            <span style={{ fontSize: 10.5, fontWeight: 700, background: q.bg, color: q.fg, borderRadius: 6, padding: "3px 8px" }}>{q.label}</span>
+            <span style={{ fontSize: 10.5, fontWeight: 600, background: color.brand.primaryTint, color: color.brand.primary, borderRadius: 6, padding: "3px 8px" }}>{l.freshLabel}</span>
+            <span style={{ fontSize: 11, color: l.spots <= 1 ? color.status.negative : color.ink.soft, fontWeight: l.spots <= 1 ? 700 : 400 }}>👥 {l.spots <= 1 ? "Last spot!" : `${l.spots} spots`}</span>
           </span>
-          <span style={{ fontSize: 11.5, color: color.ink.soft }}>👁 {l.views}</span>
+          <span style={{ fontSize: 11, color: color.ink.soft }}>👁 {l.views}</span>
         </div>
         <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 8 }}>
-          <span><span style={{ display: "block", fontSize: 16, fontWeight: 700, color: color.ink.DEFAULT }}>{l.title}</span><span style={{ fontSize: 11, fontWeight: 600, letterSpacing: 0.4, color: color.ink.soft }}>{l.categoryLabel}</span></span>
-          <span style={{ textAlign: "right", fontSize: 12, color: color.ink.soft }}>🌐 {l.region}<br />{l.city}</span>
+          <span><span style={{ display: "block", fontSize: 15, fontWeight: 700, color: color.ink.DEFAULT }}>{l.title}</span><span style={{ fontSize: 11, fontWeight: 600, letterSpacing: 0.3, color: color.ink.soft }}>{l.categoryLabel}</span></span>
+          <span style={{ textAlign: "right", fontSize: 11.5, color: color.ink.soft }}>🌐 {l.region}<br />{l.city}</span>
         </div>
-        <div style={{ fontSize: 12.5, fontStyle: "italic", color: color.ink.mid, lineHeight: "18px" }}>Verified professional lead — contact details revealed after purchase.</div>
-        <div style={{ border: `1px solid ${color.line.DEFAULT}`, borderRadius: 9, padding: "11px 13px", background: color.surface.page }}>
-          <div style={{ fontSize: 10.5, fontWeight: 700, letterSpacing: 0.5, color: color.ink.soft, marginBottom: 7 }}>🔒 CONTACT PREVIEW</div>
-          <div style={{ fontSize: 13, color: color.ink.mid, marginBottom: 4 }}>👤 {l.maskedName}</div>
-          <div style={{ fontSize: 13, color: color.ink.mid, fontFamily: "monospace" }}>📞 {l.maskedPhone}</div>
+        <div style={{ fontSize: 12, fontStyle: "italic", color: color.ink.mid, lineHeight: "17px", borderLeft: `2px solid ${color.line.DEFAULT}`, paddingLeft: 8 }}>Verified professional lead — contact details revealed after purchase.</div>
+        <div style={{ border: `1px solid ${color.line.DEFAULT}`, borderRadius: 9, padding: "10px 12px", background: color.surface.page }}>
+          <div style={{ fontSize: 10, fontWeight: 700, letterSpacing: 0.5, color: color.ink.soft, marginBottom: 6 }}>🔒 CONTACT PREVIEW</div>
+          <div style={{ fontSize: 12.5, color: color.ink.mid, marginBottom: 3, fontFamily: "monospace" }}>👤 {l.maskedName}</div>
+          <div style={{ fontSize: 12.5, color: color.ink.mid, fontFamily: "monospace" }}>📞 {l.maskedPhone}</div>
         </div>
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 8 }}>
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 7 }}>
           <Chip label="Phone" on={l.channels.phone} /><Chip label="WhatsApp" on={l.channels.whatsapp} /><Chip label="Email" on={l.channels.email} />
           <Chip label="LinkedIn" on={l.channels.linkedin} /><Chip label="CV" on={l.channels.cv} /><Chip label="DataFlow" on={l.channels.dataflow} />
         </div>
-        <div style={{ border: `1px solid ${color.line.DEFAULT}`, borderRadius: 9, padding: "12px 14px", background: color.surface.page, display: "flex", alignItems: "flex-end", justifyContent: "space-between" }}>
+        <div style={{ border: `1px solid ${critical ? color.status.negative + "44" : flash ? color.brand.primary + "55" : color.line.DEFAULT}`, borderRadius: 9, padding: "11px 13px", background: critical ? "#fdecea" : flash ? color.brand.primaryTint : color.surface.page, display: "flex", alignItems: "flex-end", justifyContent: "space-between", transition: ".4s" }}>
           <span>
-            <span style={{ display: "block", fontSize: 10.5, fontWeight: 700, letterSpacing: 0.5, color: color.ink.soft }}>CURRENT PRICE</span>
-            <span style={{ fontSize: 26, fontWeight: 800, color: color.ink.DEFAULT }}>{aed(l.price)}</span>
-            {off > 0 ? <span style={{ display: "block", fontSize: 12, color: color.ink.soft }}><span style={{ textDecoration: "line-through" }}>{aed(l.basePrice)}</span> <span style={{ color: color.status.positive, fontWeight: 700 }}>−{off}%</span></span> : null}
+            <span style={{ display: "block", fontSize: 10, fontWeight: 700, letterSpacing: 0.5, color: color.ink.soft }}>CURRENT PRICE</span>
+            <span style={{ fontSize: 26, fontWeight: 800, color: critical ? color.status.negative : flash ? color.brand.primary : color.ink.DEFAULT, fontVariantNumeric: "tabular-nums" }}>{aed(price)}</span>
+            {off > 0 ? <span style={{ display: "block", fontSize: 11.5, color: color.ink.soft }}><span style={{ textDecoration: "line-through" }}>{aed(l.basePrice)}</span> <span style={{ color: color.status.positive, fontWeight: 700 }}>−{off}%</span></span> : <span style={{ display: "block", height: 16 }} />}
           </span>
-          <span style={{ textAlign: "right", fontSize: 12, color: color.ink.soft }}>−{aed(l.dropAmount)} in<br /><span style={{ fontWeight: 700, color: color.ink.DEFAULT }}>⏱ {l.dropInLabel}</span><br />at {l.dropAtLabel}</span>
+          {live.atFloor ? (
+            <span style={{ textAlign: "right", fontSize: 11, color: color.status.critical, fontWeight: 700 }}>↓ Floor price<br /><span style={{ color: color.ink.soft, fontWeight: 400 }}>Lowest possible</span></span>
+          ) : (
+            <span style={{ textAlign: "right", fontSize: 11.5, color: critical ? color.status.negative : color.ink.soft }}>−{aed(l.dropAmount)} in<br /><span style={{ fontWeight: 800, fontSize: 14, color: critical ? color.status.negative : color.ink.DEFAULT, fontVariantNumeric: "tabular-nums" }}>⏱ {live.countdown}</span></span>
+          )}
         </div>
         <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-          <button onClick={() => onWatch(l.id)} aria-label="Watch" title={watched ? "Watching" : "Add to watchlist"} style={{ width: 36, height: 36, borderRadius: 8, border: `1px solid ${watched ? color.status.negative : color.line.strong}`, background: watched ? "#fdecea" : color.surface.card, display: "flex", alignItems: "center", justifyContent: "center", color: watched ? color.status.negative : color.ink.soft, cursor: "pointer", fontSize: 15 }}>{watched ? "♥" : "♡"}</button>
-          <button onClick={() => onAsk(l)} style={{ height: 36, padding: "0 12px", borderRadius: 8, border: `1px solid ${color.line.strong}`, background: color.surface.card, color: color.ink.mid, fontSize: 13, fontWeight: 600, cursor: "pointer" }}>❓ Ask</button>
-          <button onClick={() => onBid(l)} style={{ flex: 1, height: 36, borderRadius: 8, border: `1px solid ${color.line.strong}`, background: color.surface.card, color: color.ink.mid, fontSize: 13, fontWeight: 600, cursor: "pointer" }}>💬 Make offer</button>
+          <button onClick={() => onWatch(l.id)} aria-label="Save" title={watched ? "Saved" : "Save to watchlist"} style={{ width: 36, height: 36, borderRadius: 8, border: `1px solid ${watched ? "#df9a00" : color.line.strong}`, background: watched ? "#fff7e6" : color.surface.card, display: "flex", alignItems: "center", justifyContent: "center", color: watched ? "#df9a00" : color.ink.soft, cursor: "pointer", fontSize: 15 }}>{watched ? "★" : "☆"}</button>
+          <button onClick={() => onAsk(l)} style={{ height: 36, padding: "0 12px", borderRadius: 8, border: `1px solid ${color.line.strong}`, background: color.surface.card, color: color.ink.mid, fontSize: 12.5, fontWeight: 600, cursor: "pointer" }}>❓ Ask</button>
+          <button onClick={() => onBid(l)} style={{ flex: 1, height: 36, borderRadius: 8, border: `1px solid ${color.line.strong}`, background: color.surface.card, color: color.ink.mid, fontSize: 12.5, fontWeight: 600, cursor: "pointer" }}>💬 Make offer</button>
         </div>
-        <button onClick={() => onBuy(l.id)} disabled={busy} style={{ height: 46, borderRadius: 9, border: 0, background: busy ? color.line.strong : color.brand.primary, color: color.ink.onPrimary, fontSize: 15, fontWeight: 700, cursor: busy ? "default" : "pointer" }}>{busy ? "Processing…" : `Buy — ${aed(l.price)}`}</button>
+        {enough ? (
+          <button onClick={() => onBuy(l.id, price)} disabled={busy} style={{ height: 46, borderRadius: 10, border: 0, background: busy ? color.line.strong : critical ? color.status.negative : color.brand.primary, color: color.ink.onPrimary, fontSize: 15, fontWeight: 700, cursor: busy ? "default" : "pointer" }}>{busy ? "Processing…" : `Buy — ${aed(price)}`}</button>
+        ) : (
+          <button onClick={() => onBuy(l.id, price)} style={{ height: 46, borderRadius: 10, border: `1px solid ${color.status.critical}55`, background: "#fff7ed", color: color.status.critical, fontSize: 13, fontWeight: 700, cursor: "pointer" }}>👛 Top up to buy — need {aed(price - (credits ?? 0))} more</button>
+        )}
       </div>
     </div>
   );
@@ -84,31 +123,38 @@ export function MarketplaceClient({ initialRows }: { initialRows: MarketLead[] }
   const [watched, setWatched] = React.useState<Set<string>>(new Set());
   const [saved, setSaved] = React.useState<Saved[]>([]);
   const [msg, setMsg] = React.useState("");
-  const [q, setQ] = React.useState("");
+  const [qstr, setQstr] = React.useState("");
   const [cat, setCat] = React.useState("all");
   const [seg, setSeg] = React.useState("all");
   const [region, setRegion] = React.useState("all");
   const [sort, setSort] = React.useState("newest");
   const [onlyWatched, setOnlyWatched] = React.useState(false);
   const [credits, setCredits] = React.useState<number | null>(null);
+  const [bank, setBank] = React.useState<Bank | null>(null);
   const [stats, setStats] = React.useState<Stats | null>(null);
   const [bidLead, setBidLead] = React.useState<MarketLead | null>(null);
   const [askLead, setAskLead] = React.useState<MarketLead | null>(null);
+  const [topup, setTopup] = React.useState<{ amount: string; reference: string; sent: boolean } | null>(null);
+  const [insufficient, setInsufficient] = React.useState<{ required: number } | null>(null);
 
+  const loadCredits = React.useCallback(() => {
+    fetch("/api/credits/topup").then((r) => r.json()).then((d) => { setCredits(typeof d.credits === "number" ? d.credits : 0); if (d.bankDetails) setBank(d.bankDetails); }).catch(() => {});
+  }, []);
   React.useEffect(() => {
     fetch("/api/marketplace/watchlist").then((r) => r.json()).then((d) => setWatched(new Set(Array.isArray(d.ids) ? d.ids : []))).catch(() => {});
     fetch("/api/marketplace/saved-searches").then((r) => r.json()).then((d) => setSaved(Array.isArray(d.rows) ? d.rows : [])).catch(() => {});
-    fetch("/api/credits").then((r) => r.json()).then((d) => setCredits(typeof d.balance === "number" ? d.balance : null)).catch(() => {});
     fetch("/api/marketplace/stats").then((r) => r.json()).then((d) => setStats(d)).catch(() => {});
-  }, []);
+    loadCredits();
+  }, [loadCredits]);
 
-  async function buy(id: string) {
+  async function buy(id: string, price: number) {
+    if (credits != null && credits < price) { setInsufficient({ required: price }); return; }
     setBusyId(id); setMsg("");
     try {
       const res = await fetch(`/api/marketplace/${id}/buy`, { method: "POST" });
       const d = await res.json();
-      if (res.ok && d.success) { setBought((b) => { const n = new Set(b); n.add(id); return n; }); setCredits(d.creditsRemaining ?? credits); setMsg(`✓ Lead purchased for AED ${d.pricePaid} · ${d.creditsRemaining} credits left. Contact unlocked in your purchases.`); }
-      else if (d.error === "insufficient_credits") setMsg(`Not enough credits — this lead needs AED ${d.required}. Top up to continue.`);
+      if (res.ok && d.success) { setBought((b) => { const n = new Set(b); n.add(id); return n; }); setCredits(d.creditsRemaining ?? credits); setMsg(`✓ Lead purchased for ${aed(d.pricePaid)} · ${aed(d.creditsRemaining)} left. Contact unlocked in Purchases.`); }
+      else if (d.error === "insufficient_credits") { setCredits(d.credits ?? credits); setInsufficient({ required: d.required ?? price }); }
       else setMsg(d.message || d.error || "Could not purchase.");
     } catch { setMsg("Network error — please try again."); } finally { setBusyId(""); }
   }
@@ -116,40 +162,31 @@ export function MarketplaceClient({ initialRows }: { initialRows: MarketLead[] }
     setWatched((w) => { const n = new Set(w); if (n.has(id)) n.delete(id); else n.add(id); return n; });
     try { const r = await fetch(`/api/marketplace/${id}/watch`, { method: "POST" }); const d = await r.json(); if (typeof d.watched === "boolean") setWatched((w) => { const n = new Set(w); if (d.watched) n.add(id); else n.delete(id); return n; }); } catch { /* revert silently */ }
   }
+  async function submitTopup() {
+    if (!topup) return; const n = Number(String(topup.amount).replace(/[^\d.]/g, ""));
+    if (!n || n < (bank?.minAmount ?? 1000)) { setMsg(`Minimum top-up is ${aed(bank?.minAmount ?? 1000)}.`); return; }
+    try { const r = await fetch("/api/credits/topup", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ amount: n, reference: topup.reference }) }); if (r.ok) setTopup((t) => t ? { ...t, sent: true } : t); } catch { /* noop */ }
+  }
   async function saveSearch() {
     const name = window.prompt("Name this saved search:", [cat !== "all" ? cat : null, region !== "all" ? region : null, seg !== "all" ? seg : null].filter(Boolean).join(" · ") || "All leads");
     if (name === null) return;
-    try {
-      const r = await fetch("/api/marketplace/saved-searches", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ name, category: cat === "all" ? "" : cat, region: region === "all" ? "" : region, quality: seg === "all" ? "" : seg, sort }) });
-      if (r.ok) { const d = await fetch("/api/marketplace/saved-searches").then((x) => x.json()); setSaved(d.rows || []); setMsg("✓ Search saved."); }
-    } catch { setMsg("Could not save search."); }
+    try { const r = await fetch("/api/marketplace/saved-searches", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ name, category: cat === "all" ? "" : cat, region: region === "all" ? "" : region, quality: seg === "all" ? "" : seg, sort }) }); if (r.ok) { const d = await fetch("/api/marketplace/saved-searches").then((x) => x.json()); setSaved(d.rows || []); } } catch { /* noop */ }
   }
   function applySaved(s: Saved) { setCat(s.category || "all"); setSeg(s.quality || "all"); setRegion(s.region || "all"); setSort(s.sort || "newest"); setOnlyWatched(false); }
-  async function deleteSaved(id: string) {
-    setSaved((l) => l.filter((s) => s.id !== id));
-    await fetch(`/api/marketplace/saved-searches/${id}`, { method: "DELETE" }).catch(() => {});
-  }
+  async function deleteSaved(id: string) { setSaved((l) => l.filter((s) => s.id !== id)); await fetch(`/api/marketplace/saved-searches/${id}`, { method: "DELETE" }).catch(() => {}); }
 
   const cats = getMarketCategories();
   const regions = ["all", ...Array.from(new Set(ALL.map((l) => l.region).filter(Boolean)))];
-  let rows = ALL.filter((l) =>
-    (cat === "all" || l.category === cat) &&
-    (seg === "all" || l.quality === seg) &&
-    (region === "all" || l.region === region) &&
-    (!onlyWatched || watched.has(l.id)) &&
-    (l.title + l.categoryLabel + l.city + l.region).toLowerCase().includes(q.toLowerCase())
-  );
+  let rows = ALL.filter((l) => (cat === "all" || l.category === cat) && (seg === "all" || l.quality === seg) && (region === "all" || l.region === region) && (!onlyWatched || watched.has(l.id)) && (l.title + l.categoryLabel + l.city + l.region).toLowerCase().includes(qstr.toLowerCase()));
   if (sort === "price") rows = [...rows].sort((a, b) => a.price - b.price);
   else if (sort === "discount") rows = [...rows].sort((a, b) => (b.basePrice - b.price) - (a.basePrice - a.price));
   const visible = rows.filter((l) => !bought.has(l.id));
   const hot = stats?.hot ?? ALL.filter((l) => l.quality === "hot").length;
-  const avg = stats?.avgPrice ?? (ALL.length ? Math.round(ALL.reduce((s, l) => s + l.price, 0) / ALL.length) : 0);
 
   return (
     <AppShell active="marketplace" headerRight={
       <span style={{ display: "inline-flex", alignItems: "center", gap: 8 }}>
-        <button onClick={() => (window.location.href = "/credits")} style={{ fontSize: 12.5, fontWeight: 700, color: color.brand.primary, background: color.brand.primaryTint, border: 0, borderRadius: 8, padding: "5px 11px", cursor: "pointer" }}>◳ {credits == null ? "Credits" : aed(credits)} ＋</button>
-        <span style={{ width: 26, height: 26, borderRadius: "50%", background: color.brand.primary, color: color.ink.onPrimary, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 11, fontWeight: 700 }}>MF</span>
+        <button onClick={() => setTopup({ amount: String(bank?.minAmount ?? 1000), reference: "", sent: false })} style={{ display: "inline-flex", alignItems: "center", gap: 6, fontSize: 12.5, fontWeight: 700, color: color.brand.primary, background: color.brand.primaryTint, border: 0, borderRadius: 8, padding: "5px 11px", cursor: "pointer" }}>👛 {credits == null ? "Credits" : aed(credits)} ＋</button>
       </span>
     }>
       <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 16, marginBottom: 14, flexWrap: "wrap" }}>
@@ -158,13 +195,13 @@ export function MarketplaceClient({ initialRows }: { initialRows: MarketLead[] }
             <h1 style={{ fontSize: 22, fontWeight: 700, color: color.ink.DEFAULT, margin: 0 }}>🏪 Lead Marketplace</h1>
             <span style={{ fontSize: 12.5, color: color.status.negative, fontWeight: 600 }}>🔥 {hot} hot</span>
             <span style={{ fontSize: 12.5, color: color.ink.soft }}>{ALL.length} leads</span>
-            {watched.size > 0 ? <span style={{ fontSize: 12.5, color: color.status.negative, fontWeight: 600 }}>♥ {watched.size} watched</span> : null}
+            {watched.size > 0 ? <span style={{ fontSize: 12.5, color: "#df9a00", fontWeight: 600 }}>★ {watched.size} saved</span> : null}
           </div>
-          <div style={{ fontSize: 13, color: color.ink.mid, marginTop: 3 }}>Verified leads · Prices drop automatically</div>
+          <div style={{ fontSize: 13, color: color.ink.mid, marginTop: 3 }}>Verified leads · Prices drop automatically every interval</div>
         </div>
         <div style={{ display: "flex", gap: 8 }}>
           <Button onClick={() => (window.location.href = "/marketplace/purchases")}>Purchases</Button>
-          <Button variant="primary" onClick={() => (window.location.href = "/credits")}>+ Top up</Button>
+          <Button variant="primary" onClick={() => setTopup({ amount: String(bank?.minAmount ?? 1000), reference: "", sent: false })}>+ Top up</Button>
         </div>
       </div>
 
@@ -181,7 +218,7 @@ export function MarketplaceClient({ initialRows }: { initialRows: MarketLead[] }
 
       {saved.length > 0 ? (
         <div style={{ display: "flex", gap: 7, flexWrap: "wrap", marginBottom: 12, alignItems: "center" }}>
-          <span style={{ fontSize: 11, fontWeight: 700, color: color.ink.soft, textTransform: "uppercase", letterSpacing: 0.4 }}>Saved:</span>
+          <span style={{ fontSize: 11, fontWeight: 700, color: color.ink.soft, textTransform: "uppercase", letterSpacing: 0.4 }}>Saved searches:</span>
           {saved.map((s) => (
             <span key={s.id} style={{ display: "inline-flex", alignItems: "center", gap: 6, fontSize: 12, fontWeight: 600, color: color.ink.mid, background: color.surface.card, border: `1px solid ${color.line.strong}`, borderRadius: 999, padding: "4px 6px 4px 11px" }}>
               <button onClick={() => applySaved(s)} style={{ border: 0, background: "transparent", color: color.brand.primary, cursor: "pointer", fontWeight: 600, padding: 0 }}>{s.name}</button>
@@ -192,62 +229,114 @@ export function MarketplaceClient({ initialRows }: { initialRows: MarketLead[] }
       ) : null}
 
       <div style={{ display: "flex", gap: 10, alignItems: "center", marginBottom: 16, flexWrap: "wrap" }}>
-        <Input placeholder="Search specialty, category, country…" value={q} onChange={(e) => setQ(e.target.value)} style={{ width: 260 }} />
-        <select value={cat} onChange={(e) => setCat(e.target.value)} style={{ height: 32, borderRadius: 8, border: `1px solid ${color.line.strong}`, background: color.surface.card, color: color.ink.DEFAULT, fontSize: 13, padding: "0 10px" }}>
-          {cats.map((c) => <option key={c.id} value={c.id}>{c.label}</option>)}
-        </select>
-        <select value={region} onChange={(e) => setRegion(e.target.value)} style={{ height: 32, borderRadius: 8, border: `1px solid ${color.line.strong}`, background: color.surface.card, color: color.ink.DEFAULT, fontSize: 13, padding: "0 10px" }}>
-          {regions.map((r) => <option key={r} value={r}>{r === "all" ? "All regions" : r}</option>)}
-        </select>
-        <select value={sort} onChange={(e) => setSort(e.target.value)} style={{ height: 32, borderRadius: 8, border: `1px solid ${color.line.strong}`, background: color.surface.card, color: color.ink.DEFAULT, fontSize: 13, padding: "0 10px" }}>
-          {SORTS.map(([id, lab]) => <option key={id} value={id}>{lab}</option>)}
-        </select>
+        <Input placeholder="Search specialty, category, country…" value={qstr} onChange={(e) => setQstr(e.target.value)} style={{ width: 250 }} />
+        <select value={cat} onChange={(e) => setCat(e.target.value)} style={{ height: 32, borderRadius: 8, border: `1px solid ${color.line.strong}`, background: color.surface.card, color: color.ink.DEFAULT, fontSize: 13, padding: "0 10px" }}>{cats.map((c) => <option key={c.id} value={c.id}>{c.label}</option>)}</select>
+        <select value={region} onChange={(e) => setRegion(e.target.value)} style={{ height: 32, borderRadius: 8, border: `1px solid ${color.line.strong}`, background: color.surface.card, color: color.ink.DEFAULT, fontSize: 13, padding: "0 10px" }}>{regions.map((r) => <option key={r} value={r}>{r === "all" ? "All regions" : r}</option>)}</select>
+        <select value={sort} onChange={(e) => setSort(e.target.value)} style={{ height: 32, borderRadius: 8, border: `1px solid ${color.line.strong}`, background: color.surface.card, color: color.ink.DEFAULT, fontSize: 13, padding: "0 10px" }}>{SORTS.map(([id, lab]) => <option key={id} value={id}>{lab}</option>)}</select>
         <span style={{ display: "inline-flex", border: `1px solid ${color.line.strong}`, borderRadius: 8, overflow: "hidden" }}>
           {FILTERS.map(([id, lab]) => <button key={id} onClick={() => setSeg(id)} style={{ border: 0, background: seg === id ? color.brand.primaryTint : color.surface.card, color: seg === id ? color.brand.primary : color.ink.mid, fontSize: 12.5, fontWeight: 600, padding: "6px 12px", cursor: "pointer" }}>{lab}</button>)}
         </span>
-        <button onClick={() => setOnlyWatched((v) => !v)} style={{ height: 32, borderRadius: 8, border: `1px solid ${onlyWatched ? color.status.negative : color.line.strong}`, background: onlyWatched ? "#fdecea" : color.surface.card, color: onlyWatched ? color.status.negative : color.ink.mid, fontSize: 12.5, fontWeight: 600, padding: "0 12px", cursor: "pointer" }}>{onlyWatched ? "♥ Watchlist" : "♡ Watchlist"}</button>
+        <button onClick={() => setOnlyWatched((v) => !v)} style={{ height: 32, borderRadius: 8, border: `1px solid ${onlyWatched ? "#df9a00" : color.line.strong}`, background: onlyWatched ? "#fff7e6" : color.surface.card, color: onlyWatched ? "#b8780a" : color.ink.mid, fontSize: 12.5, fontWeight: 600, padding: "0 12px", cursor: "pointer" }}>{onlyWatched ? `★ Saved (${watched.size})` : "☆ Saved"}</button>
         <span style={{ flex: 1 }} />
         <Button onClick={saveSearch}>Save search</Button>
       </div>
 
       <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(320px, 1fr))", gap: 16 }}>
         {msg ? <div style={{ gridColumn: "1 / -1", background: color.brand.primaryTint, border: `1px solid ${color.brand.primary}`, color: color.brand.primary, borderRadius: 10, padding: "10px 14px", fontSize: 13, fontWeight: 600 }}>{msg}</div> : null}
-        {visible.length === 0 ? <div style={{ gridColumn: "1 / -1", textAlign: "center", color: color.ink.soft, fontSize: 13, padding: 30 }}>{onlyWatched ? "No watched leads yet — tap ♡ on a lead to follow it." : "No leads match your filters."}</div> : null}
-        {visible.map((l) => <Card key={l.id} l={l} onBuy={buy} busy={busyId === l.id} watched={watched.has(l.id)} onWatch={toggleWatch} onBid={setBidLead} onAsk={setAskLead} />)}
+        {visible.length === 0 ? <div style={{ gridColumn: "1 / -1", textAlign: "center", color: color.ink.soft, fontSize: 13, padding: 30 }}>{onlyWatched ? "No saved leads yet — tap ☆ on a lead to save it." : "No leads match your filters."}</div> : null}
+        {visible.map((l) => <Card key={l.id} l={l} onBuy={buy} busy={busyId === l.id} watched={watched.has(l.id)} onWatch={toggleWatch} onBid={setBidLead} onAsk={setAskLead} credits={credits} />)}
       </div>
-      <p style={{ fontSize: 11, color: color.ink.soft, textAlign: "center", marginTop: 18 }}>Lead marketplace · masked preview · watchlist, saved searches, offers, questions & price-drop · tenant-scoped</p>
+      <p style={{ fontSize: 11, color: color.ink.soft, textAlign: "center", marginTop: 18 }}>Lead marketplace · live price-drop timer · saved leads, offers, questions · masked preview · tenant-scoped</p>
 
       {bidLead ? <BidSlideOver lead={bidLead} onClose={() => setBidLead(null)} onDone={(m) => { setMsg(m); setBidLead(null); }} /> : null}
       {askLead ? <AskSlideOver lead={askLead} onClose={() => setAskLead(null)} /> : null}
+      {topup ? <TopupModal bank={bank} state={topup} setState={setTopup} onSubmit={submitTopup} onClose={() => { setTopup(null); loadCredits(); }} /> : null}
+      {insufficient ? <InsufficientModal required={insufficient.required} credits={credits ?? 0} onTopup={() => { setInsufficient(null); setTopup({ amount: String(bank?.minAmount ?? 1000), reference: "", sent: false }); }} onClose={() => setInsufficient(null)} /> : null}
     </AppShell>
   );
 }
 
-/* ── Offer / bid slide-over: shows min bid, current high, your rank; submit an offer ── */
+/* ── Top-up modal — WIO Bank / ICSL FZE transfer details + request ── */
+function TopupModal({ bank, state, setState, onSubmit, onClose }: { bank: Bank | null; state: { amount: string; reference: string; sent: boolean }; setState: (s: { amount: string; reference: string; sent: boolean }) => void; onSubmit: () => void; onClose: () => void }) {
+  const copy = (v: string) => navigator.clipboard?.writeText(v).catch(() => {});
+  const row = (k: string, v: string, mono?: boolean) => (
+    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 8, padding: "7px 0", borderBottom: `1px solid ${color.line.DEFAULT}` }}>
+      <span style={{ fontSize: 11.5, color: color.ink.soft }}>{k}</span>
+      <span style={{ display: "inline-flex", alignItems: "center", gap: 7 }}><span style={{ fontSize: 13, fontWeight: 600, color: color.ink.DEFAULT, fontFamily: mono ? "monospace" : undefined }}>{v}</span><button onClick={() => copy(v)} title="Copy" style={{ border: 0, background: "transparent", cursor: "pointer", color: color.ink.soft, fontSize: 13 }}>⧉</button></span>
+    </div>
+  );
+  return (
+    <div onClick={onClose} style={{ position: "fixed", inset: 0, background: "rgba(16,24,38,0.5)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 200, padding: 16 }}>
+      <div onClick={(e) => e.stopPropagation()} style={{ width: "100%", maxWidth: 460, background: color.surface.card, borderRadius: 16, boxShadow: "0 30px 70px -18px rgba(16,24,38,0.5)", maxHeight: "92vh", overflowY: "auto" }}>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "16px 20px", borderBottom: `1px solid ${color.line.DEFAULT}` }}>
+          <h2 style={{ margin: 0, fontSize: 17, fontWeight: 700, color: color.ink.DEFAULT }}>👛 Top up credits</h2>
+          <button onClick={onClose} aria-label="Close" style={{ border: 0, background: "transparent", fontSize: 20, color: color.ink.soft, cursor: "pointer" }}>×</button>
+        </div>
+        <div style={{ padding: 20 }}>
+          {state.sent ? (
+            <div style={{ textAlign: "center", padding: "14px 0" }}>
+              <div style={{ fontSize: 34 }}>✓</div>
+              <div style={{ fontSize: 15, fontWeight: 700, color: color.status.positive, marginTop: 6 }}>Top-up request submitted</div>
+              <div style={{ fontSize: 13, color: color.ink.mid, marginTop: 6 }}>Transfer the funds to the account below. We verify your transfer and credit your wallet — usually within a few hours.</div>
+            </div>
+          ) : (
+            <div style={{ fontSize: 13, color: color.ink.mid, marginBottom: 14 }}>Credits are settled by bank transfer. Enter the amount, transfer to the account below, and we credit your wallet on confirmation.</div>
+          )}
+          {bank ? (
+            <div style={{ border: `1px solid ${color.line.DEFAULT}`, borderRadius: 11, padding: "4px 14px", background: color.surface.page, marginBottom: 16 }}>
+              {row("Bank", bank.bankName)}{row("Account name", bank.accountName)}{row("IBAN", bank.iban, true)}{row("SWIFT", bank.swift, true)}{row("Currency", bank.currency)}
+            </div>
+          ) : null}
+          {!state.sent ? (
+            <>
+              <label style={{ fontSize: 11, fontWeight: 700, color: color.ink.soft, textTransform: "uppercase" }}>Amount (AED)</label>
+              <div style={{ display: "flex", gap: 7, margin: "6px 0 10px", flexWrap: "wrap" }}>
+                {[1000, 2500, 5000, 10000].map((v) => <button key={v} onClick={() => setState({ ...state, amount: String(v) })} style={{ height: 30, padding: "0 11px", borderRadius: 8, border: `1px solid ${Number(state.amount) === v ? color.brand.primary : color.line.strong}`, background: Number(state.amount) === v ? color.brand.primaryTint : color.surface.card, color: Number(state.amount) === v ? color.brand.primary : color.ink.mid, fontSize: 12, fontWeight: 600, cursor: "pointer" }}>{aed(v)}</button>)}
+              </div>
+              <Input type="number" value={state.amount} onChange={(e) => setState({ ...state, amount: e.target.value })} style={{ width: "100%", marginBottom: 10 }} />
+              <label style={{ fontSize: 11, fontWeight: 700, color: color.ink.soft, textTransform: "uppercase" }}>Transfer reference (optional)</label>
+              <Input value={state.reference} onChange={(e) => setState({ ...state, reference: e.target.value })} placeholder="e.g. your company name on the transfer" style={{ width: "100%", marginTop: 6, marginBottom: 14 }} />
+              <button onClick={onSubmit} style={{ width: "100%", height: 44, borderRadius: 10, border: 0, background: color.brand.primary, color: color.ink.onPrimary, fontSize: 14, fontWeight: 700, cursor: "pointer" }}>Submit top-up request</button>
+            </>
+          ) : (
+            <button onClick={onClose} style={{ width: "100%", height: 44, borderRadius: 10, border: 0, background: color.brand.primary, color: color.ink.onPrimary, fontSize: 14, fontWeight: 700, cursor: "pointer" }}>Done</button>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function InsufficientModal({ required, credits, onTopup, onClose }: { required: number; credits: number; onTopup: () => void; onClose: () => void }) {
+  return (
+    <div onClick={onClose} style={{ position: "fixed", inset: 0, background: "rgba(16,24,38,0.5)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 200, padding: 16 }}>
+      <div onClick={(e) => e.stopPropagation()} style={{ width: "100%", maxWidth: 380, background: color.surface.card, borderRadius: 16, boxShadow: "0 30px 70px -18px rgba(16,24,38,0.5)", padding: 22, textAlign: "center" }}>
+        <div style={{ fontSize: 32 }}>👛</div>
+        <h2 style={{ margin: "8px 0 4px", fontSize: 17, fontWeight: 700, color: color.ink.DEFAULT }}>Not enough credits</h2>
+        <div style={{ fontSize: 13.5, color: color.ink.mid }}>This lead costs <strong style={{ color: color.ink.DEFAULT }}>{aed(required)}</strong>. You have {aed(credits)} — top up <strong style={{ color: color.ink.DEFAULT }}>{aed(Math.max(0, required - credits))}</strong> more to buy it.</div>
+        <button onClick={onTopup} style={{ width: "100%", height: 44, borderRadius: 10, border: 0, background: color.brand.primary, color: color.ink.onPrimary, fontSize: 14, fontWeight: 700, cursor: "pointer", marginTop: 16 }}>Top up credits</button>
+        <button onClick={onClose} style={{ width: "100%", height: 38, borderRadius: 10, border: `1px solid ${color.line.strong}`, background: color.surface.card, color: color.ink.mid, fontSize: 13, fontWeight: 600, cursor: "pointer", marginTop: 8 }}>Maybe later</button>
+      </div>
+    </div>
+  );
+}
+
+/* ── Offer / bid slide-over ── */
 function BidSlideOver({ lead, onClose, onDone }: { lead: MarketLead; onClose: () => void; onDone: (msg: string) => void }) {
   const [ctx, setCtx] = React.useState<BidCtx | null>(null);
   const [amount, setAmount] = React.useState("");
   const [message, setMessage] = React.useState("");
   const [busy, setBusy] = React.useState(false);
   const [err, setErr] = React.useState("");
-
   React.useEffect(() => {
     fetch(`/api/marketplace/${lead.id}/view`, { method: "POST" }).catch(() => {});
     fetch(`/api/marketplace/${lead.id}/bid`).then((r) => r.json()).then((d) => { setCtx(d); if (d.myBid) setAmount(String(d.myBid)); else if (d.minBid) setAmount(String(d.minBid)); }).catch(() => {});
   }, [lead.id]);
-
   async function submit() {
-    const n = Number(String(amount).replace(/[^\d.]/g, ""));
-    if (!n) { setErr("Enter a valid amount."); return; }
+    const n = Number(String(amount).replace(/[^\d.]/g, "")); if (!n) { setErr("Enter a valid amount."); return; }
     setBusy(true); setErr("");
-    try {
-      const r = await fetch(`/api/marketplace/${lead.id}/bid`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ amount: n, message }) });
-      const d = await r.json();
-      if (r.ok && (d.ok || d.success)) onDone(`✓ Offer of ${aed(n)} submitted for ${lead.title}.`);
-      else setErr(d.error || "Could not submit offer.");
-    } catch { setErr("Network error."); } finally { setBusy(false); }
+    try { const r = await fetch(`/api/marketplace/${lead.id}/bid`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ amount: n, message }) }); const d = await r.json(); if (r.ok && (d.ok || d.success)) onDone(`✓ Offer of ${aed(n)} submitted for ${lead.title}.`); else setErr(d.error || "Could not submit offer."); } catch { setErr("Network error."); } finally { setBusy(false); }
   }
-
   return (
     <div onClick={onClose} style={{ position: "fixed", inset: 0, background: "rgba(16,24,38,0.45)", display: "flex", justifyContent: "flex-end", zIndex: 200 }}>
       <div onClick={(e) => e.stopPropagation()} style={{ width: 400, maxWidth: "92vw", height: "100%", background: color.surface.card, padding: 22, overflowY: "auto", boxShadow: "-8px 0 24px rgba(16,24,38,0.18)" }}>
@@ -256,7 +345,6 @@ function BidSlideOver({ lead, onClose, onDone }: { lead: MarketLead; onClose: ()
           <button onClick={onClose} aria-label="Close" style={{ border: 0, background: "transparent", fontSize: 22, color: color.ink.soft, cursor: "pointer" }}>×</button>
         </div>
         <div style={{ fontSize: 13, color: color.ink.mid, marginBottom: 14 }}>{lead.title} · {lead.categoryLabel} · {lead.region}</div>
-
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, marginBottom: 16 }}>
           {[["Current price", aed(lead.price)], ["Offers placed", String(ctx?.bidCount ?? 0)], ["Highest offer", ctx?.highBid ? aed(ctx.highBid) : "—"], ["Your offer", ctx?.myBid ? `${aed(ctx.myBid)}${ctx.myRank ? ` · #${ctx.myRank}` : ""}` : "—"]].map(([k, v]) => (
             <div key={k} style={{ border: `1px solid ${color.line.DEFAULT}`, borderRadius: 9, padding: "9px 11px", background: color.surface.page }}>
@@ -265,10 +353,7 @@ function BidSlideOver({ lead, onClose, onDone }: { lead: MarketLead; onClose: ()
             </div>
           ))}
         </div>
-
         {ctx?.minBid ? <div style={{ fontSize: 12, color: color.ink.soft, marginBottom: 10 }}>Minimum offer: <strong style={{ color: color.ink.DEFAULT }}>{aed(ctx.minBid)}</strong></div> : null}
-        {ctx?.closeAt ? <div style={{ fontSize: 12, color: color.ink.soft, marginBottom: 10 }}>Bidding closes: <strong style={{ color: color.ink.DEFAULT }}>{new Date(ctx.closeAt).toLocaleString()}</strong></div> : null}
-
         <label style={{ fontSize: 11, fontWeight: 700, color: color.ink.soft, textTransform: "uppercase" }}>Your offer (AED)</label>
         <Input type="number" value={amount} onChange={(e) => setAmount(e.target.value)} style={{ width: "100%", marginTop: 4, marginBottom: 12 }} />
         <label style={{ fontSize: 11, fontWeight: 700, color: color.ink.soft, textTransform: "uppercase" }}>Message (optional)</label>
@@ -281,29 +366,20 @@ function BidSlideOver({ lead, onClose, onDone }: { lead: MarketLead; onClose: ()
   );
 }
 
-/* ── Ask-a-question slide-over: post a question, see answered Q&A ── */
+/* ── Ask-a-question slide-over ── */
 function AskSlideOver({ lead, onClose }: { lead: MarketLead; onClose: () => void }) {
   const [questions, setQuestions] = React.useState<Question[]>([]);
   const [text, setText] = React.useState("");
   const [busy, setBusy] = React.useState(false);
   const [note, setNote] = React.useState("");
-
   React.useEffect(() => {
     fetch(`/api/marketplace/${lead.id}/view`, { method: "POST" }).catch(() => {});
     fetch(`/api/marketplace/${lead.id}/questions`).then((r) => r.json()).then((d) => setQuestions(Array.isArray(d.questions) ? d.questions : [])).catch(() => {});
   }, [lead.id]);
-
   async function submit() {
-    if (!text.trim()) return;
-    setBusy(true); setNote("");
-    try {
-      const r = await fetch(`/api/marketplace/${lead.id}/questions`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ question: text.trim() }) });
-      const d = await r.json();
-      if (r.ok && d.success) { setNote("✓ Question sent — the seller will answer shortly."); setText(""); }
-      else setNote(d.error || "Could not send question.");
-    } catch { setNote("Network error."); } finally { setBusy(false); }
+    if (!text.trim()) return; setBusy(true); setNote("");
+    try { const r = await fetch(`/api/marketplace/${lead.id}/questions`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ question: text.trim() }) }); const d = await r.json(); if (r.ok && d.success) { setNote("✓ Question sent — the seller will answer shortly."); setText(""); } else setNote(d.error || "Could not send question."); } catch { setNote("Network error."); } finally { setBusy(false); }
   }
-
   return (
     <div onClick={onClose} style={{ position: "fixed", inset: 0, background: "rgba(16,24,38,0.45)", display: "flex", justifyContent: "flex-end", zIndex: 200 }}>
       <div onClick={(e) => e.stopPropagation()} style={{ width: 400, maxWidth: "92vw", height: "100%", background: color.surface.card, padding: 22, overflowY: "auto", boxShadow: "-8px 0 24px rgba(16,24,38,0.18)" }}>
@@ -312,11 +388,9 @@ function AskSlideOver({ lead, onClose }: { lead: MarketLead; onClose: () => void
           <button onClick={onClose} aria-label="Close" style={{ border: 0, background: "transparent", fontSize: 22, color: color.ink.soft, cursor: "pointer" }}>×</button>
         </div>
         <div style={{ fontSize: 13, color: color.ink.mid, marginBottom: 14 }}>{lead.title} · {lead.categoryLabel} · {lead.region}</div>
-
         <textarea value={text} onChange={(e) => setText(e.target.value)} rows={3} style={{ width: "100%", boxSizing: "border-box", border: `1px solid ${color.line.strong}`, borderRadius: 9, padding: "8px 11px", fontSize: 13, color: color.ink.DEFAULT, resize: "vertical" }} placeholder="e.g. Is the candidate available immediately? Which emirate are they in?" />
         <button onClick={submit} disabled={busy} style={{ width: "100%", marginTop: 10, height: 42, borderRadius: 9, border: 0, background: busy ? color.line.strong : color.brand.primary, color: color.ink.onPrimary, fontSize: 14, fontWeight: 700, cursor: busy ? "default" : "pointer" }}>{busy ? "Sending…" : "Send question"}</button>
         {note ? <div style={{ fontSize: 12.5, fontWeight: 600, color: note.startsWith("✓") ? color.status.positive : color.status.negative, marginTop: 10 }}>{note}</div> : null}
-
         <div style={{ marginTop: 20, fontSize: 11, fontWeight: 700, letterSpacing: 0.4, color: color.ink.soft, textTransform: "uppercase" }}>Answered questions</div>
         <div style={{ marginTop: 8 }}>
           {questions.length === 0 ? <div style={{ fontSize: 12.5, color: color.ink.soft, padding: "10px 0" }}>No answered questions yet.</div> :
