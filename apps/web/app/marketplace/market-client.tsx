@@ -40,7 +40,7 @@ function Chip({ label, on }: { label: string; on: boolean }) {
   );
 }
 
-function Card({ l, onBuy, busy, watched, onWatch, onBid, onAsk, credits }: { l: MarketLead; onBuy: (id: string, price: number) => void; busy: boolean; watched: boolean; onWatch: (id: string) => void; onBid: (l: MarketLead) => void; onAsk: (l: MarketLead) => void; credits: number | null }) {
+function Card({ l, onBuy, busy, watched, onWatch, onBid, onAsk, credits }: { l: MarketLead; onBuy: (l: MarketLead, price: number) => void; busy: boolean; watched: boolean; onWatch: (id: string) => void; onBid: (l: MarketLead) => void; onAsk: (l: MarketLead) => void; credits: number | null }) {
   const q = QUALITY[l.quality];
   const [live, setLive] = React.useState(() => liveCalc(l));
   const [flash, setFlash] = React.useState(false);
@@ -102,9 +102,9 @@ function Card({ l, onBuy, busy, watched, onWatch, onBid, onAsk, credits }: { l: 
           <button onClick={() => onBid(l)} style={{ flex: 1, height: 36, borderRadius: 8, border: `1px solid ${color.line.strong}`, background: color.surface.card, color: color.ink.mid, fontSize: 12.5, fontWeight: 600, cursor: "pointer" }}>💬 Make offer</button>
         </div>
         {enough ? (
-          <button onClick={() => onBuy(l.id, price)} disabled={busy} style={{ height: 46, borderRadius: 10, border: 0, background: busy ? color.line.strong : critical ? color.status.negative : color.brand.primary, color: color.ink.onPrimary, fontSize: 15, fontWeight: 700, cursor: busy ? "default" : "pointer" }}>{busy ? "Processing…" : `Buy — ${aed(price)}`}</button>
+          <button onClick={() => onBuy(l, price)} disabled={busy} style={{ height: 46, borderRadius: 10, border: 0, background: busy ? color.line.strong : critical ? color.status.negative : color.brand.primary, color: color.ink.onPrimary, fontSize: 15, fontWeight: 700, cursor: busy ? "default" : "pointer" }}>{busy ? "Processing…" : `Buy — ${aed(price)}`}</button>
         ) : (
-          <button onClick={() => onBuy(l.id, price)} style={{ height: 46, borderRadius: 10, border: `1px solid ${color.status.critical}55`, background: "#fff7ed", color: color.status.critical, fontSize: 13, fontWeight: 700, cursor: "pointer" }}>👛 Top up to buy — need {aed(price - (credits ?? 0))} more</button>
+          <button onClick={() => onBuy(l, price)} style={{ height: 46, borderRadius: 10, border: `1px solid ${color.status.critical}55`, background: "#fff7ed", color: color.status.critical, fontSize: 13, fontWeight: 700, cursor: "pointer" }}>👛 Top up to buy — need {aed(price - (credits ?? 0))} more</button>
         )}
       </div>
     </div>
@@ -136,6 +136,7 @@ export function MarketplaceClient({ initialRows }: { initialRows: MarketLead[] }
   const [askLead, setAskLead] = React.useState<MarketLead | null>(null);
   const [topup, setTopup] = React.useState<{ amount: string; reference: string; sent: boolean } | null>(null);
   const [insufficient, setInsufficient] = React.useState<{ required: number } | null>(null);
+  const [confirmLead, setConfirmLead] = React.useState<{ l: MarketLead; price: number } | null>(null);
 
   const loadCredits = React.useCallback(() => {
     fetch("/api/credits/topup").then((r) => r.json()).then((d) => { setCredits(typeof d.credits === "number" ? d.credits : 0); if (d.bankDetails) setBank(d.bankDetails); }).catch(() => {});
@@ -147,14 +148,19 @@ export function MarketplaceClient({ initialRows }: { initialRows: MarketLead[] }
     loadCredits();
   }, [loadCredits]);
 
-  async function buy(id: string, price: number) {
+  // Buy is a two-step flow like the old app: click → Confirm Purchase modal
+  // (with the 3 mandatory agreements) → Confirm & Buy actually charges.
+  function requestBuy(l: MarketLead, price: number) {
     if (credits != null && credits < price) { setInsufficient({ required: price }); return; }
-    setBusyId(id); setMsg("");
+    setConfirmLead({ l, price });
+  }
+  async function doBuy(id: string) {
+    setBusyId(id); setMsg(""); setConfirmLead(null);
     try {
       const res = await fetch(`/api/marketplace/${id}/buy`, { method: "POST" });
       const d = await res.json();
       if (res.ok && d.success) { setBought((b) => { const n = new Set(b); n.add(id); return n; }); setCredits(d.creditsRemaining ?? credits); setMsg(`✓ Lead purchased for ${aed(d.pricePaid)} · ${aed(d.creditsRemaining)} left. Contact unlocked in Purchases.`); }
-      else if (d.error === "insufficient_credits") { setCredits(d.credits ?? credits); setInsufficient({ required: d.required ?? price }); }
+      else if (d.error === "insufficient_credits") { setCredits(d.credits ?? credits); setInsufficient({ required: d.required ?? 0 }); }
       else setMsg(d.message || d.error || "Could not purchase.");
     } catch { setMsg("Network error — please try again."); } finally { setBusyId(""); }
   }
@@ -244,15 +250,57 @@ export function MarketplaceClient({ initialRows }: { initialRows: MarketLead[] }
       <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(320px, 1fr))", gap: 16 }}>
         {msg ? <div style={{ gridColumn: "1 / -1", background: color.brand.primaryTint, border: `1px solid ${color.brand.primary}`, color: color.brand.primary, borderRadius: 10, padding: "10px 14px", fontSize: 13, fontWeight: 600 }}>{msg}</div> : null}
         {visible.length === 0 ? <div style={{ gridColumn: "1 / -1", textAlign: "center", color: color.ink.soft, fontSize: 13, padding: 30 }}>{onlyWatched ? "No saved leads yet — tap ☆ on a lead to save it." : "No leads match your filters."}</div> : null}
-        {visible.map((l) => <Card key={l.id} l={l} onBuy={buy} busy={busyId === l.id} watched={watched.has(l.id)} onWatch={toggleWatch} onBid={setBidLead} onAsk={setAskLead} credits={credits} />)}
+        {visible.map((l) => <Card key={l.id} l={l} onBuy={requestBuy} busy={busyId === l.id} watched={watched.has(l.id)} onWatch={toggleWatch} onBid={setBidLead} onAsk={setAskLead} credits={credits} />)}
       </div>
       <p style={{ fontSize: 11, color: color.ink.soft, textAlign: "center", marginTop: 18 }}>Lead marketplace · live price-drop timer · saved leads, offers, questions · masked preview · tenant-scoped</p>
 
       {bidLead ? <BidSlideOver lead={bidLead} onClose={() => setBidLead(null)} onDone={(m) => { setMsg(m); setBidLead(null); }} /> : null}
       {askLead ? <AskSlideOver lead={askLead} onClose={() => setAskLead(null)} /> : null}
+      {confirmLead ? <ConfirmPurchaseModal lead={confirmLead.l} price={confirmLead.price} credits={credits} busy={busyId === confirmLead.l.id} onConfirm={() => doBuy(confirmLead.l.id)} onClose={() => setConfirmLead(null)} /> : null}
       {topup ? <TopupModal bank={bank} state={topup} setState={setTopup} onSubmit={submitTopup} onClose={() => { setTopup(null); loadCredits(); }} /> : null}
       {insufficient ? <InsufficientModal required={insufficient.required} credits={credits ?? 0} onTopup={() => { setInsufficient(null); setTopup({ amount: String(bank?.minAmount ?? 1000), reference: "", sent: false }); }} onClose={() => setInsufficient(null)} /> : null}
     </AppShell>
+  );
+}
+
+/* ── Confirm Purchase modal — must tick all 3 agreements before Confirm & Buy ── */
+function ConfirmPurchaseModal({ lead, price, credits, busy, onConfirm, onClose }: { lead: MarketLead; price: number; credits: number | null; busy: boolean; onConfirm: () => void; onClose: () => void }) {
+  const [c1, setC1] = React.useState(false); const [c2, setC2] = React.useState(false); const [c3, setC3] = React.useState(false);
+  const allChecked = c1 && c2 && c3;
+  const after = credits != null ? Math.max(0, credits - price) : null;
+  const rowS: React.CSSProperties = { display: "flex", justifyContent: "space-between", alignItems: "center", padding: "8px 0" };
+  const ck = (on: boolean, set: (v: boolean) => void, label: string) => (
+    <label style={{ display: "flex", gap: 10, alignItems: "flex-start", padding: "8px 0", cursor: "pointer", fontSize: 12.5, color: color.ink.mid, lineHeight: "17px" }}>
+      <input type="checkbox" checked={on} onChange={(e) => set(e.target.checked)} style={{ marginTop: 2, flexShrink: 0 }} />
+      <span>{label}</span>
+    </label>
+  );
+  return (
+    <div onClick={onClose} style={{ position: "fixed", inset: 0, background: "rgba(16,24,38,0.5)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 200, padding: 16 }}>
+      <div onClick={(e) => e.stopPropagation()} style={{ width: "100%", maxWidth: 430, background: color.surface.card, borderRadius: 16, boxShadow: "0 30px 70px -18px rgba(16,24,38,0.5)", maxHeight: "92vh", overflowY: "auto" }}>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "16px 20px", borderBottom: `1px solid ${color.line.DEFAULT}` }}>
+          <h2 style={{ margin: 0, fontSize: 17, fontWeight: 700, color: color.ink.DEFAULT, display: "inline-flex", alignItems: "center", gap: 8 }}>🛡 Confirm Purchase</h2>
+          <button onClick={onClose} aria-label="Close" style={{ border: 0, background: "transparent", fontSize: 20, color: color.ink.soft, cursor: "pointer" }}>×</button>
+        </div>
+        <div style={{ padding: 20 }}>
+          <div style={{ fontSize: 15, fontWeight: 700, color: color.ink.DEFAULT }}>{lead.title}</div>
+          <div style={{ fontSize: 11, fontWeight: 600, letterSpacing: 0.3, color: color.ink.soft, marginBottom: 10 }}>{lead.categoryLabel} · {lead.region}</div>
+          <div style={{ borderTop: `1px solid ${color.line.DEFAULT}`, borderBottom: `1px solid ${color.line.DEFAULT}`, padding: "4px 0", marginBottom: 14 }}>
+            <div style={rowS}><span style={{ fontSize: 13, color: color.ink.mid }}>Amount</span><span style={{ fontSize: 20, fontWeight: 800, color: color.ink.DEFAULT }}>{aed(price)}</span></div>
+            {after != null ? <div style={rowS}><span style={{ fontSize: 13, color: color.ink.mid }}>Balance after</span><span style={{ fontSize: 13.5, fontWeight: 600, color: color.ink.DEFAULT }}>{aed(after)}</span></div> : null}
+          </div>
+          <div style={{ fontSize: 10.5, fontWeight: 700, letterSpacing: 0.4, color: color.ink.soft, textTransform: "uppercase", marginBottom: 2 }}>Confirm all to proceed:</div>
+          {ck(c1, setC1, "I understand this purchase is final and credits are non-refundable except for invalid contact information.")}
+          {ck(c2, setC2, `I authorize deduction of ${aed(price)} from my balance.`)}
+          {ck(c3, setC3, "I agree disputes must be filed within 24 hours of purchase.")}
+          <div style={{ background: "#fff7ed", border: `1px solid ${color.status.critical}33`, color: color.status.critical, borderRadius: 9, padding: "9px 12px", fontSize: 12, fontWeight: 500, margin: "10px 0 16px" }}>⚠ Contact info revealed instantly. Disputes accepted within 24h only.</div>
+          <div style={{ display: "flex", gap: 10 }}>
+            <button onClick={onClose} style={{ flex: 1, height: 42, borderRadius: 10, border: `1px solid ${color.line.strong}`, background: color.surface.card, color: color.ink.mid, fontSize: 13.5, fontWeight: 600, cursor: "pointer" }}>Cancel</button>
+            <button onClick={onConfirm} disabled={!allChecked || busy} style={{ flex: 1, height: 42, borderRadius: 10, border: 0, background: allChecked && !busy ? color.brand.primary : color.line.strong, color: color.ink.onPrimary, fontSize: 13.5, fontWeight: 700, cursor: allChecked && !busy ? "pointer" : "default" }}>{busy ? "Processing…" : "Confirm & Buy"}</button>
+          </div>
+        </div>
+      </div>
+    </div>
   );
 }
 
