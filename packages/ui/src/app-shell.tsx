@@ -48,6 +48,8 @@ const NAV: NavGroup[] = [
     group: "Marketplace",
     items: [
       { id: "marketplace", label: "Marketplace", href: "/marketplace", glyph: "◫" },
+      { id: "marketplace-saved", label: "Saved leads", href: "/marketplace/saved", glyph: "★" },
+      { id: "marketplace-purchases", label: "Purchased leads", href: "/marketplace/purchases", glyph: "✓" },
       { id: "reseller", label: "Reseller", href: "/reseller", glyph: "◎" },
       { id: "partner", label: "Partner Program", href: "/partner", glyph: "◍" },
     ],

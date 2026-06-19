@@ -116,7 +116,7 @@ const SORTS: [string, string][] = [["newest", "Newest"], ["price", "Lowest price
 type Saved = { id: string; name: string; category: string; region: string; quality: string; sort: string };
 type Stats = { total: number; hot: number; exclusive: number; avgPrice: number; addedToday: number };
 
-export function MarketplaceClient({ initialRows }: { initialRows: MarketLead[] }) {
+export function MarketplaceClient({ initialRows, startSaved }: { initialRows: MarketLead[]; startSaved?: boolean }) {
   const ALL = initialRows;
   const [busyId, setBusyId] = React.useState("");
   const [bought, setBought] = React.useState<Set<string>>(new Set());
@@ -128,7 +128,7 @@ export function MarketplaceClient({ initialRows }: { initialRows: MarketLead[] }
   const [seg, setSeg] = React.useState("all");
   const [region, setRegion] = React.useState("all");
   const [sort, setSort] = React.useState("newest");
-  const [onlyWatched, setOnlyWatched] = React.useState(false);
+  const [onlyWatched, setOnlyWatched] = React.useState(!!startSaved);
   const [credits, setCredits] = React.useState<number | null>(null);
   const [bank, setBank] = React.useState<Bank | null>(null);
   const [stats, setStats] = React.useState<Stats | null>(null);
