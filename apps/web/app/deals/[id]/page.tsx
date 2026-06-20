@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import { color, shadow } from "@xentral/config";
-import { AppShell, KPICard, Button, StagePill, StatusBadge } from "@xentral/ui";
+import { AppShell, KPICard, Button, StagePill, StatusBadge, AiInlineBar } from "@xentral/ui";
 import { listDeals } from "@xentral/module-crm";
 
 const aed = (n: number) => `AED ${n.toLocaleString()}`;
@@ -44,6 +44,14 @@ export default function DealRecordPage({ params }: { params: { id: string } }) {
   const deal = deals.find((d) => d.id === params.id) ?? deals[0];
   if (!deal) return <AppShell active="deals"><p style={{ fontSize: 13, color: color.ink.soft }}>Deal not found.</p></AppShell>;
   const prob = PROB[deal.stage] ?? 0;
+  const stage = String(deal.stage).toLowerCase();
+  const actionNeeded = !/won|lost/.test(stage);
+  const nextStep = /won/.test(stage) ? "Won — hand off to delivery and confirm the start date."
+    : /lost/.test(stage) ? "Lost — log the reason so the pipeline stays clean."
+    : /negoti/.test(stage) ? "Align on final terms and ask for the close."
+    : /proposal/.test(stage) ? "Follow up on the proposal — confirm budget and timeline."
+    : /qualif/.test(stage) ? "Prepare and send a proposal."
+    : "Qualify the opportunity — confirm need, budget and decision-maker.";
 
   return (
     <AppShell active="deals">
@@ -51,7 +59,7 @@ export default function DealRecordPage({ params }: { params: { id: string } }) {
       <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 16, margin: "8px 0 18px" }}>
         <div>
           <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-            <h1 style={{ fontSize: 22, fontWeight: 700, color: color.ink.DEFAULT, margin: 0 }}>{deal.name}</h1>
+            <h1 style={{ fontSize: 20, fontWeight: 700, color: color.ink.DEFAULT, margin: 0 }}>{deal.name}</h1>
             <StagePill stage={deal.stage} />
           </div>
           <div style={{ fontSize: 13, color: color.ink.mid, marginTop: 4 }}>{deal.account} · owner {deal.owner} · {aed(deal.value)}</div>
@@ -63,6 +71,13 @@ export default function DealRecordPage({ params }: { params: { id: string } }) {
           <Button>Convert to quote</Button>
           <Button variant="primary">Mark won</Button>
         </div>
+      </div>
+
+      <AiInlineBar subject={deal.name} />
+      <div style={{ display: "flex", alignItems: "center", gap: 10, padding: "11px 16px", borderRadius: 12, border: `1px solid ${color.line.DEFAULT}`, background: color.brand.primaryTint, margin: "14px 0" }}>
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke={color.brand.primary} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14" /><path d="m12 5 7 7-7 7" /></svg>
+        <span style={{ fontSize: 11, fontWeight: 700, letterSpacing: 0.4, textTransform: "uppercase", color: color.brand.primary, flexShrink: 0 }}>Next step</span>
+        <span style={{ fontSize: 13, fontWeight: 600, color: actionNeeded ? color.ink.DEFAULT : color.ink.soft, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{nextStep}</span>
       </div>
 
       <div style={{ display: "flex", gap: 12, marginBottom: 18, flexWrap: "wrap" }}>
