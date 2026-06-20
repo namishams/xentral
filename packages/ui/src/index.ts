@@ -32,3 +32,4 @@ export { AiLauncher, AskAiButton, AiInlineBar, HeaderAiField, AiCommandBand } fr
 export { Panel, PanelHeader, PanelBody, PanelFooter, FactStrip } from "./panel";
 export { ExportMenu } from "./export-menu";
 export { ImportButton } from "./import-button";
+export { ModuleBoundary } from "./module-boundary";
