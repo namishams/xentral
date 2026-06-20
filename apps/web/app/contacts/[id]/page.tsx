@@ -122,18 +122,23 @@ export default function ContactDetailPage({ params }: { params: { id: string } }
         <div style={{ display: "flex", alignItems: "center", gap: 14, padding: "16px 18px", borderBottom: `1px solid ${color.line.DEFAULT}`, flexWrap: "wrap" }}>
           <span style={{ width: 52, height: 52, borderRadius: "50%", background: color.brand.primaryTint, color: color.brand.primary, fontSize: 19, fontWeight: 700, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>{initials(name)}</span>
           <div style={{ minWidth: 0, flex: 1 }}>
-            <div style={{ fontSize: 13.5, color: color.ink.mid }}>{c.title || "Contact"}{c.accountName ? <> · <a href={`/companies/${c.accountId}`} style={{ color: color.brand.primary, textDecoration: "none", fontWeight: 600 }}>{c.accountName}</a></> : null}</div>
+            <div style={{ fontSize: 14, color: color.ink.mid }}>{c.title || "Contact"}{c.accountName ? <> · <a href={`/companies/${c.accountId}`} style={{ color: color.brand.primary, textDecoration: "none", fontWeight: 600 }}>{c.accountName}</a></> : null}</div>
             <div style={{ display: "flex", flexWrap: "wrap", gap: "8px 20px", marginTop: 9 }}>
-              {([["Owner", c.assignedToName || "Unassigned"], ["Lead source", c.leadSource || "—"], ["Last touch", d.activities[0]?.at?.split(",")[0] ?? "—"], ["Next step", d.tasks[0] ? (d.tasks[0].title + (d.tasks[0].due ? " · " + d.tasks[0].due : "")) : "—"]] as [string, string][]).map(([l, v]) => (
-                <div key={l} style={{ minWidth: 0 }}><div style={{ fontSize: 9.5, fontWeight: 700, letterSpacing: 0.4, textTransform: "uppercase", color: color.ink.soft }}>{l}</div><div style={{ fontSize: 12.5, fontWeight: 600, color: color.ink.DEFAULT, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", maxWidth: 240 }}>{v}</div></div>
+              {([["Owner", c.assignedToName || "Unassigned"], ["Lead source", c.leadSource || "—"], ["Last touch", d.activities[0]?.at?.split(",")[0] ?? "—"]] as [string, string][]).map(([l, v]) => (
+                <div key={l} style={{ minWidth: 0 }}><div style={{ fontSize: 11, fontWeight: 700, letterSpacing: 0.4, textTransform: "uppercase", color: color.ink.soft }}>{l}</div><div style={{ fontSize: 13, fontWeight: 600, color: color.ink.DEFAULT, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", maxWidth: 240 }}>{v}</div></div>
               ))}
             </div>
           </div>
         </div>
+        <div style={{ display: "flex", alignItems: "center", gap: 10, padding: "11px 18px", borderBottom: `1px solid ${color.line.DEFAULT}`, background: color.brand.primaryTint }}>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke={color.brand.primary} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14" /><path d="m12 5 7 7-7 7" /></svg>
+          <span style={{ fontSize: 11, fontWeight: 700, letterSpacing: 0.4, textTransform: "uppercase", color: color.brand.primary, flexShrink: 0 }}>Next step</span>
+          <span style={{ fontSize: 13, fontWeight: 600, color: d.tasks[0] ? color.ink.DEFAULT : color.ink.soft, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{d.tasks[0] ? (d.tasks[0].title + (d.tasks[0].due ? " · " + d.tasks[0].due : "")) : "No next step set — add a follow-up to keep this moving."}</span>
+        </div>
         <div style={{ display: "flex", flexWrap: "wrap", gap: "12px 36px", padding: "12px 18px", background: color.surface.page }}>
           {metrics.map((m) => (
             <div key={m.label} style={{ minWidth: 0 }}>
-              <div style={{ fontSize: 9.5, fontWeight: 700, letterSpacing: 0.4, textTransform: "uppercase", color: color.ink.soft }}>{m.label}</div>
+              <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: 0.4, textTransform: "uppercase", color: color.ink.soft }}>{m.label}</div>
               <div style={{ fontSize: 15, fontWeight: 700, color: m.tone, marginTop: 2 }}>{m.value}</div>
             </div>
           ))}
@@ -144,7 +149,7 @@ export default function ContactDetailPage({ params }: { params: { id: string } }
         {/* left rail */}
         <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
           <Panel>
-            <PanelHeader title="Details" actions={dirty ? <Button variant="primary" onClick={saveForm} disabled={busy}>{busy ? "Saving…" : "Save"}</Button> : (saved ? <span style={{ fontSize: 12, fontWeight: 600, color: color.status.positive }}>✓ Saved</span> : <span style={{ fontSize: 11.5, color: color.ink.soft }}>Edit any field</span>)} />
+            <PanelHeader title="Details" actions={dirty ? <Button variant="primary" onClick={saveForm} disabled={busy}>{busy ? "Saving…" : "Save"}</Button> : (saved ? <span style={{ fontSize: 12, fontWeight: 600, color: color.status.positive }}>✓ Saved</span> : <span style={{ fontSize: 12, color: color.ink.soft }}>Edit any field</span>)} />
             <PanelBody>
               {form ? (
                 <div style={{ display: "flex", flexDirection: "column", gap: 11 }}>
@@ -197,8 +202,8 @@ export default function ContactDetailPage({ params }: { params: { id: string } }
                     ) : form.accountId ? (
                       <div style={{ display: "flex", alignItems: "center", gap: 10, padding: "7px 9px 7px 8px", borderRadius: 10, border: `1px solid ${color.line.DEFAULT}`, background: color.surface.page }}>
                         <span style={{ width: 30, height: 30, flexShrink: 0, borderRadius: 8, background: color.brand.primaryTint, color: color.brand.primary, fontSize: 12, fontWeight: 700, display: "inline-flex", alignItems: "center", justifyContent: "center" }}>{initials(accounts.find((a) => a.id === form.accountId)?.name || c.accountName || "?")}</span>
-                        <a href={`/companies/${form.accountId}`} style={{ flex: 1, minWidth: 0, fontSize: 13.5, fontWeight: 600, color: color.ink.DEFAULT, textDecoration: "none", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{accounts.find((a) => a.id === form.accountId)?.name || c.accountName || "Company"}</a>
-                        <button type="button" onClick={() => { setPendCo(form.accountId); setNewCo(""); setChangeCompany(true); }} style={{ flexShrink: 0, height: 30, padding: "0 12px", borderRadius: 8, border: `1px solid ${color.brand.primary}`, background: color.surface.card, color: color.brand.primary, fontSize: 12.5, fontWeight: 600, cursor: "pointer" }}>Change</button>
+                        <a href={`/companies/${form.accountId}`} style={{ flex: 1, minWidth: 0, fontSize: 14, fontWeight: 600, color: color.ink.DEFAULT, textDecoration: "none", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{accounts.find((a) => a.id === form.accountId)?.name || c.accountName || "Company"}</a>
+                        <button type="button" onClick={() => { setPendCo(form.accountId); setNewCo(""); setChangeCompany(true); }} style={{ flexShrink: 0, height: 30, padding: "0 12px", borderRadius: 8, border: `1px solid ${color.brand.primary}`, background: color.surface.card, color: color.brand.primary, fontSize: 13, fontWeight: 600, cursor: "pointer" }}>Change</button>
                       </div>
                     ) : (
                       <button type="button" onClick={() => { setPendCo(""); setNewCo(""); setChangeCompany(true); }} style={{ display: "inline-flex", alignItems: "center", gap: 7, height: 36, padding: "0 13px", borderRadius: 9, border: `1px dashed ${color.line.strong}`, background: color.surface.page, color: color.ink.mid, fontSize: 13, fontWeight: 600, cursor: "pointer" }}>+ Link a company</button>
@@ -227,13 +232,13 @@ export default function ContactDetailPage({ params }: { params: { id: string } }
             <PanelHeader title="Timeline" subtitle="Notes, calls, billing — newest first" />
             <PanelBody>
               <div style={{ display: "flex", gap: 6, flexWrap: "wrap", marginBottom: 8 }}>
-                {(["NOTE","CALL","MEETING","EMAIL","FOLLOW_UP"] as const).map((tp) => { const on = noteType === tp; return <button key={tp} onClick={() => setNoteType(tp)} style={{ fontSize: 11.5, fontWeight: 600, padding: "4px 10px", borderRadius: 999, cursor: "pointer", border: `1px solid ${on ? color.brand.primary : color.line.strong}`, background: on ? color.brand.primaryTint : color.surface.card, color: on ? color.brand.primary : color.ink.mid }}>{am(tp).icon} {cap(tp)}</button>; })}
+                {(["NOTE","CALL","MEETING","EMAIL","FOLLOW_UP"] as const).map((tp) => { const on = noteType === tp; return <button key={tp} onClick={() => setNoteType(tp)} style={{ fontSize: 12, fontWeight: 600, padding: "4px 10px", borderRadius: 999, cursor: "pointer", border: `1px solid ${on ? color.brand.primary : color.line.strong}`, background: on ? color.brand.primaryTint : color.surface.card, color: on ? color.brand.primary : color.ink.mid }}>{am(tp).icon} {cap(tp)}</button>; })}
               </div>
               <div style={{ display: "flex", gap: 8, marginBottom: 16 }}>
                 <input value={note} onChange={(e) => setNote(e.target.value)} onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); addNote(); } }} placeholder={noteType === "NOTE" ? "Add a note…" : `Log a ${cap(noteType).toLowerCase()}…`} style={{ flex: 1, height: 34, border: `1px solid ${color.line.strong}`, borderRadius: 8, padding: "0 11px", fontSize: 13, color: color.ink.DEFAULT, background: color.surface.card, outline: "none" }} />
                 <Button variant="primary" onClick={addNote} disabled={busy || !note.trim()}>{busy ? "…" : "Log"}</Button>
               </div>
-              {d.activities.length === 0 ? <div style={{ padding: "12px 0", textAlign: "center", fontSize: 12.5, color: color.ink.soft }}>No activity yet — log your first call or note above.</div>
+              {d.activities.length === 0 ? <div style={{ padding: "12px 0", textAlign: "center", fontSize: 13, color: color.ink.soft }}>No activity yet — log your first call or note above.</div>
                 : <div style={{ display: "flex", flexDirection: "column" }}>{d.activities.map((a, idx) => { const m = am(a.type); return (
                     <div key={a.id} style={{ display: "flex", gap: 11, paddingBottom: 14 }}>
                       <div style={{ display: "flex", flexDirection: "column", alignItems: "center", flexShrink: 0 }}>
@@ -242,7 +247,7 @@ export default function ContactDetailPage({ params }: { params: { id: string } }
                       </div>
                       <div style={{ minWidth: 0, flex: 1 }}>
                         <div style={{ display: "flex", gap: 8, alignItems: "baseline" }}>
-                          <span style={{ fontSize: 12.5, fontWeight: 600, color: color.ink.DEFAULT }}>{a.subject || cap(a.type)}</span>
+                          <span style={{ fontSize: 13, fontWeight: 600, color: color.ink.DEFAULT }}>{a.subject || cap(a.type)}</span>
                           <span style={{ fontSize: 11, color: color.ink.soft, marginLeft: "auto", flexShrink: 0 }}>{a.at}</span>
                         </div>
                         {a.content ? <div style={{ fontSize: 12, color: color.ink.mid, marginTop: 2, whiteSpace: "pre-wrap" }}>{a.content}</div> : null}
@@ -256,7 +261,7 @@ export default function ContactDetailPage({ params }: { params: { id: string } }
           <Panel>
             <PanelHeader title="Deals" subtitle={`${d.deals.length} linked · ${openDeals.length} open`} />
             <PanelBody flush>
-              {d.deals.length === 0 ? <div style={{ padding: 16, textAlign: "center", fontSize: 12.5, color: color.ink.soft }}>No deals linked to this contact yet.</div>
+              {d.deals.length === 0 ? <div style={{ padding: 16, textAlign: "center", fontSize: 13, color: color.ink.soft }}>No deals linked to this contact yet.</div>
                 : d.deals.map((l) => (
                   <a key={l.id} href={`/leads/${l.id}`} className="xui-row-link" style={linkRow}>
                     <span style={{ flex: 1, minWidth: 0, fontWeight: 500, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{l.name || "Deal"}</span>
@@ -288,11 +293,11 @@ export default function ContactDetailPage({ params }: { params: { id: string } }
             <PanelHeader title="Open tasks" subtitle={`${d.tasks.length} open`} />
             <PanelBody flush>
               <div style={{ display: "flex", gap: 8, padding: "11px 14px", borderBottom: `1px solid ${color.line.DEFAULT}` }}>
-                <input value={newTask} onChange={(e) => setNewTask(e.target.value)} onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); addTask(); } }} placeholder="Add a task…" style={{ flex: 1, height: 32, border: `1px solid ${color.line.strong}`, borderRadius: 8, padding: "0 10px", fontSize: 12.5, color: color.ink.DEFAULT, background: color.surface.card, outline: "none" }} />
+                <input value={newTask} onChange={(e) => setNewTask(e.target.value)} onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); addTask(); } }} placeholder="Add a task…" style={{ flex: 1, height: 32, border: `1px solid ${color.line.strong}`, borderRadius: 8, padding: "0 10px", fontSize: 13, color: color.ink.DEFAULT, background: color.surface.card, outline: "none" }} />
                 <Button onClick={addTask} disabled={busy || !newTask.trim()}>Add</Button>
               </div>
-              {d.tasks.length === 0 ? <div style={{ padding: "16px", textAlign: "center", fontSize: 12.5, color: color.ink.soft }}>No open tasks.</div>
-                : d.tasks.map((t) => <div key={t.id} style={{ padding: "9px 14px", borderBottom: `1px solid ${color.line.DEFAULT}` }}><div style={{ fontSize: 12.5, fontWeight: 500, color: color.ink.DEFAULT }}>{t.title}</div>{t.due ? <div style={{ fontSize: 11, color: color.ink.soft }}>Due {t.due}</div> : null}</div>)}
+              {d.tasks.length === 0 ? <div style={{ padding: "16px", textAlign: "center", fontSize: 13, color: color.ink.soft }}>No open tasks.</div>
+                : d.tasks.map((t) => <div key={t.id} style={{ padding: "9px 14px", borderBottom: `1px solid ${color.line.DEFAULT}` }}><div style={{ fontSize: 13, fontWeight: 500, color: color.ink.DEFAULT }}>{t.title}</div>{t.due ? <div style={{ fontSize: 11, color: color.ink.soft }}>Due {t.due}</div> : null}</div>)}
             </PanelBody>
           </Panel>
 
@@ -300,7 +305,7 @@ export default function ContactDetailPage({ params }: { params: { id: string } }
             <Panel>
               <PanelHeader title="WhatsApp" actions={<a href="/inbox" style={{ fontSize: 12, color: color.brand.primary, textDecoration: "none" }}>Open inbox</a>} />
               <PanelBody flush>
-                {d.conversations.map((cv) => <div key={cv.id} style={{ padding: "9px 14px", borderBottom: `1px solid ${color.line.DEFAULT}` }}><div style={{ fontSize: 12.5, fontWeight: 500 }}>{cv.phone} <span style={{ color: color.ink.soft, fontWeight: 400 }}>· {cv.at}</span></div>{cv.body ? <div style={{ fontSize: 11.5, color: color.ink.soft, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{cv.body}</div> : null}</div>)}
+                {d.conversations.map((cv) => <div key={cv.id} style={{ padding: "9px 14px", borderBottom: `1px solid ${color.line.DEFAULT}` }}><div style={{ fontSize: 13, fontWeight: 500 }}>{cv.phone} <span style={{ color: color.ink.soft, fontWeight: 400 }}>· {cv.at}</span></div>{cv.body ? <div style={{ fontSize: 12, color: color.ink.soft, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{cv.body}</div> : null}</div>)}
               </PanelBody>
             </Panel>
           )}
