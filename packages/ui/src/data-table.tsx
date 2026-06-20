@@ -87,7 +87,7 @@ export function DataTable<T>({
   const showToolbar = !!title || searchable || !!toolbarRight;
 
   return (
-    <div style={{ background: color.surface.card, border: `1px solid ${color.line.DEFAULT}`, borderRadius: 12, boxShadow: shadow.card, overflow: "hidden" }}>
+    <div style={{ background: color.surface.card, border: `1px solid ${color.line.DEFAULT}`, borderRadius: 12, boxShadow: shadow.none, overflow: "hidden" }}>
       {showToolbar && (
         <div style={{ display: "flex", alignItems: "center", gap: 12, padding: "10px 14px", borderBottom: `1px solid ${color.line.DEFAULT}`, background: color.surface.card }}>
           {title ? <span style={{ fontSize: 13.5, fontWeight: 700, color: color.ink.DEFAULT }}>{title}</span> : null}

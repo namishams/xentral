@@ -27,7 +27,7 @@ export function DashboardCard({ children, size = "medium", title, className = ""
         padding: c.paddingX,
         border: `1px solid ${color.line.DEFAULT}`,
         borderRadius: radius.lg,
-        boxShadow: shadow.card,
+        boxShadow: shadow.none,
       }}
     >
       {title && (

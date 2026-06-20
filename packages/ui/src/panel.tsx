@@ -41,7 +41,7 @@ export function Panel({
         background: color.surface.card,
         border: `1px solid ${color.line.DEFAULT}`,
         borderRadius: radius.xl,
-        boxShadow: shadow.card,
+        boxShadow: shadow.none,
         ...(interactive ? { cursor: "pointer" } : null),
         ...style,
       }}
