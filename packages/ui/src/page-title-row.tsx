@@ -80,7 +80,7 @@ export function PageTitleRow({ title, subtitle, breadcrumb, badge, actions, icon
   );
 
   return (
-    <div style={{ display: "flex", alignItems: subtitle || breadcrumb ? "flex-end" : "center", justifyContent: "space-between", marginBottom: 14, gap: 12 }}>
+    <div style={{ display: "flex", alignItems: subtitle || breadcrumb ? "flex-end" : "center", justifyContent: "space-between", marginBottom: 16, gap: 12 }}>
       <div style={{ display: "flex", alignItems: "center", gap: 12, minWidth: 0 }}>
         {iconBadge}
         <div style={{ minWidth: 0 }}>

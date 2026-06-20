@@ -218,7 +218,7 @@ export function AppShell({ children, active, fullBleed, headerRight }: { childre
           <div style={{ flex: 1, minHeight: 0 }}>{children}</div>
         ) : (
           <main style={{ flex: 1, overflowY: "auto" }}>
-            <div style={{ paddingTop: 18, paddingBottom: 28 }}>
+            <div style={{ paddingTop: 20, paddingBottom: 32 }}>
               <PageContainer>{children}</PageContainer>
             </div>
           </main>
