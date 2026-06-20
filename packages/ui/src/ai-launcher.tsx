@@ -91,7 +91,7 @@ export function AiCommandBand({ agentKey = "ceo", context, suggestions, placehol
   if (!open) {
     return (
       <button onClick={() => { setOpen(true); setTimeout(() => taRef.current?.focus(), 80); }} aria-label="Ask Xentral AI"
-        style={{ position: "fixed", right: 22, bottom: 22, zIndex: 60, display: "inline-flex", alignItems: "center", gap: 8, height: 44, padding: "0 16px 0 13px", borderRadius: 999, border: 0, cursor: "pointer", background: color.surface.card, color: color.ink.DEFAULT, boxShadow: "0 8px 24px -6px rgba(20,30,60,0.28), 0 0 0 1px rgba(20,30,60,0.06)", fontSize: 13.5, fontWeight: 600, fontFamily: "inherit" }}>
+        style={{ position: "fixed", right: 22, bottom: 22, zIndex: 60, display: "inline-flex", alignItems: "center", gap: 8, height: 44, padding: "0 16px 0 13px", borderRadius: 999, border: 0, cursor: "pointer", background: color.surface.card, color: color.ink.DEFAULT, boxShadow: "0 8px 24px -6px rgba(20,30,60,0.28), 0 0 0 1px rgba(20,30,60,0.06)", fontSize: 14, fontWeight: 600, fontFamily: "inherit" }}>
         <span style={{ width: 26, height: 26, borderRadius: "50%", background: "linear-gradient(135deg, #0064d9, #22D3A6)", display: "inline-flex", alignItems: "center", justifyContent: "center" }}><Spark size={15} color="#fff" /></span>
         Ask Xentral AI
         <kbd style={{ fontSize: 10, fontWeight: 600, color: color.ink.soft, border: `1px solid ${color.line.DEFAULT}`, borderRadius: 5, padding: "1px 5px", fontFamily: "inherit" }}>⌘K</kbd>
@@ -106,8 +106,8 @@ export function AiCommandBand({ agentKey = "ceo", context, suggestions, placehol
       <div style={{ display: "flex", alignItems: "center", gap: 9, padding: "11px 12px 11px 14px", borderBottom: `1px solid ${color.line.DEFAULT}`, background: "linear-gradient(90deg, rgba(0,100,217,0.06), rgba(34,211,166,0.06))" }}>
         <span style={{ width: 26, height: 26, borderRadius: "50%", background: "linear-gradient(135deg, #0064d9, #22D3A6)", display: "inline-flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}><Spark size={15} color="#fff" /></span>
         <div style={{ minWidth: 0, flex: 1 }}>
-          <div style={{ fontSize: 13.5, fontWeight: 700, color: color.ink.DEFAULT }}>Xentral AI</div>
-          <div style={{ fontSize: 10.5, color: color.ink.soft }}>reads live data · takes actions</div>
+          <div style={{ fontSize: 14, fontWeight: 700, color: color.ink.DEFAULT }}>Xentral AI</div>
+          <div style={{ fontSize: 11, color: color.ink.soft }}>reads live data · takes actions</div>
         </div>
         <a href="/settings" title="AI settings" aria-label="AI settings" style={{ color: color.ink.soft, display: "inline-flex", flexShrink: 0, padding: 4 }}><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></a>
         <button onClick={() => setOpen(false)} aria-label="Minimise" title="Minimise" style={{ flexShrink: 0, width: 28, height: 28, borderRadius: 8, border: 0, background: "transparent", color: color.ink.mid, cursor: "pointer", fontSize: 17, lineHeight: 1 }}>—</button>
@@ -128,7 +128,7 @@ export function AiCommandBand({ agentKey = "ceo", context, suggestions, placehol
                   <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginTop: 7 }}>
                     {t.actions.map((a, j) => {
                       const label = a.summary || a.label || "Done"; const href = a.link || a.href;
-                      const st: React.CSSProperties = { fontSize: 11.5, fontWeight: 600, color: "#188918", background: "#eef6ee", border: "1px solid #cfe8cf", borderRadius: 999, padding: "4px 10px", display: "inline-flex", alignItems: "center", gap: 5, textDecoration: "none" };
+                      const st: React.CSSProperties = { fontSize: 12, fontWeight: 600, color: "#188918", background: "#eef6ee", border: "1px solid #cfe8cf", borderRadius: 999, padding: "4px 10px", display: "inline-flex", alignItems: "center", gap: 5, textDecoration: "none" };
                       return href ? <a key={j} href={href} style={st}>✓ {label}</a> : <span key={j} style={st}>✓ {label}</span>;
                     })}
                   </div>
@@ -143,15 +143,15 @@ export function AiCommandBand({ agentKey = "ceo", context, suggestions, placehol
       {/* empty-state starters */}
       {turns.length === 0 && !err && (
         <div style={{ padding: "16px 14px 4px" }}>
-          <div style={{ fontSize: 12.5, color: color.ink.mid, marginBottom: 10 }}>Ask anything, or tell Xentral what to do — it reads your live data <b style={{ color: "#188918" }}>and takes actions</b>.</div>
+          <div style={{ fontSize: 13, color: color.ink.mid, marginBottom: 10 }}>Ask anything, or tell Xentral what to do — it reads your live data <b style={{ color: "#188918" }}>and takes actions</b>.</div>
           <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
-            {starters.map((s) => <button key={s} onClick={() => ask(s)} style={{ textAlign: "left", fontSize: 12.5, fontWeight: 500, color: color.ink.DEFAULT, background: color.surface.page, border: `1px solid ${color.line.DEFAULT}`, borderRadius: 9, padding: "8px 11px", cursor: "pointer" }}>{s}</button>)}
+            {starters.map((s) => <button key={s} onClick={() => ask(s)} style={{ textAlign: "left", fontSize: 13, fontWeight: 500, color: color.ink.DEFAULT, background: color.surface.page, border: `1px solid ${color.line.DEFAULT}`, borderRadius: 9, padding: "8px 11px", cursor: "pointer" }}>{s}</button>)}
           </div>
         </div>
       )}
 
       {err && (
-        <div style={{ margin: "10px 14px 0", display: "flex", alignItems: "center", gap: 8, fontSize: 12.5, color: "#b3261e", background: "#fdeeec", border: "1px solid #f6d4cf", borderRadius: 10, padding: "8px 12px" }}>
+        <div style={{ margin: "10px 14px 0", display: "flex", alignItems: "center", gap: 8, fontSize: 13, color: "#b3261e", background: "#fdeeec", border: "1px solid #f6d4cf", borderRadius: 10, padding: "8px 12px" }}>
           <span>{err.msg}</span>
           {err.notConfigured && <a href="/settings" style={{ marginLeft: "auto", fontWeight: 600, color: BLUE, flexShrink: 0 }}>Set up →</a>}
         </div>
@@ -162,7 +162,7 @@ export function AiCommandBand({ agentKey = "ceo", context, suggestions, placehol
         <div style={{ position: "relative" }}>
           <textarea ref={taRef} value={q} onChange={(e) => setQ(e.target.value)} onKeyDown={onKey} rows={2}
             placeholder={placeholder || "Ask anything, or type a command…"}
-            style={{ width: "100%", boxSizing: "border-box", resize: "none", borderRadius: 11, border: `1px solid ${color.line.strong}`, background: color.surface.page, padding: "9px 44px 9px 12px", fontSize: 13.5, lineHeight: 1.4, color: "#16202c", fontFamily: "inherit", outline: "none" }} />
+            style={{ width: "100%", boxSizing: "border-box", resize: "none", borderRadius: 11, border: `1px solid ${color.line.strong}`, background: color.surface.page, padding: "9px 44px 9px 12px", fontSize: 14, lineHeight: 1.4, color: "#16202c", fontFamily: "inherit", outline: "none" }} />
           <button onClick={() => ask()} disabled={loading || !q.trim()} aria-label="Send"
             style={{ position: "absolute", right: 9, bottom: 9, width: 30, height: 30, borderRadius: 8, background: BLUE, border: 0, color: "#fff", display: "inline-flex", alignItems: "center", justifyContent: "center", cursor: loading || !q.trim() ? "default" : "pointer", opacity: loading || !q.trim() ? 0.4 : 1, fontSize: 15 }}>↑</button>
         </div>
@@ -185,7 +185,7 @@ export function HeaderAiField() {
       <Spark size={16} />
       <input value={v} onChange={(e) => setV(e.target.value)} onFocus={() => setFocused(true)} onBlur={() => setFocused(false)} onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); submit(); } }} placeholder="Ask Xentral AI — or type a command…" aria-label="Ask Xentral AI" style={{ flex: 1, minWidth: 0, border: 0, outline: "none", background: "transparent", fontSize: 13, color: "var(--ink)", fontFamily: "inherit" }} />
       {has ? <button onClick={submit} aria-label="Send to Xentral AI" style={{ flexShrink: 0, width: 28, height: 28, borderRadius: 8, border: 0, cursor: "pointer", background: BLUE, color: "#fff", fontSize: 14 }}>↑</button>
-        : <kbd style={{ flexShrink: 0, marginRight: 4, fontSize: 10.5, fontWeight: 600, color: "var(--ink-soft)", border: "1px solid var(--line)", borderRadius: 5, padding: "1px 5px", fontFamily: "inherit" }}>⏎</kbd>}
+        : <kbd style={{ flexShrink: 0, marginRight: 4, fontSize: 11, fontWeight: 600, color: "var(--ink-soft)", border: "1px solid var(--line)", borderRadius: 5, padding: "1px 5px", fontFamily: "inherit" }}>⏎</kbd>}
     </div>
   );
 }
@@ -213,6 +213,6 @@ export function AiInlineBar({ subject, placeholder }: { subject?: string; placeh
 /** AskAiButton — drop on any quiet surface; opens & seeds the floating dock. */
 export function AskAiButton({ seed, label = "Ask Xentral AI", variant = "pill" }: { seed?: string; label?: string; variant?: "pill" | "ghost" }) {
   const ask = () => window.dispatchEvent(new CustomEvent("xentral-ai-ask", { detail: seed ? { q: seed } : {} }));
-  if (variant === "ghost") return <button onClick={ask} style={{ display: "inline-flex", alignItems: "center", gap: 6, fontSize: 12.5, fontWeight: 600, color: BLUE, background: "transparent", border: 0, cursor: "pointer" }}><Spark size={14} /> {label}</button>;
+  if (variant === "ghost") return <button onClick={ask} style={{ display: "inline-flex", alignItems: "center", gap: 6, fontSize: 13, fontWeight: 600, color: BLUE, background: "transparent", border: 0, cursor: "pointer" }}><Spark size={14} /> {label}</button>;
   return <button onClick={ask} style={{ display: "inline-flex", alignItems: "center", gap: 7, fontSize: 13, fontWeight: 600, color: color.ink.DEFAULT, background: color.surface.card, border: `1px solid ${color.line.strong}`, borderRadius: 9, padding: "0 13px", height: 32, cursor: "pointer" }}><Spark size={15} /> {label}</button>;
 }

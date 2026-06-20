@@ -16,6 +16,6 @@ const TONE: Record<BadgeTone, { bg: string; fg: string }> = {
 export function StatusBadge({ label, tone = "neutral" }: { label: string; tone?: BadgeTone }) {
   const t = TONE[tone];
   return (
-    <span style={{ display: "inline-block", fontSize: 10.5, fontWeight: 600, background: t.bg, color: t.fg, borderRadius: 999, padding: "2px 9px", whiteSpace: "nowrap" }}>{label}</span>
+    <span style={{ display: "inline-block", fontSize: 11, fontWeight: 600, background: t.bg, color: t.fg, borderRadius: 999, padding: "2px 9px", whiteSpace: "nowrap" }}>{label}</span>
   );
 }

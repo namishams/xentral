@@ -69,13 +69,13 @@ export function ImportButton({ entity, label = "Import" }: { entity: string; lab
               <h2 style={{ fontSize: 16, fontWeight: 700, color: color.ink.DEFAULT, margin: 0 }}>Import {entity}</h2>
               <button onClick={() => setOpen(false)} aria-label="Close" style={{ border: 0, background: "transparent", fontSize: 20, color: color.ink.soft, cursor: "pointer", lineHeight: 1 }}>×</button>
             </div>
-            <p style={{ fontSize: 12.5, color: color.ink.mid, margin: "0 0 12px" }}>
+            <p style={{ fontSize: 13, color: color.ink.mid, margin: "0 0 12px" }}>
               Upload or paste a CSV. Columns: {fields.map((f) => f.label + (f.req ? "*" : "")).join(", ")}. <a href={template} download={`${entity}-template.csv`} style={{ color: color.brand.primary, fontWeight: 600, textDecoration: "none" }}>Download template</a>
             </p>
             <input type="file" accept=".csv,text/csv" onChange={(e) => { const f = e.target.files?.[0]; if (f) f.text().then(ingest); }}
               style={{ display: "block", marginBottom: 10, fontSize: 13 }} />
             <textarea placeholder="…or paste CSV rows here" onChange={(e) => ingest(e.target.value)}
-              style={{ width: "100%", boxSizing: "border-box", minHeight: 96, border: `1px solid ${color.line.strong}`, borderRadius: 8, padding: 10, fontSize: 12.5, fontFamily: "ui-monospace, monospace", color: color.ink.DEFAULT, background: color.surface.page, outline: "none", marginBottom: 10 }} />
+              style={{ width: "100%", boxSizing: "border-box", minHeight: 96, border: `1px solid ${color.line.strong}`, borderRadius: 8, padding: 10, fontSize: 13, fontFamily: "ui-monospace, monospace", color: color.ink.DEFAULT, background: color.surface.page, outline: "none", marginBottom: 10 }} />
             {rows.length > 0 && (
               <div style={{ border: `1px solid ${color.line.DEFAULT}`, borderRadius: 8, overflow: "hidden", marginBottom: 12 }}>
                 <div style={{ padding: "7px 11px", background: color.surface.sunken, fontSize: 12, fontWeight: 600, color: color.ink.mid }}>{valid.length} of {rows.length} rows ready</div>
@@ -84,7 +84,7 @@ export function ImportButton({ entity, label = "Import" }: { entity: string; lab
                 </div>
               </div>
             )}
-            {msg && <div style={{ fontSize: 12.5, color: msg.startsWith("Imported") ? color.status.positive : color.status.negative, marginBottom: 10 }}>{msg}</div>}
+            {msg && <div style={{ fontSize: 13, color: msg.startsWith("Imported") ? color.status.positive : color.status.negative, marginBottom: 10 }}>{msg}</div>}
             <div style={{ display: "flex", justifyContent: "flex-end", gap: 8 }}>
               <button onClick={() => setOpen(false)} style={{ height: uiConstants.control.height, padding: "0 14px", borderRadius: 8, border: `1px solid ${color.line.strong}`, background: color.surface.card, color: color.ink.DEFAULT, fontSize: 13, fontWeight: 600, cursor: "pointer" }}>Cancel</button>
               <button onClick={run} disabled={busy || valid.length === 0} style={{ height: uiConstants.control.height, padding: "0 16px", borderRadius: 8, border: 0, background: color.brand.primary, color: color.ink.onPrimary, fontSize: 13, fontWeight: 700, cursor: busy || valid.length === 0 ? "default" : "pointer", opacity: busy || valid.length === 0 ? 0.5 : 1 }}>{busy ? "Importing…" : `Import ${valid.length}`}</button>

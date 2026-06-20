@@ -29,14 +29,14 @@ export function Pagination({ page, pageCount, pageSize, total, onPageChange, onP
 
   return (
     <div className="flex items-center justify-between gap-4" style={{ paddingTop: 12 }}>
-      <div style={{ color: color.ink.mid, fontSize: 12.5 }}>
+      <div style={{ color: color.ink.mid, fontSize: 13 }}>
         {typeof total === "number"
           ? `${(page - 1) * pageSize + 1}–${Math.min(page * pageSize, total)} of ${total}`
           : `Page ${page} of ${pageCount}`}
       </div>
       <div className="flex items-center gap-2">
         {onPageSizeChange && (
-          <label className="flex items-center gap-1.5" style={{ color: color.ink.mid, fontSize: 12.5 }}>
+          <label className="flex items-center gap-1.5" style={{ color: color.ink.mid, fontSize: 13 }}>
             Rows
             <select
               value={pageSize}

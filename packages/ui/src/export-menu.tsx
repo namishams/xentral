@@ -16,7 +16,7 @@ export function ExportMenu({ entity, label = "Export" }: { entity: string; label
   const [open, setOpen] = React.useState(false);
   React.useEffect(() => { if (!open) return; const h = () => setOpen(false); document.addEventListener("click", h); return () => document.removeEventListener("click", h); }, [open]);
   const item: React.CSSProperties = { display: "flex", alignItems: "center", gap: 8, padding: "8px 11px", fontSize: 13, color: color.ink.DEFAULT, textDecoration: "none", borderRadius: 7, whiteSpace: "nowrap", cursor: "pointer" };
-  const cap: React.CSSProperties = { padding: "6px 11px 4px", fontSize: 10.5, fontWeight: 700, letterSpacing: 0.4, color: color.ink.soft, textTransform: "uppercase" };
+  const cap: React.CSSProperties = { padding: "6px 11px 4px", fontSize: 11, fontWeight: 700, letterSpacing: 0.4, color: color.ink.soft, textTransform: "uppercase" };
   return (
     <span style={{ position: "relative", display: "inline-flex" }} onClick={(e) => e.stopPropagation()}>
       <button onClick={() => setOpen((o) => !o)} aria-label="Export" aria-expanded={open}

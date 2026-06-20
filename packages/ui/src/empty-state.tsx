@@ -6,7 +6,7 @@ export function EmptyState({ title, hint, action }: { title: string; hint?: stri
   return (
     <div style={{ textAlign: "center", padding: "48px 24px" }}>
       <div style={{ fontSize: 14, fontWeight: 600, color: color.ink.mid }}>{title}</div>
-      {hint && <div style={{ fontSize: 12.5, color: color.ink.soft, marginTop: 4 }}>{hint}</div>}
+      {hint && <div style={{ fontSize: 13, color: color.ink.soft, marginTop: 4 }}>{hint}</div>}
       {action && <div style={{ marginTop: 14, display: "flex", justifyContent: "center" }}>{action}</div>}
     </div>
   );

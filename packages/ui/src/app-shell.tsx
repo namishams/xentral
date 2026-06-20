@@ -141,7 +141,7 @@ function _bshade(h: string, mul: number) { const n = parseInt(h.slice(1), 16); c
 function _btint(h: string) { const n = parseInt(h.slice(1), 16); const f = (x: number) => Math.round(x + (255 - x) * 0.9); return "#" + [f((n >> 16) & 255), f((n >> 8) & 255), f(n & 255)].map((x) => x.toString(16).padStart(2, "0")).join(""); }
 
 export function GlobalHeader({ right }: { right?: React.ReactNode }) {
-  const pill: React.CSSProperties = { display: "inline-flex", alignItems: "center", gap: 6, height: 30, padding: "0 10px", borderRadius: 8, border: `1px solid ${color.line.DEFAULT}`, background: color.surface.card, color: color.ink.mid, fontSize: 12.5, fontWeight: 500, whiteSpace: "nowrap", flexShrink: 0 };
+  const pill: React.CSSProperties = { display: "inline-flex", alignItems: "center", gap: 6, height: 30, padding: "0 10px", borderRadius: 8, border: `1px solid ${color.line.DEFAULT}`, background: color.surface.card, color: color.ink.mid, fontSize: 13, fontWeight: 500, whiteSpace: "nowrap", flexShrink: 0 };
   const iconBtn: React.CSSProperties = { width: 30, height: 30, borderRadius: 8, border: `1px solid ${color.line.DEFAULT}`, background: color.surface.card, color: color.ink.soft, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 14, cursor: "pointer", position: "relative", flexShrink: 0 };
   React.useEffect(() => {
     fetch("/api/me").then((r) => r.json()).then((d) => {
@@ -186,7 +186,7 @@ export function Sidebar({ active }: { active?: string }) {
       <div style={{ padding: "8px 10px 16px", display: "flex", flexDirection: "column", gap: 4 }}>
         {NAV.map((section) => (
           <div key={section.group} style={{ display: "flex", flexDirection: "column", gap: 2, marginTop: 6 }}>
-            <div style={{ fontSize: 10.5, fontWeight: 700, letterSpacing: 0.8, textTransform: "uppercase", color: color.ink.soft, padding: "6px 12px 4px" }}>{section.group}</div>
+            <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: 0.8, textTransform: "uppercase", color: color.ink.soft, padding: "6px 12px 4px" }}>{section.group}</div>
             {section.items.filter((n) => n.id !== "admin" || superAdmin).map((n) => {
               const on = n.id === active;
               return (

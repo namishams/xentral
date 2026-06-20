@@ -3,7 +3,7 @@
 import * as React from "react";
 import { color } from "@xentral/config";
 
-const pill: React.CSSProperties = { display: "inline-flex", alignItems: "center", gap: 6, height: 36, padding: "0 12px", borderRadius: 9, border: `1px solid ${color.line.DEFAULT}`, background: color.surface.card, color: color.ink.mid, fontSize: 12.5, fontWeight: 500, whiteSpace: "nowrap", flexShrink: 0, textDecoration: "none", cursor: "pointer" };
+const pill: React.CSSProperties = { display: "inline-flex", alignItems: "center", gap: 6, height: 36, padding: "0 12px", borderRadius: 9, border: `1px solid ${color.line.DEFAULT}`, background: color.surface.card, color: color.ink.mid, fontSize: 13, fontWeight: 500, whiteSpace: "nowrap", flexShrink: 0, textDecoration: "none", cursor: "pointer" };
 const iconBtn: React.CSSProperties = { width: 36, height: 36, borderRadius: 9, border: `1px solid ${color.line.DEFAULT}`, background: color.surface.card, color: color.ink.mid, display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", position: "relative", flexShrink: 0, transition: "background 120ms ease, border-color 120ms ease" };
 const menu: React.CSSProperties = { position: "absolute", right: 0, top: 42, minWidth: 210, background: color.surface.card, border: `1px solid ${color.line.DEFAULT}`, borderRadius: 10, boxShadow: "0 12px 32px -8px rgba(20,28,38,0.25)", zIndex: 60, padding: 6 };
 const item: React.CSSProperties = { display: "block", padding: "9px 12px", fontSize: 13, color: color.ink.DEFAULT, textDecoration: "none", borderRadius: 7, whiteSpace: "nowrap" };

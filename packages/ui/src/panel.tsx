@@ -68,7 +68,7 @@ export function PanelHeader({
       }}
     >
       <div style={{ minWidth: 0 }}>
-        <h3 style={{ fontSize: 13.5, fontWeight: 600, color: color.ink.DEFAULT, margin: 0, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{title}</h3>
+        <h3 style={{ fontSize: 14, fontWeight: 600, color: color.ink.DEFAULT, margin: 0, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{title}</h3>
         {subtitle && <p style={{ fontSize: 12, color: color.ink.soft, margin: "2px 0 0" }}>{subtitle}</p>}
       </div>
       {actions && <div style={{ display: "flex", alignItems: "center", gap: 6, flexShrink: 0 }}>{actions}</div>}
