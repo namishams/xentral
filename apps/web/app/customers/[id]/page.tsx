@@ -66,13 +66,22 @@ export default function CustomerDetailPage({ params }: { params: { id: string } 
   if (!d || !form) return <AppShell active="customers"><div style={{ padding: 40, textAlign: "center", color: color.ink.soft }}>Customer not found. <a href="/customers" style={{ color: color.brand.primary }}>Back to customers</a></div></AppShell>;
 
   const s = d.summary; const cur = s.currency;
+  const overdue = d.invoices.filter((x) => (x.status || "").toUpperCase() === "OVERDUE");
+  const overdueAmt = overdue.reduce((acc, x) => acc + (Number(x.total) - (Number(x.amountPaid) || 0)), 0);
+  const actionNeeded = overdue.length > 0 || s.outstanding > 0;
+  const nextStep = overdue.length ? `Chase ${overdue.length} overdue invoice${overdue.length > 1 ? "s" : ""} · ${aed(overdueAmt, cur)}`
+    : s.outstanding > 0 ? `Collect ${aed(s.outstanding, cur)} outstanding across ${s.invoiceCount} invoice${s.invoiceCount === 1 ? "" : "s"}`
+    : s.quoteCount > 0 && s.invoiceCount === 0 ? `Convert ${s.quoteCount} open offer${s.quoteCount > 1 ? "s" : ""} into an invoice`
+    : "Account is up to date — no action needed.";
+  const healthTone: BadgeTone = overdue.length ? "critical" : s.outstanding > 0 ? "warning" : "positive";
+  const healthLabel = overdue.length ? "Overdue" : s.outstanding > 0 ? "Outstanding" : "Up to date";
   const labelS: React.CSSProperties = { display: "block", fontSize: 11, fontWeight: 700, letterSpacing: 0.3, color: color.ink.soft, textTransform: "uppercase", marginBottom: 4 };
-  const fieldS: React.CSSProperties = { width: "100%", boxSizing: "border-box", height: 34, border: `1px solid ${color.line.strong}`, borderRadius: 8, padding: "0 10px", fontSize: 13, color: color.ink.DEFAULT, background: color.surface.card, outline: "none" };
+  const fieldS: React.CSSProperties = { width: "100%", boxSizing: "border-box", height: 36, border: `1px solid ${color.line.strong}`, borderRadius: 8, padding: "0 10px", fontSize: 13, color: color.ink.DEFAULT, background: color.surface.card, outline: "none" };
   const linkRow: React.CSSProperties = { display: "flex", alignItems: "center", gap: 10, padding: "9px 16px", borderBottom: `1px solid ${color.line.DEFAULT}`, textDecoration: "none", color: color.ink.DEFAULT, fontSize: 13 };
 
   return (
     <AppShell active="customers">
-      <PageTitleRow title={d.customer.name} breadcrumb="Books · Customers" showIcon={false}
+      <PageTitleRow title={d.customer.name} breadcrumb="Books · Customers" showIcon={false} badge={<StatusBadge tone={healthTone} label={healthLabel} />}
         actions={<div style={{ display: "flex", gap: 8, alignItems: "center" }}>
           <Button onClick={() => { window.location.href = "/quotations/new"; }}>New quote</Button>
           <Button variant="primary" onClick={() => { window.location.href = "/invoices/new"; }}>New invoice</Button>
@@ -81,6 +90,11 @@ export default function CustomerDetailPage({ params }: { params: { id: string } 
       <AiInlineBar subject={d.customer.name} />
 
       <Panel style={{ marginBottom: 16 }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 10, padding: "11px 16px", borderBottom: `1px solid ${color.line.DEFAULT}`, background: color.brand.primaryTint }}>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke={color.brand.primary} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14" /><path d="m12 5 7 7-7 7" /></svg>
+          <span style={{ fontSize: 11, fontWeight: 700, letterSpacing: 0.4, textTransform: "uppercase", color: color.brand.primary, flexShrink: 0 }}>Next step</span>
+          <span style={{ fontSize: 13, fontWeight: 600, color: actionNeeded ? color.ink.DEFAULT : color.ink.soft, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{nextStep}</span>
+        </div>
         <PanelBody>
           <FactStrip facts={[
             { label: "Lifetime billed", value: aed(s.billed, cur) },
@@ -95,7 +109,7 @@ export default function CustomerDetailPage({ params }: { params: { id: string } 
       <div style={{ display: "grid", gridTemplateColumns: "minmax(0,1fr) minmax(0,1.4fr)", gap: 16, alignItems: "start" }}>
         {/* Profile (editable) */}
         <Panel>
-          <PanelHeader title="Details" actions={dirty ? <Button variant="primary" onClick={save} disabled={busy}>{busy ? "Saving…" : "Save"}</Button> : (saved ? <span style={{ fontSize: 12, fontWeight: 600, color: color.status.positive }}>✓ Saved</span> : <span style={{ fontSize: 11.5, color: color.ink.soft }}>Edit any field</span>)} />
+          <PanelHeader title="Details" actions={dirty ? <Button variant="primary" onClick={save} disabled={busy}>{busy ? "Saving…" : "Save"}</Button> : (saved ? <span style={{ fontSize: 12, fontWeight: 600, color: color.status.positive }}>✓ Saved</span> : <span style={{ fontSize: 12, color: color.ink.soft }}>Edit any field</span>)} />
           <PanelBody>
             <div style={{ display: "grid", gap: 10 }}>
               <div><label style={labelS}>Name</label><input value={form.name} onChange={(e) => set("name", e.target.value)} style={fieldS} /></div>
@@ -135,14 +149,14 @@ export default function CustomerDetailPage({ params }: { params: { id: string } 
                 ) : coId ? (
                   <div style={{ display: "flex", alignItems: "center", gap: 10, padding: "7px 9px 7px 8px", borderRadius: 10, border: `1px solid ${color.line.DEFAULT}`, background: color.surface.page }}>
                     <span style={{ width: 30, height: 30, flexShrink: 0, borderRadius: 8, background: color.brand.primaryTint, color: color.brand.primary, fontSize: 12, fontWeight: 700, display: "inline-flex", alignItems: "center", justifyContent: "center" }}>{coInitials(accounts.find((a) => a.id === coId)?.name || "?")}</span>
-                    <a href={`/companies/${coId}`} style={{ flex: 1, minWidth: 0, fontSize: 13.5, fontWeight: 600, color: color.ink.DEFAULT, textDecoration: "none", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{accounts.find((a) => a.id === coId)?.name || "Linked account"}</a>
-                    <button type="button" onClick={() => { setPendCo(coId); setNewCo(""); setChangeCompany(true); }} style={{ flexShrink: 0, height: 30, padding: "0 12px", borderRadius: 8, border: `1px solid ${color.brand.primary}`, background: color.surface.card, color: color.brand.primary, fontSize: 12.5, fontWeight: 600, cursor: "pointer" }}>Change</button>
+                    <a href={`/companies/${coId}`} style={{ flex: 1, minWidth: 0, fontSize: 14, fontWeight: 600, color: color.ink.DEFAULT, textDecoration: "none", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{accounts.find((a) => a.id === coId)?.name || "Linked account"}</a>
+                    <button type="button" onClick={() => { setPendCo(coId); setNewCo(""); setChangeCompany(true); }} style={{ flexShrink: 0, height: 30, padding: "0 12px", borderRadius: 8, border: `1px solid ${color.brand.primary}`, background: color.surface.card, color: color.brand.primary, fontSize: 13, fontWeight: 600, cursor: "pointer" }}>Change</button>
                   </div>
                 ) : (
                   <button type="button" onClick={() => { setPendCo(""); setNewCo(""); setChangeCompany(true); }} style={{ display: "inline-flex", alignItems: "center", gap: 7, height: 36, padding: "0 13px", borderRadius: 9, border: `1px dashed ${color.line.strong}`, background: color.surface.page, color: color.ink.mid, fontSize: 13, fontWeight: 600, cursor: "pointer" }}>+ Link a company</button>
                 )}
               </div>
-              {d.customer.contactId ? <a href={`/contacts/${d.customer.contactId}`} style={{ fontSize: 12.5, color: color.brand.primary, textDecoration: "none" }}>Open CRM contact →</a> : null}
+              {d.customer.contactId ? <a href={`/contacts/${d.customer.contactId}`} style={{ fontSize: 13, color: color.brand.primary, textDecoration: "none" }}>Open CRM contact →</a> : null}
             </div>
           </PanelBody>
         </Panel>
@@ -152,10 +166,10 @@ export default function CustomerDetailPage({ params }: { params: { id: string } 
           <Panel>
             <PanelHeader title="Invoices" subtitle={`${d.invoices.length}`} actions={<a href="/invoices" style={{ fontSize: 12, color: color.brand.primary, textDecoration: "none" }}>All →</a>} />
             <PanelBody flush>
-              {d.invoices.length === 0 ? <div style={{ padding: 16, textAlign: "center", fontSize: 12.5, color: color.ink.soft }}>No invoices yet.</div>
+              {d.invoices.length === 0 ? <div style={{ padding: 16, textAlign: "center", fontSize: 13, color: color.ink.soft }}>No invoices yet.</div>
                 : d.invoices.map((i) => { const bal = Math.max(0, (i.total || 0) - (i.amountPaid || 0)); return (
                   <a key={i.id} href={`/invoices/${i.id}`} className="xui-row-link" style={linkRow}>
-                    <span style={{ flex: 1, minWidth: 0 }}><span style={{ display: "block", fontWeight: 600, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{i.number}</span><span style={{ fontSize: 11.5, color: color.ink.soft }}>Due {i.due || "—"}</span></span>
+                    <span style={{ flex: 1, minWidth: 0 }}><span style={{ display: "block", fontWeight: 600, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{i.number}</span><span style={{ fontSize: 12, color: color.ink.soft }}>Due {i.due || "—"}</span></span>
                     <StatusBadge tone={ITONE[i.status] ?? "neutral"} label={i.status.replace("_", " ").toLowerCase()} />
                     <span style={{ width: 110, textAlign: "right", fontWeight: 600 }}>{aed(bal > 0 ? bal : i.total, i.currency)}</span>
                   </a>); })}
@@ -165,10 +179,10 @@ export default function CustomerDetailPage({ params }: { params: { id: string } 
           <Panel>
             <PanelHeader title="Offers" subtitle={`${d.quotes.length}`} actions={<a href="/quotations" style={{ fontSize: 12, color: color.brand.primary, textDecoration: "none" }}>All →</a>} />
             <PanelBody flush>
-              {d.quotes.length === 0 ? <div style={{ padding: 16, textAlign: "center", fontSize: 12.5, color: color.ink.soft }}>No offers yet.</div>
+              {d.quotes.length === 0 ? <div style={{ padding: 16, textAlign: "center", fontSize: 13, color: color.ink.soft }}>No offers yet.</div>
                 : d.quotes.map((q) => (
                   <a key={q.id} href={`/quotations/${q.id}`} className="xui-row-link" style={linkRow}>
-                    <span style={{ flex: 1, minWidth: 0 }}><span style={{ display: "block", fontWeight: 600, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{q.number}</span><span style={{ fontSize: 11.5, color: color.ink.soft }}>Valid {q.valid || "—"}</span></span>
+                    <span style={{ flex: 1, minWidth: 0 }}><span style={{ display: "block", fontWeight: 600, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{q.number}</span><span style={{ fontSize: 12, color: color.ink.soft }}>Valid {q.valid || "—"}</span></span>
                     <StatusBadge tone={ITONE[q.status] ?? "neutral"} label={q.status.toLowerCase()} />
                     <span style={{ width: 110, textAlign: "right", fontWeight: 600 }}>{aed(q.total, q.currency)}</span>
                   </a>
@@ -182,7 +196,7 @@ export default function CustomerDetailPage({ params }: { params: { id: string } 
               <PanelBody flush>
                 {d.payments.map((pm) => (
                   <div key={pm.id} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "9px 16px", borderBottom: `1px solid ${color.line.DEFAULT}` }}>
-                    <span style={{ minWidth: 0 }}><span style={{ display: "block", fontSize: 13, fontWeight: 600 }}>{aed(pm.amount, cur)}</span><span style={{ fontSize: 11.5, color: color.ink.soft }}>{(pm.method || "").replace("_", " ").toLowerCase()}{pm.invoiceNo ? ` · ${pm.invoiceNo}` : ""}{pm.date ? ` · ${pm.date}` : ""}</span></span>
+                    <span style={{ minWidth: 0 }}><span style={{ display: "block", fontSize: 13, fontWeight: 600 }}>{aed(pm.amount, cur)}</span><span style={{ fontSize: 12, color: color.ink.soft }}>{(pm.method || "").replace("_", " ").toLowerCase()}{pm.invoiceNo ? ` · ${pm.invoiceNo}` : ""}{pm.date ? ` · ${pm.date}` : ""}</span></span>
                     <span style={{ fontSize: 16, color: color.status.positive }}>✓</span>
                   </div>
                 ))}
