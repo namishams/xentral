@@ -59,7 +59,7 @@ function Card({ l, onBuy, busy, watched, onWatch, onBid, onAsk, credits }: { l: 
       : { bg: color.brand.primaryTint, fg: color.brand.primary, t: "⚡ Verified · Dispute protection · Instant unlock" };
 
   return (
-    <div style={{ background: color.surface.card, border: `2px solid ${flash ? color.brand.primary : critical ? color.status.negative + "66" : color.line.DEFAULT}`, borderRadius: 14, overflow: "hidden", display: "flex", flexDirection: "column", boxShadow: "0 1px 2px rgba(16,24,40,0.04)", transition: "border-color .3s" }}>
+    <div style={{ background: color.surface.card, border: `${flash || critical ? 2 : 1}px solid ${flash ? color.brand.primary : critical ? color.status.negative + "66" : color.line.DEFAULT}`, borderRadius: 14, overflow: "hidden", display: "flex", flexDirection: "column", boxShadow: "0 1px 2px rgba(16,24,40,0.04)", transition: "border-color .3s" }}>
       <div style={{ height: 28, display: "flex", alignItems: "center", gap: 6, padding: "0 14px", fontSize: 11, fontWeight: 600, background: strip.bg, color: strip.fg }}>{critical ? "🔥" : ""}<span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{strip.t}</span></div>
       <div style={{ padding: "12px 14px 14px", display: "flex", flexDirection: "column", gap: 11 }}>
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8 }}>
@@ -71,12 +71,12 @@ function Card({ l, onBuy, busy, watched, onWatch, onBid, onAsk, credits }: { l: 
           <span style={{ fontSize: 11, color: color.ink.soft }}>👁 {l.views}</span>
         </div>
         <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 8 }}>
-          <span><span style={{ display: "block", fontSize: 15, fontWeight: 700, color: color.ink.DEFAULT }}>{l.title}</span><span style={{ fontSize: 11, fontWeight: 600, letterSpacing: 0.3, color: color.ink.soft }}>{l.categoryLabel}</span></span>
+          <span><span style={{ display: "block", fontSize: 16, fontWeight: 700, color: color.ink.DEFAULT }}>{l.title}</span><span style={{ fontSize: 11, fontWeight: 600, letterSpacing: 0.3, color: color.ink.soft }}>{l.categoryLabel}</span></span>
           <span style={{ textAlign: "right", fontSize: 12, color: color.ink.soft }}>🌐 {l.region}<br />{l.city}</span>
         </div>
         <div style={{ fontSize: 12, fontStyle: "italic", color: color.ink.mid, lineHeight: "17px", borderLeft: `2px solid ${color.line.DEFAULT}`, paddingLeft: 8 }}>Verified professional lead — contact details revealed after purchase.</div>
         <div style={{ border: `1px solid ${color.line.DEFAULT}`, borderRadius: 9, padding: "10px 12px", background: color.surface.page }}>
-          <div style={{ fontSize: 10, fontWeight: 700, letterSpacing: 0.5, color: color.ink.soft, marginBottom: 6 }}>🔒 CONTACT PREVIEW</div>
+          <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: 0.5, color: color.ink.soft, marginBottom: 6 }}>🔒 CONTACT PREVIEW</div>
           <div style={{ fontSize: 13, color: color.ink.mid, marginBottom: 3, fontFamily: "monospace" }}>👤 {l.maskedName}</div>
           <div style={{ fontSize: 13, color: color.ink.mid, fontFamily: "monospace" }}>📞 {l.maskedPhone}</div>
         </div>
@@ -86,7 +86,7 @@ function Card({ l, onBuy, busy, watched, onWatch, onBid, onAsk, credits }: { l: 
         </div>
         <div style={{ border: `1px solid ${critical ? color.status.negative + "44" : flash ? color.brand.primary + "55" : color.line.DEFAULT}`, borderRadius: 9, padding: "11px 13px", background: critical ? "#fdecea" : flash ? color.brand.primaryTint : color.surface.page, display: "flex", alignItems: "flex-end", justifyContent: "space-between", transition: ".4s" }}>
           <span>
-            <span style={{ display: "block", fontSize: 10, fontWeight: 700, letterSpacing: 0.5, color: color.ink.soft }}>CURRENT PRICE</span>
+            <span style={{ display: "block", fontSize: 11, fontWeight: 700, letterSpacing: 0.5, color: color.ink.soft }}>CURRENT PRICE</span>
             <span style={{ fontSize: 26, fontWeight: 800, color: critical ? color.status.negative : flash ? color.brand.primary : color.ink.DEFAULT, fontVariantNumeric: "tabular-nums" }}>{aed(price)}</span>
             {off > 0 ? <span style={{ display: "block", fontSize: 12, color: color.ink.soft }}><span style={{ textDecoration: "line-through" }}>{aed(l.basePrice)}</span> <span style={{ color: color.status.positive, fontWeight: 700 }}>−{off}%</span></span> : <span style={{ display: "block", height: 16 }} />}
           </span>
@@ -97,12 +97,12 @@ function Card({ l, onBuy, busy, watched, onWatch, onBid, onAsk, credits }: { l: 
           )}
         </div>
         <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-          <button onClick={() => onWatch(l.id)} aria-label="Save" title={watched ? "Saved" : "Save to watchlist"} style={{ width: 36, height: 36, borderRadius: 8, border: `1px solid ${watched ? "#df9a00" : color.line.strong}`, background: watched ? "#fff7e6" : color.surface.card, display: "flex", alignItems: "center", justifyContent: "center", color: watched ? "#df9a00" : color.ink.soft, cursor: "pointer", fontSize: 15 }}>{watched ? "★" : "☆"}</button>
+          <button onClick={() => onWatch(l.id)} aria-label="Save" title={watched ? "Saved" : "Save to watchlist"} style={{ width: 36, height: 36, borderRadius: 8, border: `1px solid ${watched ? "#df9a00" : color.line.strong}`, background: watched ? "#fff7e6" : color.surface.card, display: "flex", alignItems: "center", justifyContent: "center", color: watched ? "#df9a00" : color.ink.soft, cursor: "pointer", fontSize: 16 }}>{watched ? "★" : "☆"}</button>
           <button onClick={() => onAsk(l)} style={{ height: 36, padding: "0 12px", borderRadius: 8, border: `1px solid ${color.line.strong}`, background: color.surface.card, color: color.ink.mid, fontSize: 13, fontWeight: 600, cursor: "pointer" }}>❓ Ask</button>
           <button onClick={() => onBid(l)} style={{ flex: 1, height: 36, borderRadius: 8, border: `1px solid ${color.line.strong}`, background: color.surface.card, color: color.ink.mid, fontSize: 13, fontWeight: 600, cursor: "pointer" }}>💬 Make offer</button>
         </div>
         {enough ? (
-          <button onClick={() => onBuy(l, price)} disabled={busy} style={{ height: 46, borderRadius: 10, border: 0, background: busy ? color.line.strong : critical ? color.status.negative : color.brand.primary, color: color.ink.onPrimary, fontSize: 15, fontWeight: 700, cursor: busy ? "default" : "pointer" }}>{busy ? "Processing…" : `Buy — ${aed(price)}`}</button>
+          <button onClick={() => onBuy(l, price)} disabled={busy} style={{ height: 46, borderRadius: 10, border: 0, background: busy ? color.line.strong : critical ? color.status.negative : color.brand.primary, color: color.ink.onPrimary, fontSize: 16, fontWeight: 700, cursor: busy ? "default" : "pointer" }}>{busy ? "Processing…" : `Buy — ${aed(price)}`}</button>
         ) : (
           <button onClick={() => onBuy(l, price)} style={{ height: 46, borderRadius: 10, border: `1px solid ${color.status.critical}55`, background: "#fff7ed", color: color.status.critical, fontSize: 13, fontWeight: 700, cursor: "pointer" }}>👛 Top up to buy — need {aed(price - (credits ?? 0))} more</button>
         )}
@@ -279,7 +279,7 @@ function ConfirmPurchaseModal({ lead, price, credits, busy, onConfirm, onClose }
           <button onClick={onClose} aria-label="Close" style={{ border: 0, background: "transparent", fontSize: 20, color: color.ink.soft, cursor: "pointer" }}>×</button>
         </div>
         <div style={{ padding: 20 }}>
-          <div style={{ fontSize: 15, fontWeight: 700, color: color.ink.DEFAULT }}>{lead.title}</div>
+          <div style={{ fontSize: 16, fontWeight: 700, color: color.ink.DEFAULT }}>{lead.title}</div>
           <div style={{ fontSize: 11, fontWeight: 600, letterSpacing: 0.3, color: color.ink.soft, marginBottom: 10 }}>{lead.categoryLabel} · {lead.region}</div>
           <div style={{ borderTop: `1px solid ${color.line.DEFAULT}`, borderBottom: `1px solid ${color.line.DEFAULT}`, padding: "4px 0", marginBottom: 14 }}>
             <div style={rowS}><span style={{ fontSize: 13, color: color.ink.mid }}>Amount</span><span style={{ fontSize: 20, fontWeight: 800, color: color.ink.DEFAULT }}>{aed(price)}</span></div>
@@ -320,7 +320,7 @@ function TopupModal({ bank, state, setState, onSubmit, onClose }: { bank: Bank |
           {state.sent ? (
             <div style={{ textAlign: "center", padding: "14px 0" }}>
               <div style={{ fontSize: 34 }}>✓</div>
-              <div style={{ fontSize: 15, fontWeight: 700, color: color.status.positive, marginTop: 6 }}>Top-up request submitted</div>
+              <div style={{ fontSize: 16, fontWeight: 700, color: color.status.positive, marginTop: 6 }}>Top-up request submitted</div>
               <div style={{ fontSize: 13, color: color.ink.mid, marginTop: 6 }}>Transfer the funds to the account below. We verify your transfer and credit your wallet — usually within a few hours.</div>
             </div>
           ) : (
@@ -393,7 +393,7 @@ function BidSlideOver({ lead, onClose, onDone }: { lead: MarketLead; onClose: ()
           {[["Current price", aed(lead.price)], ["Offers placed", String(ctx?.bidCount ?? 0)], ["Highest offer", ctx?.highBid ? aed(ctx.highBid) : "—"], ["Your offer", ctx?.myBid ? `${aed(ctx.myBid)}${ctx.myRank ? ` · #${ctx.myRank}` : ""}` : "—"]].map(([k, v]) => (
             <div key={k} style={{ border: `1px solid ${color.line.DEFAULT}`, borderRadius: 9, padding: "9px 11px", background: color.surface.page }}>
               <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: 0.3, color: color.ink.soft, textTransform: "uppercase" }}>{k}</div>
-              <div style={{ fontSize: 15, fontWeight: 700, color: color.ink.DEFAULT, marginTop: 2 }}>{v}</div>
+              <div style={{ fontSize: 16, fontWeight: 700, color: color.ink.DEFAULT, marginTop: 2 }}>{v}</div>
             </div>
           ))}
         </div>
