@@ -1,0 +1,88 @@
+name: Xentral safe deploy
+
+# Enforces the branch flow:  feature/** -> preview -> staging -> production.
+# Production never deploys directly: the `production` job uses a GitHub
+# Environment with required reviewers (manual approval), and the deploy itself
+# runs scripts/deploy-guard.sh which adds health + smoke gates and AUTO-ROLLBACK.
+#
+# Required repo secrets:  VPS_HOST, VPS_USER, VPS_SSH_KEY
+# Required GitHub Environments:  "staging" and "production"
+#   -> production must have "Required reviewers" set (this is the manual approval).
+# Required branch protection on `main`:  require PR + require the `verify` check.
+
+on:
+  push:
+    branches: ["feature/**", "staging", "main"]
+  pull_request:
+    branches: ["staging", "main"]
+
+concurrency:
+  group: deploy-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  # Quality gate — runs on EVERY push/PR. Nothing deploys if this fails.
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with: { version: 9 }
+      - uses: actions/setup-node@v4
+        with: { node-version: 20, cache: pnpm }
+      - run: pnpm install --frozen-lockfile
+      - name: Typecheck (strict)
+        run: pnpm -w turbo run typecheck
+      - name: Module boundaries (lint)
+        run: pnpm -w lint
+      - name: Migration safety (block destructive SQL)
+        run: bash scripts/migration-check.sh
+      - name: Production build
+        run: pnpm -w build
+      - name: Smoke gate (boot + critical routes + /api/health)
+        run: |
+          XENTRAL_LIVE_DATA=0 pnpm --filter @xentral/web start -p 3100 &
+          for i in $(seq 1 30); do curl -sf http://localhost:3100/api/health >/dev/null && break; sleep 2; done
+          BASE_URL=http://localhost:3100 bash scripts/smoke-test.sh
+
+  # Ephemeral preview for feature branches.
+  preview:
+    needs: verify
+    if: startsWith(github.ref, 'refs/heads/feature/')
+    runs-on: ubuntu-latest
+    environment: preview
+    steps:
+      - run: echo "Deploy ephemeral preview here (Vercel/Render/own runner), then hit /api/health."
+
+  # Staging deploy — push to the `staging` branch.
+  staging:
+    needs: verify
+    if: github.ref == 'refs/heads/staging'
+    runs-on: ubuntu-latest
+    environment: staging
+    steps:
+      - uses: appleboy/ssh-action@v1
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USER }}
+          key: ${{ secrets.VPS_SSH_KEY }}
+          script: |
+            cd /var/www/xentral-staging && git fetch origin && git checkout staging && git pull
+            bash scripts/deploy-guard.sh
+
+  # Production deploy — push to `main`. The `production` environment requires a
+  # human approval before this job runs (configure Required reviewers in GitHub).
+  production:
+    needs: verify
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    environment: production
+    steps:
+      - uses: appleboy/ssh-action@v1
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USER }}
+          key: ${{ secrets.VPS_SSH_KEY }}
+          script: |
+            cd /var/www/xentral && git fetch origin && git checkout main && git pull
+            ALLOW_PROD_DEPLOY=1 bash scripts/deploy-guard.sh
