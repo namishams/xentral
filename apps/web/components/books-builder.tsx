@@ -150,14 +150,12 @@ export function BooksBuilder({ kind, editId }: { kind: Kind; editId?: string }) 
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M4 2v20l2-1 2 1 2-1 2 1 2-1 2 1 2-1 2 1V2l-2 1-2-1-2 1-2-1-2 1-2-1-2 1Z"/><path d="M8 7h8M8 11h8M8 15h5"/></svg>
           </span>
           <div style={{ minWidth: 0 }}>
-            <div style={{ fontSize: 11.5, color: color.ink.soft }}>{cfg.crumb}</div>
-            <h1 style={{ fontSize: 19, fontWeight: 700, color: color.ink.DEFAULT, margin: 0 }}>{editing ? `Edit ${cfg.noun.toLowerCase()}` : `New ${cfg.noun.toLowerCase()}`}</h1>
+            <div style={{ fontSize: 12, color: color.ink.soft }}>{cfg.crumb}</div>
+            <h1 style={{ fontSize: 20, fontWeight: 700, color: color.ink.DEFAULT, margin: 0 }}>{editing ? `Edit ${cfg.noun.toLowerCase()}` : `New ${cfg.noun.toLowerCase()}`}</h1>
           </div>
         </div>
         <div style={{ display: "flex", gap: 8, flexShrink: 0 }}>
           <Button onClick={cancel}>Cancel</Button>
-          <Button onClick={() => save(true)} disabled={!canSave}>{saving === "send" ? "Sending…" : "Save & Send"}</Button>
-          <Button variant="primary" onClick={() => save(false)} disabled={!canSave}>{saving === "save" ? "Saving…" : editing ? "Save changes" : "Create draft"}</Button>
         </div>
       </div>
 
@@ -181,7 +179,7 @@ export function BooksBuilder({ kind, editId }: { kind: Kind; editId?: string }) 
                 <div style={{ display: "flex", gap: 12, marginTop: 6 }}>
                   <label style={{ display: "flex", alignItems: "center", gap: 5, fontSize: 12, color: color.ink.mid, cursor: "pointer" }}><input type="radio" checked={mode === "existing"} onChange={() => setMode("existing")} /> Existing</label>
                   <label style={{ display: "flex", alignItems: "center", gap: 5, fontSize: 12, color: color.ink.mid, cursor: "pointer" }}><input type="radio" checked={mode === "new"} onChange={() => setMode("new")} /> New</label>
-                  <span style={{ fontSize: 11.5, color: color.ink.soft, alignSelf: "center" }}>CRM-synced — no duplicates.</span>
+                  <span style={{ fontSize: 12, color: color.ink.soft, alignSelf: "center" }}>CRM-synced — no duplicates.</span>
                 </div>
               </div>
               <div><label style={lbl}>{cfg.noun} date</label><input type="date" value={issueDate} onChange={(e) => { onBind(); setIssueDate(e.target.value); }} style={{ ...cell, height: 36 }} /></div>
@@ -252,7 +250,7 @@ export function BooksBuilder({ kind, editId }: { kind: Kind; editId?: string }) 
             <Row k="Subtotal" v={aed(calc.sub)} />
             {calc.byRate.map(([rate, v]) => <Row key={rate} k={`VAT ${rate}%`} v={aed(v)} dim />)}
             <div style={{ display: "flex", justifyContent: "space-between", fontSize: 16, fontWeight: 800, color: color.ink.DEFAULT, borderTop: `1px solid ${color.line.DEFAULT}`, paddingTop: 10, marginTop: 4 }}><span>Total</span><span style={{ fontVariantNumeric: "tabular-nums" }}>{aed(calc.total)}</span></div>
-            {issues.length ? <div style={{ marginTop: 10, fontSize: 11.5, color: color.status.critical }}>{issues.map((x) => <div key={x}>• {x}</div>)}</div> : null}
+            {issues.length ? <div style={{ marginTop: 10, fontSize: 12, color: color.status.critical }}>{issues.map((x) => <div key={x}>• {x}</div>)}</div> : null}
             <div style={{ marginTop: 14, display: "flex", flexDirection: "column", gap: 8 }}>
               <Button variant="primary" onClick={() => save(false)} disabled={!canSave}>{saving === "save" ? "Saving…" : editing ? "Save changes" : "Save draft"}</Button>
               <Button onClick={() => save(true)} disabled={!canSave}>{saving === "send" ? "Sending…" : "Save & Send"}</Button>
@@ -270,12 +268,12 @@ export function BooksBuilder({ kind, editId }: { kind: Kind; editId?: string }) 
                 <div style={{ textAlign: "right" }}><div style={{ fontSize: 14, fontWeight: 800, color: accent }}>{cfg.noun.toUpperCase()}</div><div style={{ fontSize: 10.5, color: "#5b6b7b" }}>Draft</div></div>
               </div>
               <div style={{ fontSize: 10, color: "#8a97a5", textTransform: "uppercase" }}>Bill to</div>
-              <div style={{ fontSize: 12.5, fontWeight: 600, marginBottom: subject ? 4 : 10 }}>{custLabel}</div>{subject ? <div style={{ fontSize: 11.5, color: "#5b6b7b", marginBottom: 10 }}><span style={{ color: "#8a97a5" }}>Subject: </span>{subject}</div> : null}
+              <div style={{ fontSize: 12.5, fontWeight: 600, marginBottom: subject ? 4 : 10 }}>{custLabel}</div>{subject ? <div style={{ fontSize: 12, color: "#5b6b7b", marginBottom: 10 }}><span style={{ color: "#8a97a5" }}>Subject: </span>{subject}</div> : null}
               <div style={{ borderTop: "1px solid #eef1f5" }}>
                 {lines.filter((l) => l.name.trim() || parseFloat(l.unitPrice)).slice(0, 6).map((l, i) => { const net = (parseFloat(l.qty) || 0) * (parseFloat(l.unitPrice) || 0) * (1 - (parseFloat(l.discountPct) || 0) / 100); return (
-                  <div key={i} style={{ display: "flex", justifyContent: "space-between", gap: 8, padding: "5px 0", fontSize: 11.5, borderBottom: "1px solid #f4f6f9" }}><span style={{ minWidth: 0, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{l.name || "—"} <span style={{ color: "#8a97a5" }}>×{parseFloat(l.qty) || 0}</span></span><span style={{ fontVariantNumeric: "tabular-nums" }}>{fmt(net)}</span></div>
+                  <div key={i} style={{ display: "flex", justifyContent: "space-between", gap: 8, padding: "5px 0", fontSize: 12, borderBottom: "1px solid #f4f6f9" }}><span style={{ minWidth: 0, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{l.name || "—"} <span style={{ color: "#8a97a5" }}>×{parseFloat(l.qty) || 0}</span></span><span style={{ fontVariantNumeric: "tabular-nums" }}>{fmt(net)}</span></div>
                 ); })}
-                {lines.filter((l) => l.name.trim() || parseFloat(l.unitPrice)).length === 0 ? <div style={{ padding: "10px 0", fontSize: 11.5, color: "#8a97a5", textAlign: "center" }}>Add a line to preview</div> : null}
+                {lines.filter((l) => l.name.trim() || parseFloat(l.unitPrice)).length === 0 ? <div style={{ padding: "10px 0", fontSize: 12, color: "#8a97a5", textAlign: "center" }}>Add a line to preview</div> : null}
               </div>
               <div style={{ display: "flex", justifyContent: "flex-end", marginTop: 8 }}>
                 <div style={{ width: 150 }}>
