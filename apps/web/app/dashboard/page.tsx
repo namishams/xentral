@@ -91,6 +91,7 @@ function Panel({ title, action, children }: { title: string; action?: React.Reac
 }
 
 export default function DashboardPage() {
+  const focus = RECOMMENDATIONS.filter((r) => r.count > 0).slice().sort((a, b) => b.count - a.count)[0];
   return (
     <AppShell active="dashboard">
       {/* Greeting */}
@@ -101,6 +102,28 @@ export default function DashboardPage() {
         </div>
         <div style={{ fontSize: d.greeting.subFontSize, color: color.ink.mid, marginTop: 2 }}>Take a look at this month's performance</div>
       </div>
+
+      {/* Today's focus — the one hero: what needs attention right now */}
+      {focus ? (
+        <a href={focus.href} style={{ display: "flex", alignItems: "center", gap: 14, padding: "16px 18px", borderRadius: 12, border: `1px solid ${color.line.DEFAULT}`, background: color.surface.card, textDecoration: "none", marginBottom: d.panel.gap }}>
+          <span aria-hidden="true" style={{ width: 44, height: 44, borderRadius: 12, background: color.brand.primaryTint, color: color.brand.primary, display: "inline-flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="9" /><circle cx="12" cy="12" r="5" /><circle cx="12" cy="12" r="1.5" /></svg>
+          </span>
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: 0.4, textTransform: "uppercase", color: color.brand.primary }}>Today&rsquo;s focus</div>
+            <div style={{ fontSize: 16, fontWeight: 700, color: color.ink.DEFAULT, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", marginTop: 1 }}>{focus.label}</div>
+          </div>
+          <span style={{ fontSize: 13, fontWeight: 700, color: focus.tone, padding: "4px 11px", borderRadius: 8, background: color.surface.sunken, flexShrink: 0 }}>{focus.count}</span>
+          <span style={{ display: "inline-flex", alignItems: "center", gap: 6, height: 36, padding: "0 14px", borderRadius: 8, background: color.brand.primary, color: color.ink.onPrimary, fontSize: 13, fontWeight: 600, flexShrink: 0 }}>Resolve<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14" /><path d="m12 5 7 7-7 7" /></svg></span>
+        </a>
+      ) : (
+        <div style={{ display: "flex", alignItems: "center", gap: 12, padding: "16px 18px", borderRadius: 12, border: `1px solid ${color.line.DEFAULT}`, background: color.surface.card, marginBottom: d.panel.gap }}>
+          <span aria-hidden="true" style={{ width: 44, height: 44, borderRadius: 12, background: "#F0FDF4", color: color.status.positive, display: "inline-flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m9 12 2 2 4-4" /><circle cx="12" cy="12" r="9" /></svg>
+          </span>
+          <div><div style={{ fontSize: 11, fontWeight: 700, letterSpacing: 0.4, textTransform: "uppercase", color: color.status.positive }}>Today&rsquo;s focus</div><div style={{ fontSize: 16, fontWeight: 700, color: color.ink.DEFAULT, marginTop: 1 }}>You&rsquo;re all caught up — nothing needs attention right now.</div></div>
+        </div>
+      )}
 
       {/* KPI row — 4 identical locked tiles */}
       <div style={{ display: "flex", gap: uiConstants.card.gap, flexWrap: "wrap", marginBottom: d.panel.gap }}>
