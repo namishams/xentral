@@ -5,3 +5,7 @@ dist/
 *.log
 .env*
 next-env.d.ts
+
+# safety runtime state
+logs/
+.last-good-ref
