@@ -33,10 +33,10 @@ function Row({ r, done, onToggle }: { r: TaskRow; done: boolean; onToggle: () =>
     <div style={{ display: "flex", alignItems: "center", gap: 12, padding: "11px 14px", borderBottom: `1px solid ${color.line.DEFAULT}` }}>
       <button onClick={onToggle} aria-label={done ? "Mark not done" : "Mark done"} style={{ width: 20, height: 20, borderRadius: 6, cursor: "pointer", flexShrink: 0,
         border: `1.5px solid ${done ? color.status.positive : color.line.strong}`, background: done ? color.status.positive : color.surface.card, color: color.ink.onPrimary, fontSize: 12, lineHeight: "16px" }}>{done ? "✓" : ""}</button>
-      <span style={{ flex: 1, minWidth: 0, fontSize: 13.5, fontWeight: 500, color: done ? color.ink.soft : color.ink.DEFAULT, textDecoration: done ? "line-through" : "none" }}>{r.title}</span>
+      <span style={{ flex: 1, minWidth: 0, fontSize: 14, fontWeight: 500, color: done ? color.ink.soft : color.ink.DEFAULT, textDecoration: done ? "line-through" : "none" }}>{r.title}</span>
       <StatusBadge tone={PRIO_TONE[r.priority]} label={r.priority} />
-      <span style={{ fontSize: 12.5, fontWeight: 600, color: dueTone(r.due, done), minWidth: 64, textAlign: "right", fontVariantNumeric: "tabular-nums" }}>{fmtDue(r.due)}</span>
-      {r.owner ? <span aria-hidden="true" title={r.owner} style={{ display: "inline-flex", width: 26, height: 26, borderRadius: "50%", background: color.brand.primaryTint, color: color.brand.primary, fontSize: 10.5, fontWeight: 700, alignItems: "center", justifyContent: "center", flexShrink: 0 }}>{initials(r.owner)}</span> : null}
+      <span style={{ fontSize: 13, fontWeight: 600, color: dueTone(r.due, done), minWidth: 64, textAlign: "right", fontVariantNumeric: "tabular-nums" }}>{fmtDue(r.due)}</span>
+      {r.owner ? <span aria-hidden="true" title={r.owner} style={{ display: "inline-flex", width: 26, height: 26, borderRadius: "50%", background: color.brand.primaryTint, color: color.brand.primary, fontSize: 11, fontWeight: 700, alignItems: "center", justifyContent: "center", flexShrink: 0 }}>{initials(r.owner)}</span> : null}
     </div>
   );
 }

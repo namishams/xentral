@@ -57,7 +57,7 @@ export default function EmailPage() {
                     <span style={{ width: 32, height: 32, borderRadius: 8, background: color.surface.sunken, color: color.ink.mid, fontSize: 11, fontWeight: 700, display: "inline-flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>{initials(m.toName || m.to)}</span>
                     <span style={{ flex: 1, minWidth: 0 }}>
                       <span style={{ display: "flex", justifyContent: "space-between", gap: 8 }}><span style={{ fontSize: 13, fontWeight: 600, color: color.ink.DEFAULT, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{m.toName || m.to}</span><span style={{ fontSize: 11, color: color.ink.soft, flexShrink: 0 }}>{m.sent}</span></span>
-                      <span style={{ display: "block", fontSize: 12.5, color: color.ink.mid, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{m.subject}</span>
+                      <span style={{ display: "block", fontSize: 13, color: color.ink.mid, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{m.subject}</span>
                     </span>
                   </button>
                 );
@@ -71,8 +71,8 @@ export default function EmailPage() {
                 <h2 style={{ margin: 0, fontSize: 18, fontWeight: 700, color: color.ink.DEFAULT }}>{sel.subject}</h2>
                 <StatusBadge tone={TONE[sel.status] ?? "neutral"} label={sel.status.toLowerCase()} />
               </div>
-              <div style={{ fontSize: 12.5, color: color.ink.soft, marginBottom: 4 }}>To: {sel.toName ? `${sel.toName} · ` : ""}{sel.to}</div>
-              <div style={{ fontSize: 12.5, color: color.ink.soft, marginBottom: 16 }}>From: {sel.from} · {sel.sent}</div>
+              <div style={{ fontSize: 13, color: color.ink.soft, marginBottom: 4 }}>To: {sel.toName ? `${sel.toName} · ` : ""}{sel.to}</div>
+              <div style={{ fontSize: 13, color: color.ink.soft, marginBottom: 16 }}>From: {sel.from} · {sel.sent}</div>
               <div style={{ fontSize: 14, color: color.ink.DEFAULT, lineHeight: 1.6, whiteSpace: "pre-wrap", borderTop: `1px solid ${color.line.DEFAULT}`, paddingTop: 16 }}>{sel.body || "(no body)"}</div>
             </>
           ) : (
@@ -92,7 +92,7 @@ export default function EmailPage() {
               <h2 style={{ margin: 0, fontSize: 17, fontWeight: 700, color: color.ink.DEFAULT }}>New email</h2>
               <button aria-label="Close" onClick={() => setCompose(false)} style={{ border: 0, background: "transparent", fontSize: 20, color: color.ink.soft, cursor: "pointer" }}>×</button>
             </div>
-            {err ? <div style={{ background: "#fdeceb", color: "#b3261e", border: "1px solid #f3b6b1", borderRadius: 8, padding: "8px 11px", fontSize: 12.5, marginBottom: 12 }}>{err}</div> : null}
+            {err ? <div style={{ background: "#fdeceb", color: "#b3261e", border: "1px solid #f3b6b1", borderRadius: 8, padding: "8px 11px", fontSize: 13, marginBottom: 12 }}>{err}</div> : null}
             <div style={{ display: "flex", gap: 10, marginBottom: 10 }}>
               <Input placeholder="To (email)" value={draft.to} onChange={(e) => setDraft({ ...draft, to: e.target.value })} style={{ flex: 1.4 }} />
               <Input placeholder="Name (optional)" value={draft.toName} onChange={(e) => setDraft({ ...draft, toName: e.target.value })} style={{ flex: 1 }} />

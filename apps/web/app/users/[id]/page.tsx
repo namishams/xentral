@@ -70,16 +70,16 @@ export default function UserRecordPage({ params }: { params: { id: string } }) {
 
       <div style={{ display: "grid", gridTemplateColumns: "minmax(0,1fr) 320px", gap: 16, alignItems: "start" }}>
         <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
-          <Panel title="Access &amp; permissions" action={<a href="/roles" style={{ fontSize: 12.5, color: color.brand.primary, textDecoration: "none" }}>Manage roles ↗</a>}>
+          <Panel title="Access &amp; permissions" action={<a href="/roles" style={{ fontSize: 13, color: color.brand.primary, textDecoration: "none" }}>Manage roles ↗</a>}>
             {scope.map((s, i) => (
               <div key={s} style={{ display: "flex", alignItems: "center", gap: 10, padding: "9px 0", borderTop: i === 0 ? "none" : `1px solid ${color.line.DEFAULT}` }}>
                 <span style={{ color: color.status.positive, fontSize: 14 }}>✓</span>
-                <span style={{ fontSize: 13.5, color: color.ink.DEFAULT }}>{s}</span>
+                <span style={{ fontSize: 14, color: color.ink.DEFAULT }}>{s}</span>
               </div>
             ))}
           </Panel>
           <Panel title="Recent activity">
-            <div style={{ fontSize: 12.5, color: color.ink.soft }}>Signed in {m.lastLogin || "recently"} · Email OTP verified · UAE region.</div>
+            <div style={{ fontSize: 13, color: color.ink.soft }}>Signed in {m.lastLogin || "recently"} · Email OTP verified · UAE region.</div>
           </Panel>
         </div>
         <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
@@ -90,7 +90,7 @@ export default function UserRecordPage({ params }: { params: { id: string } }) {
             <SumRow label="Last login">{m.lastLogin || "—"}</SumRow>
           </Panel>
           <Panel title="Sessions" action={<Button>Sign out all</Button>}>
-            <div style={{ fontSize: 12.5, color: color.ink.soft, padding: "4px 0" }}>1 active session · this device.</div>
+            <div style={{ fontSize: 13, color: color.ink.soft, padding: "4px 0" }}>1 active session · this device.</div>
           </Panel>
         </div>
       </div>

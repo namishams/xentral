@@ -49,8 +49,8 @@ export default function AccountPage() {
     setMsg("Profile saved.");
   }
 
-  const lab: React.CSSProperties = { display: "block", fontSize: 10.5, fontWeight: 700, letterSpacing: 0.3, color: color.ink.soft, textTransform: "uppercase", marginBottom: 5 };
-  const inS: React.CSSProperties = { width: "100%", boxSizing: "border-box", height: 36, border: `1px solid ${color.line.strong}`, borderRadius: 8, padding: "0 11px", fontSize: 13.5, color: color.ink.DEFAULT, background: color.surface.card, outline: "none" };
+  const lab: React.CSSProperties = { display: "block", fontSize: 11, fontWeight: 700, letterSpacing: 0.3, color: color.ink.soft, textTransform: "uppercase", marginBottom: 5 };
+  const inS: React.CSSProperties = { width: "100%", boxSizing: "border-box", height: 36, border: `1px solid ${color.line.strong}`, borderRadius: 8, padding: "0 11px", fontSize: 14, color: color.ink.DEFAULT, background: color.surface.card, outline: "none" };
 
   if (loading) return <AppShell active="account"><div style={{ padding: 40, textAlign: "center", color: color.ink.soft }}>Loading…</div></AppShell>;
 
@@ -77,7 +77,7 @@ export default function AccountPage() {
                   <Button variant="primary" onClick={() => fileRef.current?.click()} disabled={photoBusy}>{photoBusy ? "Uploading…" : avatar ? "Replace photo" : "Upload photo"}</Button>
                   {avatar ? <Button onClick={removePhoto} disabled={photoBusy}>Remove</Button> : null}
                 </div>
-                <div style={{ fontSize: 11.5, color: color.ink.soft, marginTop: 7 }}>PNG, JPG or WebP · max 2 MB · square works best.</div>
+                <div style={{ fontSize: 12, color: color.ink.soft, marginTop: 7 }}>PNG, JPG or WebP · max 2 MB · square works best.</div>
               </div>
             </div>
           </PanelBody>
@@ -89,7 +89,7 @@ export default function AccountPage() {
             <div style={{ display: "flex", flexDirection: "column", gap: 13 }}>
               <div><label style={lab}>Full name</label><input value={name} onChange={(e) => setName(e.target.value)} placeholder="Your name" style={inS} /></div>
               <div><label style={lab}>Phone</label><input value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="+971 50 xxx xxxx" style={inS} /></div>
-              <div><label style={lab}>Email</label><input value={me?.email || ""} disabled style={{ ...inS, background: color.surface.sunken, color: color.ink.soft }} /><div style={{ fontSize: 11.5, color: color.ink.soft, marginTop: 4 }}>Sign-in email — change it under Security.</div></div>
+              <div><label style={lab}>Email</label><input value={me?.email || ""} disabled style={{ ...inS, background: color.surface.sunken, color: color.ink.soft }} /><div style={{ fontSize: 12, color: color.ink.soft, marginTop: 4 }}>Sign-in email — change it under Security.</div></div>
               <div style={{ display: "flex", gap: 8, marginTop: 2 }}>
                 <a href="/security" style={{ textDecoration: "none" }}><Button>Security &amp; password</Button></a>
                 <a href="/settings/email" style={{ textDecoration: "none" }}><Button>Email settings</Button></a>

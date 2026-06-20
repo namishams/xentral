@@ -54,7 +54,7 @@ export default function InvoicePrintPage({ params }: { params: { id: string } })
       <div style={{ marginBottom: 22 }}>
         <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: 0.5, color: "#8a97a5", textTransform: "uppercase", marginBottom: 4 }}>Bill to</div>
         <div style={{ fontSize: 15, fontWeight: 700 }}>{inv.customer}</div>
-        {inv.customerEmail ? <div style={{ fontSize: 12.5, color: "#5b6b7b" }}>{inv.customerEmail}</div> : null}
+        {inv.customerEmail ? <div style={{ fontSize: 13, color: "#5b6b7b" }}>{inv.customerEmail}</div> : null}
       </div>
 
       <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 13, marginBottom: 18 }}>
@@ -64,7 +64,7 @@ export default function InvoicePrintPage({ params }: { params: { id: string } })
         <tbody>
           {lines.map((l, i) => (
             <tr key={i} style={{ borderBottom: "1px solid #e4e9ef" }}>
-              <td style={{ padding: "9px 10px" }}>{l.name}{l.description ? <span style={{ display: "block", fontSize: 11.5, color: "#8a97a5" }}>{l.description}</span> : null}</td>
+              <td style={{ padding: "9px 10px" }}>{l.name}{l.description ? <span style={{ display: "block", fontSize: 12, color: "#8a97a5" }}>{l.description}</span> : null}</td>
               <td style={{ textAlign: "right", padding: "9px 10px", color: "#5b6b7b" }}>{Number(l.qty)}</td>
               <td style={{ textAlign: "right", padding: "9px 10px", color: "#5b6b7b" }}>{money(l.unitPrice, inv.currency)}</td>
               <td style={{ textAlign: "right", padding: "9px 10px", fontWeight: 600 }}>{money(l.lineTotal, inv.currency)}</td>
@@ -87,5 +87,5 @@ export default function InvoicePrintPage({ params }: { params: { id: string } })
   );
 }
 function Row({ k, v }: { k: string; v: string }) {
-  return <div style={{ display: "flex", justifyContent: "space-between", fontSize: 12.5, color: "#5b6b7b", padding: "3px 0" }}><span>{k}</span><span>{v}</span></div>;
+  return <div style={{ display: "flex", justifyContent: "space-between", fontSize: 13, color: "#5b6b7b", padding: "3px 0" }}><span>{k}</span><span>{v}</span></div>;
 }

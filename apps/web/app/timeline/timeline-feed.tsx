@@ -26,8 +26,8 @@ export function TimelineFeed({ events }: { events: TimelineEvent[] }) {
             <div key={e.id} style={{ display: "flex", alignItems: "center", gap: 14, padding: "12px 16px", borderTop: i === 0 ? "none" : `1px solid ${color.line.DEFAULT}` }}>
               <span style={{ width: 86, flexShrink: 0, fontSize: 12, color: color.ink.soft }}>{e.when}</span>
               <StatusBadge tone={kindTone(e.kind)} label={e.kind} />
-              <span style={{ flex: 1, minWidth: 0, fontSize: 13.5, color: color.ink.DEFAULT, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{e.title}</span>
-              <span style={{ fontSize: 11.5, color: color.ink.soft }}>{e.detail}</span>
+              <span style={{ flex: 1, minWidth: 0, fontSize: 14, color: color.ink.DEFAULT, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{e.title}</span>
+              <span style={{ fontSize: 12, color: color.ink.soft }}>{e.detail}</span>
               {e.who ? <StatusBadge tone="neutral" label={e.who} /> : null}
             </div>
           ))}

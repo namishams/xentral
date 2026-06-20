@@ -6,8 +6,8 @@ import { Button } from "@xentral/ui";
 
 type Inv = { id: string; number: string; customer: string; total: number; amountPaid: number };
 const METHODS = [["BANK_TRANSFER", "Bank transfer"], ["CASH", "Cash"], ["CARD", "Card"], ["CHEQUE", "Cheque"], ["ONLINE", "Online"]] as const;
-const lbl: React.CSSProperties = { display: "block", fontSize: 11.5, fontWeight: 700, letterSpacing: 0.3, color: color.ink.soft, textTransform: "uppercase", marginBottom: 5 };
-const inp: React.CSSProperties = { width: "100%", boxSizing: "border-box", height: 38, border: `1px solid ${color.line.strong}`, borderRadius: 8, padding: "0 11px", fontSize: 13.5, color: color.ink.DEFAULT, background: color.surface.card, outline: "none", marginBottom: 12 };
+const lbl: React.CSSProperties = { display: "block", fontSize: 12, fontWeight: 700, letterSpacing: 0.3, color: color.ink.soft, textTransform: "uppercase", marginBottom: 5 };
+const inp: React.CSSProperties = { width: "100%", boxSizing: "border-box", height: 38, border: `1px solid ${color.line.strong}`, borderRadius: 8, padding: "0 11px", fontSize: 14, color: color.ink.DEFAULT, background: color.surface.card, outline: "none", marginBottom: 12 };
 
 export function RecordPaymentButton({ label = "+ Record payment" }: { label?: string }) {
   const [open, setOpen] = React.useState(false);
@@ -57,7 +57,7 @@ export function RecordPaymentButton({ label = "+ Record payment" }: { label?: st
               <h2 style={{ margin: 0, fontSize: 17, fontWeight: 700, color: color.ink.DEFAULT }}>Record payment</h2>
               <button aria-label="Close" onClick={reset} style={{ border: 0, background: "transparent", fontSize: 20, color: color.ink.soft, cursor: "pointer" }}>×</button>
             </div>
-            {err ? <div style={{ background: `color-mix(in srgb, ${color.status.critical} 12%, ${color.surface.card})`, color: color.status.critical, border: `1px solid ${color.status.critical}`, borderRadius: 8, padding: "8px 11px", fontSize: 12.5, marginBottom: 12 }}>{err}</div> : null}
+            {err ? <div style={{ background: `color-mix(in srgb, ${color.status.critical} 12%, ${color.surface.card})`, color: color.status.critical, border: `1px solid ${color.status.critical}`, borderRadius: 8, padding: "8px 11px", fontSize: 13, marginBottom: 12 }}>{err}</div> : null}
             <label style={lbl}>Invoice</label>
             {invoices.length === 0 ? (
               <div style={{ fontSize: 13, color: color.ink.mid, marginBottom: 12 }}>No outstanding invoices.</div>

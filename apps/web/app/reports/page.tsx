@@ -34,7 +34,7 @@ export default function ReportsPage() {
             <span style={{ width: 38, height: 38, flexShrink: 0, borderRadius: 9, background: r.accent + "1a", color: r.accent, fontSize: 18, display: "flex", alignItems: "center", justifyContent: "center" }}>{r.glyph}</span>
             <span>
               <span style={{ display: "block", fontSize: 14, fontWeight: 600, color: color.ink.DEFAULT, marginBottom: 3 }}>{r.title}</span>
-              <span style={{ display: "block", fontSize: 12.5, color: color.ink.soft, lineHeight: "18px" }}>{r.desc}</span>
+              <span style={{ display: "block", fontSize: 13, color: color.ink.soft, lineHeight: "18px" }}>{r.desc}</span>
             </span>
           </button>
         ))}

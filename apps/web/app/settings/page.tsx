@@ -34,7 +34,7 @@ function Panel({ title, children }: { title: string; children: React.ReactNode }
 function Row({ label, right }: { label: string; right: React.ReactNode }) {
   return (
     <div style={{ display: "flex", alignItems: "center", gap: 12, padding: "12px 0", borderTop: `1px solid ${color.line.DEFAULT}` }}>
-      <div style={{ width: 180, flexShrink: 0, fontSize: 13.5, color: color.ink.DEFAULT }}>{label}</div>
+      <div style={{ width: 180, flexShrink: 0, fontSize: 14, color: color.ink.DEFAULT }}>{label}</div>
       <div style={{ flex: 1, minWidth: 0 }}>{right}</div>
     </div>
   );
@@ -55,7 +55,7 @@ export default function SettingsPage() {
               {c.tag ? <StatusBadge tone="positive" label={c.tag} /> : null}
             </div>
             <div style={{ fontSize: 14, fontWeight: 600, color: color.ink.DEFAULT, marginBottom: 3 }}>{c.title}</div>
-            <div style={{ fontSize: 12.5, color: color.ink.mid, lineHeight: 1.45 }}>{c.desc}</div>
+            <div style={{ fontSize: 13, color: color.ink.mid, lineHeight: 1.45 }}>{c.desc}</div>
           </a>
         ))}
       </div>

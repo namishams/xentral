@@ -28,7 +28,7 @@ export default function PartnerPage() {
               {t.current ? <StatusBadge tone="positive" label="current" /> : null}
             </div>
             <div style={{ fontSize: 26, fontWeight: 700, color: color.brand.primary }}>{t.commission}</div>
-            <div style={{ fontSize: 12.5, color: color.ink.soft }}>{t.reqs}</div>
+            <div style={{ fontSize: 13, color: color.ink.soft }}>{t.reqs}</div>
           </div>
         ))}
       </div>

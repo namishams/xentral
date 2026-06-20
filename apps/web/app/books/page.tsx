@@ -30,7 +30,7 @@ export default function BooksHomePage() {
     <div style={card}>
       <div style={{ fontSize: 11, fontWeight: 600, textTransform: "uppercase", letterSpacing: 0.4, color: color.ink.soft }}>{label}</div>
       <div style={{ fontSize: 22, fontWeight: 800, marginTop: 4, color: tone === "neg" ? color.status.negative : tone === "pos" ? color.status.positive : tone === "warn" ? color.status.critical : color.ink.DEFAULT }}>{value}</div>
-      {sub ? <div style={{ fontSize: 11.5, color: color.ink.soft, marginTop: 2 }}>{sub}</div> : null}
+      {sub ? <div style={{ fontSize: 12, color: color.ink.soft, marginTop: 2 }}>{sub}</div> : null}
     </div>
   );
 
@@ -50,7 +50,7 @@ export default function BooksHomePage() {
         <>
           {/* AI quick prompts */}
           <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap", marginBottom: 16, padding: "12px 14px", borderRadius: 12, background: "linear-gradient(90deg, #eef4ff, var(--surface-page))", border: `1px solid ${color.line.DEFAULT}` }}>
-            <span style={{ fontSize: 12.5, fontWeight: 700, color: color.brand.primary }}>Ask Xentral AI:</span>
+            <span style={{ fontSize: 13, fontWeight: 700, color: color.brand.primary }}>Ask Xentral AI:</span>
             {AI.map((q) => <AskAiButton key={q} seed={q} label={q.length > 42 ? q.slice(0, 40) + "…" : q} variant="ghost" />)}
           </div>
 
@@ -71,7 +71,7 @@ export default function BooksHomePage() {
               <PanelBody>
                 {d.aging.map((a) => (
                   <div key={a.label} style={{ marginBottom: 10 }}>
-                    <div style={{ display: "flex", justifyContent: "space-between", fontSize: 12.5, marginBottom: 3 }}><span style={{ color: color.ink.mid }}>{a.label} {a.count ? <span style={{ color: color.ink.soft }}>· {a.count}</span> : null}</span><span style={{ fontWeight: 600, color: a.label === "90+" && a.amount > 0 ? color.status.negative : color.ink.DEFAULT }}>{aed(a.amount)}</span></div>
+                    <div style={{ display: "flex", justifyContent: "space-between", fontSize: 13, marginBottom: 3 }}><span style={{ color: color.ink.mid }}>{a.label} {a.count ? <span style={{ color: color.ink.soft }}>· {a.count}</span> : null}</span><span style={{ fontWeight: 600, color: a.label === "90+" && a.amount > 0 ? color.status.negative : color.ink.DEFAULT }}>{aed(a.amount)}</span></div>
                     <div style={{ height: 7, borderRadius: 4, background: color.surface.sunken, overflow: "hidden" }}><div style={{ height: "100%", width: `${(a.amount / agingMax) * 100}%`, background: a.label === "Current" ? color.status.positive : a.label === "90+" ? color.status.negative : color.brand.primary }} /></div>
                   </div>
                 ))}
@@ -85,7 +85,7 @@ export default function BooksHomePage() {
                 <div style={{ display: "flex", alignItems: "flex-end", gap: 10, height: 130, paddingTop: 8 }}>
                   {d.trend.map((t) => (
                     <div key={t.label} style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", gap: 6 }}>
-                      <div style={{ fontSize: 10.5, color: color.ink.soft }}>{t.value ? aed(t.value).replace(cur + " ", "") : ""}</div>
+                      <div style={{ fontSize: 11, color: color.ink.soft }}>{t.value ? aed(t.value).replace(cur + " ", "") : ""}</div>
                       <div style={{ width: "70%", height: `${(t.value / trendMax) * 90}px`, minHeight: 3, borderRadius: "5px 5px 0 0", background: color.brand.primary, opacity: 0.85 }} />
                       <div style={{ fontSize: 11, color: color.ink.mid }}>{t.label}</div>
                     </div>
@@ -100,10 +100,10 @@ export default function BooksHomePage() {
             <Panel>
               <PanelHeader title="Top debtors" subtitle="Who owes the most" />
               <PanelBody flush>
-                {d.debtors.length === 0 ? <div style={{ padding: 16, textAlign: "center", fontSize: 12.5, color: color.ink.soft }}>No outstanding balances. 🎉</div>
+                {d.debtors.length === 0 ? <div style={{ padding: 16, textAlign: "center", fontSize: 13, color: color.ink.soft }}>No outstanding balances. 🎉</div>
                   : d.debtors.map((c) => (
                     <div key={c.name} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "10px 16px", borderBottom: `1px solid ${color.line.DEFAULT}` }}>
-                      <span style={{ minWidth: 0 }}><span style={{ display: "block", fontSize: 13, fontWeight: 600, color: color.ink.DEFAULT, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{c.name}</span><span style={{ fontSize: 11.5, color: color.ink.soft }}>{c.count} invoice{c.count === 1 ? "" : "s"}{c.oldest > 0 ? ` · ${c.oldest}d overdue` : ""}</span></span>
+                      <span style={{ minWidth: 0 }}><span style={{ display: "block", fontSize: 13, fontWeight: 600, color: color.ink.DEFAULT, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{c.name}</span><span style={{ fontSize: 12, color: color.ink.soft }}>{c.count} invoice{c.count === 1 ? "" : "s"}{c.oldest > 0 ? ` · ${c.oldest}d overdue` : ""}</span></span>
                       <span style={{ fontWeight: 700, fontSize: 13, color: c.oldest > 30 ? color.status.negative : color.ink.DEFAULT }}>{aed(c.amount)}</span>
                     </div>
                   ))}
@@ -114,12 +114,12 @@ export default function BooksHomePage() {
             <Panel>
               <PanelHeader title="Recent invoices" actions={<a href="/invoices" style={{ fontSize: 12, color: color.brand.primary, textDecoration: "none" }}>All invoices →</a>} />
               <PanelBody flush>
-                {d.recentInvoices.length === 0 ? <div style={{ padding: 16, textAlign: "center", fontSize: 12.5, color: color.ink.soft }}>No invoices yet.</div>
+                {d.recentInvoices.length === 0 ? <div style={{ padding: 16, textAlign: "center", fontSize: 13, color: color.ink.soft }}>No invoices yet.</div>
                   : d.recentInvoices.map((i) => (
                     <a key={i.id} href={`/invoices/${i.id}`} className="xui-row-link" style={{ display: "flex", alignItems: "center", gap: 10, padding: "9px 16px", borderBottom: `1px solid ${color.line.DEFAULT}`, textDecoration: "none", color: color.ink.DEFAULT }}>
-                      <span style={{ flex: 1, minWidth: 0 }}><span style={{ display: "block", fontSize: 13, fontWeight: 600, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{i.number} · {i.customer}</span><span style={{ fontSize: 11.5, color: color.ink.soft }}>Due {i.due}</span></span>
+                      <span style={{ flex: 1, minWidth: 0 }}><span style={{ display: "block", fontSize: 13, fontWeight: 600, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{i.number} · {i.customer}</span><span style={{ fontSize: 12, color: color.ink.soft }}>Due {i.due}</span></span>
                       <StatusBadge tone={ITONE[i.status] ?? "neutral"} label={i.status.replace("_", " ").toLowerCase()} />
-                      <span style={{ width: 96, textAlign: "right", fontWeight: 600, fontSize: 12.5 }}>{aed(i.balance > 0 ? i.balance : i.total)}</span>
+                      <span style={{ width: 96, textAlign: "right", fontWeight: 600, fontSize: 13 }}>{aed(i.balance > 0 ? i.balance : i.total)}</span>
                     </a>
                   ))}
               </PanelBody>

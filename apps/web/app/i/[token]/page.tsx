@@ -31,7 +31,7 @@ export default function PublicInvoicePage({ params }: { params: { token: string 
           <div style={{ fontSize: 13, color: "#5b6b7b" }}>Invoice from <b style={{ color: "#1d2733" }}>{d.merchant}</b></div>
           <div style={{ display: "flex", gap: 8 }}>
             <button onClick={() => window.print()} style={{ height: 36, padding: "0 14px", borderRadius: 9, border: "1px solid #dce2ea", background: "#fff", fontSize: 13, fontWeight: 600, color: "#1d2733", cursor: "pointer" }}>Print</button>
-            {!paid ? <a href={`/pay/${d.id}`} style={{ height: 36, padding: "0 16px", borderRadius: 9, background: accent, color: "#fff", fontSize: 13.5, fontWeight: 700, display: "inline-flex", alignItems: "center", textDecoration: "none" }}>Pay {aed(d.balance, d.currency)}</a> : null}
+            {!paid ? <a href={`/pay/${d.id}`} style={{ height: 36, padding: "0 16px", borderRadius: 9, background: accent, color: "#fff", fontSize: 14, fontWeight: 700, display: "inline-flex", alignItems: "center", textDecoration: "none" }}>Pay {aed(d.balance, d.currency)}</a> : null}
           </div>
         </div>
 
@@ -55,7 +55,7 @@ export default function PublicInvoicePage({ params }: { params: { token: string 
                 <div style={{ fontSize: 11, fontWeight: 700, textTransform: "uppercase", color: "#8a97a5", marginBottom: 4 }}>Bill to</div>
                 <div style={{ fontSize: 14, fontWeight: 600 }}>{d.customer}</div>
               </div>
-              <div style={{ textAlign: "right", fontSize: 12.5, color: "#5b6b7b" }}>
+              <div style={{ textAlign: "right", fontSize: 13, color: "#5b6b7b" }}>
                 <div>Issued: <b style={{ color: "#1d2733" }}>{d.issued || "—"}</b></div>
                 <div>Due: <b style={{ color: "#1d2733" }}>{d.due || "—"}</b></div>
               </div>
@@ -95,7 +95,7 @@ export default function PublicInvoicePage({ params }: { params: { token: string 
             {(d.bank.iban || d.bank.bankName) ? (
               <div style={{ marginTop: 22, paddingTop: 16, borderTop: "1px solid #eef1f5" }}>
                 <div style={{ fontSize: 11, fontWeight: 700, textTransform: "uppercase", color: "#8a97a5", marginBottom: 6 }}>Payment details</div>
-                <div style={{ fontSize: 12.5, color: "#1d2733", lineHeight: 1.8 }}>
+                <div style={{ fontSize: 13, color: "#1d2733", lineHeight: 1.8 }}>
                   {d.bank.accountName ? <div>Account: <b>{d.bank.accountName}</b></div> : null}
                   {d.bank.bankName ? <div>Bank: <b>{d.bank.bankName}</b></div> : null}
                   {d.bank.iban ? <div>IBAN: <b>{d.bank.iban}</b></div> : null}
@@ -106,7 +106,7 @@ export default function PublicInvoicePage({ params }: { params: { token: string 
             {d.notes ? <div style={{ marginTop: 18, fontSize: 12, color: "#5b6b7b", borderTop: "1px solid #eef1f5", paddingTop: 12 }}>{d.notes}</div> : null}
           </div>
         </div>
-        <p style={{ textAlign: "center", fontSize: 11.5, color: "#8a97a5", marginTop: 16 }}>Powered by Xentral</p>
+        <p style={{ textAlign: "center", fontSize: 12, color: "#8a97a5", marginTop: 16 }}>Powered by Xentral</p>
       </div>
     </div>
   );

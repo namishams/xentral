@@ -25,7 +25,7 @@ export default function ThemePreviewPage() {
     <div style={{ flex: 1, minWidth: 180, height: 96, background: c.surface.card, border: `1px solid ${c.line.DEFAULT}`, borderRadius: 10, padding: 14, display: "flex", flexDirection: "column", justifyContent: "center" }}>
       <div style={{ fontSize: 12, color: c.ink.mid }}>{label}</div>
       <div style={{ fontSize: 22, fontWeight: 700, color: c.ink.DEFAULT, lineHeight: "28px" }}>{value}</div>
-      <div style={{ fontSize: 11.5, color: tone ?? c.ink.soft }}>{note}</div>
+      <div style={{ fontSize: 12, color: tone ?? c.ink.soft }}>{note}</div>
     </div>
   );
   const Stage = ({ s }: { s: keyof typeof pipeline }) => {
@@ -45,11 +45,11 @@ export default function ThemePreviewPage() {
         </div>
         {NAV.map((sec) => (
           <div key={sec.g} style={{ padding: "8px 0" }}>
-            <div style={{ fontSize: 10.5, fontWeight: 700, letterSpacing: "0.06em", textTransform: "uppercase", color: dark ? c.ink.soft : "#aab8c6", padding: "0 18px 6px" }}>{sec.g}</div>
+            <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.06em", textTransform: "uppercase", color: dark ? c.ink.soft : "#aab8c6", padding: "0 18px 6px" }}>{sec.g}</div>
             {sec.items.map((it, i) => {
               const on = sec.g === "Revenue" && i === 1;
               const txt = dark ? (on ? c.brand.primary : c.ink.mid) : (on ? "#fff" : "#c9d4de");
-              return <div key={it} style={{ display: "flex", alignItems: "center", gap: 10, padding: "8px 18px", fontSize: 13.5, color: txt, background: on ? (dark ? c.brand.primaryTint : "rgba(255,255,255,0.12)") : "transparent", fontWeight: on ? 600 : 400 }}><span style={{ width: 7, height: 7, borderRadius: 2, background: on ? c.brand.primary : c.line.strong }} />{it}</div>;
+              return <div key={it} style={{ display: "flex", alignItems: "center", gap: 10, padding: "8px 18px", fontSize: 14, color: txt, background: on ? (dark ? c.brand.primaryTint : "rgba(255,255,255,0.12)") : "transparent", fontWeight: on ? 600 : 400 }}><span style={{ width: 7, height: 7, borderRadius: 2, background: on ? c.brand.primary : c.line.strong }} />{it}</div>;
             })}
           </div>
         ))}
@@ -59,7 +59,7 @@ export default function ThemePreviewPage() {
       <div style={{ flex: 1, minWidth: 0, display: "flex", flexDirection: "column" }}>
         <header style={{ height: 56, flexShrink: 0, background: c.shell.alt, borderBottom: `1px solid ${c.line.DEFAULT}`, display: "flex", alignItems: "center", gap: 12, padding: "0 22px" }}>
           <div style={{ flex: 1, maxWidth: 420, height: 34, background: dark ? c.surface.sunken : "rgba(255,255,255,0.16)", border: `1px solid ${dark ? c.line.DEFAULT : "rgba(255,255,255,0.25)"}`, borderRadius: 8, display: "flex", alignItems: "center", padding: "0 12px", color: dark ? c.ink.soft : "#dbe4ec", fontSize: 13 }}>Search leads, contacts, deals…</div>
-          <button onClick={() => setDark((v) => !v)} style={{ cursor: "pointer", fontSize: 12.5, fontWeight: 600, color: "#fff", background: c.brand.primary, border: 0, borderRadius: 8, padding: "7px 14px" }}>{dark ? "☀ Switch to Light" : "☾ Switch to Dark"}</button>
+          <button onClick={() => setDark((v) => !v)} style={{ cursor: "pointer", fontSize: 13, fontWeight: 600, color: "#fff", background: c.brand.primary, border: 0, borderRadius: 8, padding: "7px 14px" }}>{dark ? "☀ Switch to Light" : "☾ Switch to Dark"}</button>
           <span style={{ width: 30, height: 30, borderRadius: "50%", background: c.brand.primary, color: c.ink.onPrimary, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 12, fontWeight: 700 }}>MF</span>
         </header>
 
@@ -80,11 +80,11 @@ export default function ThemePreviewPage() {
               <span style={{ fontSize: 12, fontWeight: 600, background: c.brand.primary, color: "#fff", borderRadius: 8, padding: "6px 12px" }}>+ New deal</span>
             </div>
             <div>
-              <div style={{ display: "flex", fontSize: 11.5, color: c.ink.soft, padding: "0 0 8px", borderBottom: `1px solid ${c.line.DEFAULT}` }}>
+              <div style={{ display: "flex", fontSize: 12, color: c.ink.soft, padding: "0 0 8px", borderBottom: `1px solid ${c.line.DEFAULT}` }}>
                 <span style={{ flex: 2 }}>Deal</span><span style={{ flex: 1 }}>Account</span><span style={{ width: 120 }}>Stage</span><span style={{ width: 110, textAlign: "right" }}>Value</span>
               </div>
               {ROWS.map((r) => (
-                <div key={r.name} style={{ display: "flex", alignItems: "center", padding: "11px 0", borderBottom: `1px solid ${c.line.DEFAULT}`, fontSize: 13.5 }}>
+                <div key={r.name} style={{ display: "flex", alignItems: "center", padding: "11px 0", borderBottom: `1px solid ${c.line.DEFAULT}`, fontSize: 14 }}>
                   <span style={{ flex: 2, fontWeight: 600, color: c.ink.DEFAULT }}>{r.name}</span>
                   <span style={{ flex: 1, color: c.ink.mid }}>{r.acct}</span>
                   <span style={{ width: 120 }}><Stage s={r.stage} /></span>
@@ -115,8 +115,8 @@ export default function ThemePreviewPage() {
               </div>
               <div style={{ fontSize: 13, color: c.ink.mid }}>Two customers are overdue. Al Noor owes AED 9,500 — want me to send a reminder?</div>
               <div style={{ display: "flex", gap: 8, marginTop: 12 }}>
-                <span style={{ fontSize: 12.5, fontWeight: 600, background: c.brand.primary, color: "#fff", borderRadius: 8, padding: "7px 13px" }}>Send reminder</span>
-                <span style={{ fontSize: 12.5, fontWeight: 600, background: "transparent", color: c.ink.DEFAULT, border: `1px solid ${c.line.strong}`, borderRadius: 8, padding: "7px 13px" }}>Dismiss</span>
+                <span style={{ fontSize: 13, fontWeight: 600, background: c.brand.primary, color: "#fff", borderRadius: 8, padding: "7px 13px" }}>Send reminder</span>
+                <span style={{ fontSize: 13, fontWeight: 600, background: "transparent", color: c.ink.DEFAULT, border: `1px solid ${c.line.strong}`, borderRadius: 8, padding: "7px 13px" }}>Dismiss</span>
               </div>
             </section>
           </div>

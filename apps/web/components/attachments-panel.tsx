@@ -44,7 +44,7 @@ export function AttachmentsPanel({ docType, docId }: { docType: "QUOTE" | "INVOI
       <PanelBody flush>
         {err ? <div style={{ padding: "8px 16px", fontSize: 12, color: color.status.critical }}>{err}</div> : null}
         {files.length === 0 ? (
-          <div style={{ padding: 16, textAlign: "center", fontSize: 12.5, color: color.ink.soft }}>No files attached. Add specs, drawings or signed POs.</div>
+          <div style={{ padding: 16, textAlign: "center", fontSize: 13, color: color.ink.soft }}>No files attached. Add specs, drawings or signed POs.</div>
         ) : files.map((f) => (
           <div key={f.id} style={{ display: "flex", alignItems: "center", gap: 10, padding: "9px 16px", borderBottom: `1px solid ${color.line.DEFAULT}` }}>
             <span style={{ width: 26, height: 26, borderRadius: 6, background: color.surface.sunken, display: "inline-flex", alignItems: "center", justifyContent: "center", fontSize: 13, flexShrink: 0 }}>📎</span>

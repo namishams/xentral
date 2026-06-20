@@ -47,7 +47,7 @@ export default function AppearancePage() {
     <AppShell active="settings">
       <PageTitleRow title="Appearance" breadcrumb="Settings · Appearance"
         badge={<StatusBadge tone="info" label="Workspace theme" />}
-        actions={dirty ? <Button variant="primary" onClick={save} disabled={busy || !valid}>{busy ? "Saving…" : "Save theme"}</Button> : <span style={{ fontSize: 12.5, fontWeight: 600, color: color.status.positive }}>{msg ? "✓ Saved" : ""}</span>} />
+        actions={dirty ? <Button variant="primary" onClick={save} disabled={busy || !valid}>{busy ? "Saving…" : "Save theme"}</Button> : <span style={{ fontSize: 13, fontWeight: 600, color: color.status.positive }}>{msg ? "✓ Saved" : ""}</span>} />
 
       {msg && <div style={{ marginBottom: 14, fontSize: 13, fontWeight: 500, color: color.status.positive, background: "#F0FDF4", border: `1px solid ${color.status.positive}33`, borderRadius: 8, padding: "9px 12px" }}>{msg}</div>}
 
@@ -64,10 +64,10 @@ export default function AppearancePage() {
                 </div>
                 <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
                   <input type="color" value={valid ? accent : "#0064d9"} onChange={(e) => setAccent(e.target.value)} style={{ width: 44, height: 38, borderRadius: 8, border: `1px solid ${color.line.strong}`, background: "transparent", cursor: "pointer" }} />
-                  <input value={accent} onChange={(e) => setAccent(e.target.value)} placeholder="#0064d9" style={{ width: 140, height: 38, border: `1px solid ${valid ? color.line.strong : color.status.negative}`, borderRadius: 8, padding: "0 11px", fontSize: 13.5, fontFamily: "ui-monospace, monospace", color: color.ink.DEFAULT, background: color.surface.card, outline: "none" }} />
+                  <input value={accent} onChange={(e) => setAccent(e.target.value)} placeholder="#0064d9" style={{ width: 140, height: 38, border: `1px solid ${valid ? color.line.strong : color.status.negative}`, borderRadius: 8, padding: "0 11px", fontSize: 14, fontFamily: "ui-monospace, monospace", color: color.ink.DEFAULT, background: color.surface.card, outline: "none" }} />
                   <Button onClick={reset}>Reset to default</Button>
                 </div>
-                <div style={{ fontSize: 11.5, color: color.ink.soft }}>Saved per workspace. Hover &amp; tint shades are derived automatically.</div>
+                <div style={{ fontSize: 12, color: color.ink.soft }}>Saved per workspace. Hover &amp; tint shades are derived automatically.</div>
               </div>
             )}
           </PanelBody>
@@ -89,7 +89,7 @@ export default function AppearancePage() {
                 <div style={{ height: 4, background: color.brand.primary }} />
                 <div style={{ padding: 14, display: "flex", alignItems: "center", gap: 12 }}>
                   <span style={{ width: 36, height: 36, borderRadius: 9, background: color.brand.primaryTint, color: color.brand.primary, display: "inline-flex", alignItems: "center", justifyContent: "center", fontWeight: 800 }}>X</span>
-                  <div><div style={{ fontSize: 13.5, fontWeight: 700, color: color.ink.DEFAULT }}>Sample card</div><div style={{ fontSize: 12, color: color.ink.soft }}>Accent, tint and hover all follow your colour.</div></div>
+                  <div><div style={{ fontSize: 14, fontWeight: 700, color: color.ink.DEFAULT }}>Sample card</div><div style={{ fontSize: 12, color: color.ink.soft }}>Accent, tint and hover all follow your colour.</div></div>
                 </div>
               </div>
             </div>

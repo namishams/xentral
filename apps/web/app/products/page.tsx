@@ -142,7 +142,7 @@ export default function ProductsPage() {
     ) },
   ];
 
-  const chip = (active: boolean): React.CSSProperties => ({ padding: "5px 12px", borderRadius: 999, fontSize: 12.5, fontWeight: 600, cursor: "pointer", whiteSpace: "nowrap", border: `1px solid ${active ? color.brand.primary : color.line.strong}`, background: active ? color.brand.primary : color.surface.card, color: active ? color.ink.onPrimary : color.ink.mid });
+  const chip = (active: boolean): React.CSSProperties => ({ padding: "5px 12px", borderRadius: 999, fontSize: 13, fontWeight: 600, cursor: "pointer", whiteSpace: "nowrap", border: `1px solid ${active ? color.brand.primary : color.line.strong}`, background: active ? color.brand.primary : color.surface.card, color: active ? color.ink.onPrimary : color.ink.mid });
 
   return (
     <AppShell active="products">
@@ -243,19 +243,19 @@ export default function ProductsPage() {
       <Modal open={catOpen} onClose={() => setCatOpen(false)} title="Categories" size="md"
         footer={<Button variant="secondary" onClick={() => setCatOpen(false)}>Done</Button>}>
         <div style={{ display: "grid", gap: 14 }}>
-          <p style={{ fontSize: 12.5, color: color.ink.mid, margin: 0 }}>Organise items & services into categories by industry — e.g. <strong>Real Estate</strong>, <strong>Healthcare</strong> — so larger catalogs stay tidy.</p>
+          <p style={{ fontSize: 13, color: color.ink.mid, margin: 0 }}>Organise items & services into categories by industry — e.g. <strong>Real Estate</strong>, <strong>Healthcare</strong> — so larger catalogs stay tidy.</p>
           <div style={{ display: "grid", gridTemplateColumns: "1.4fr 1.2fr 0.9fr auto", gap: 8, alignItems: "end" }}>
             <div><label style={fieldLabel}>New category</label><Input value={catDraft.name} onChange={(e) => setCatDraft({ ...catDraft, name: e.target.value })} placeholder="e.g. Property listings" /></div>
             <div><label style={fieldLabel}>Industry</label><Input value={catDraft.industry} list="industries" onChange={(e) => setCatDraft({ ...catDraft, industry: e.target.value })} placeholder="optional" /><datalist id="industries">{INDUSTRIES.map((i) => <option key={i} value={i} />)}</datalist></div>
             <div><label style={fieldLabel}>For</label><select value={catDraft.itemType} onChange={(e) => setCatDraft({ ...catDraft, itemType: e.target.value })} style={selectStyle}><option value="">Any</option><option value="SERVICE">Services</option><option value="PRODUCT">Products</option></select></div>
             <Button variant="primary" onClick={createCat} disabled={catBusy}>{catBusy ? "…" : "Add"}</Button>
           </div>
-          {catErr && <div style={{ fontSize: 12.5, color: color.status.negative }}>{catErr}</div>}
+          {catErr && <div style={{ fontSize: 13, color: color.status.negative }}>{catErr}</div>}
           <div style={{ border: `1px solid ${color.line.DEFAULT}`, borderRadius: 9, maxHeight: 280, overflowY: "auto" }}>
             {cats.length === 0 ? <div style={{ padding: 18, textAlign: "center", fontSize: 13, color: color.ink.soft }}>No categories yet.</div>
               : cats.map((c) => (
                 <div key={c.id} style={{ display: "flex", alignItems: "center", gap: 10, padding: "9px 12px", borderBottom: `1px solid ${color.line.DEFAULT}` }}>
-                  <span style={{ flex: 1, minWidth: 0, fontSize: 13.5, fontWeight: 600, color: color.ink.DEFAULT }}>{c.name}</span>
+                  <span style={{ flex: 1, minWidth: 0, fontSize: 14, fontWeight: 600, color: color.ink.DEFAULT }}>{c.name}</span>
                   {c.industry ? <StatusBadge tone="info" label={c.industry} /> : null}
                   <span style={{ fontSize: 12, color: color.ink.soft, width: 60, textAlign: "right" }}>{c.itemCount} item{c.itemCount === 1 ? "" : "s"}</span>
                   <button onClick={() => removeCat(c)} aria-label="Delete" style={{ width: 28, height: 28, borderRadius: 7, border: `1px solid ${color.line.strong}`, background: color.surface.card, color: color.status.negative, cursor: "pointer" }}>×</button>

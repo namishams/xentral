@@ -123,25 +123,25 @@ export default function InboxPage() {
         </div>
         <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
           {isOperator ? <span style={{ display: "flex", gap: 10 }}>{tabBtn("inbox", "Inbox")}{tabBtn("broadcast", "Broadcast")}</span> : null}
-          <button onClick={newChat} style={{ height: 32, padding: "0 13px", borderRadius: 8, border: 0, background: color.brand.primary, color: color.ink.onPrimary, fontSize: 12.5, fontWeight: 700, cursor: "pointer" }}>＋ New chat</button>
+          <button onClick={newChat} style={{ height: 32, padding: "0 13px", borderRadius: 8, border: 0, background: color.brand.primary, color: color.ink.onPrimary, fontSize: 13, fontWeight: 700, cursor: "pointer" }}>＋ New chat</button>
         </div>
       </div>
 
       {view === "broadcast" ? (
         <div style={{ margin: "12px 18px 18px", border: `1px solid ${color.line.DEFAULT}`, borderRadius: 12, background: color.surface.card, padding: 18, height: "calc(100vh - 64px - 80px)", overflowY: "auto" }}>
           <h2 style={{ fontSize: 16, fontWeight: 700, color: color.ink.DEFAULT, margin: "0 0 4px" }}>Broadcast</h2>
-          <div style={{ fontSize: 12.5, color: color.ink.soft, marginBottom: 12 }}>Select conversations and send one message to all of them.</div>
-          <textarea value={bcMsg} onChange={(e) => setBcMsg(e.target.value)} rows={3} placeholder="Your broadcast message…" style={{ width: "100%", boxSizing: "border-box", border: `1px solid ${color.line.strong}`, borderRadius: 9, padding: "9px 12px", fontSize: 13.5, color: color.ink.DEFAULT, resize: "vertical", marginBottom: 10 }} />
+          <div style={{ fontSize: 13, color: color.ink.soft, marginBottom: 12 }}>Select conversations and send one message to all of them.</div>
+          <textarea value={bcMsg} onChange={(e) => setBcMsg(e.target.value)} rows={3} placeholder="Your broadcast message…" style={{ width: "100%", boxSizing: "border-box", border: `1px solid ${color.line.strong}`, borderRadius: 9, padding: "9px 12px", fontSize: 14, color: color.ink.DEFAULT, resize: "vertical", marginBottom: 10 }} />
           <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 12 }}>
-            <button onClick={sendBroadcast} disabled={bcSending || !bcMsg.trim() || bcSel.size === 0} style={{ height: 38, padding: "0 16px", borderRadius: 9, border: 0, background: bcSending || !bcMsg.trim() || bcSel.size === 0 ? color.line.strong : WA_GREEN, color: "#fff", fontSize: 13.5, fontWeight: 700, cursor: "pointer" }}>{bcSending ? "Sending…" : `Send to ${bcSel.size} selected`}</button>
-            <button onClick={() => setBcSel(new Set(convs.map((c) => c.id)))} style={{ fontSize: 12.5, color: color.brand.primary, background: "transparent", border: 0, cursor: "pointer", fontWeight: 600 }}>Select all</button>
-            <button onClick={() => setBcSel(new Set())} style={{ fontSize: 12.5, color: color.ink.soft, background: "transparent", border: 0, cursor: "pointer" }}>Clear</button>
+            <button onClick={sendBroadcast} disabled={bcSending || !bcMsg.trim() || bcSel.size === 0} style={{ height: 38, padding: "0 16px", borderRadius: 9, border: 0, background: bcSending || !bcMsg.trim() || bcSel.size === 0 ? color.line.strong : WA_GREEN, color: "#fff", fontSize: 14, fontWeight: 700, cursor: "pointer" }}>{bcSending ? "Sending…" : `Send to ${bcSel.size} selected`}</button>
+            <button onClick={() => setBcSel(new Set(convs.map((c) => c.id)))} style={{ fontSize: 13, color: color.brand.primary, background: "transparent", border: 0, cursor: "pointer", fontWeight: 600 }}>Select all</button>
+            <button onClick={() => setBcSel(new Set())} style={{ fontSize: 13, color: color.ink.soft, background: "transparent", border: 0, cursor: "pointer" }}>Clear</button>
           </div>
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(240px, 1fr))", gap: 8 }}>
             {convs.map((c) => { const on = bcSel.has(c.id); return (
               <button key={c.id} onClick={() => setBcSel((s) => { const n = new Set(s); if (n.has(c.id)) n.delete(c.id); else n.add(c.id); return n; })} style={{ textAlign: "left", border: `1px solid ${on ? color.brand.primary : color.line.DEFAULT}`, background: on ? color.brand.primaryTint : color.surface.card, borderRadius: 9, padding: "9px 11px", cursor: "pointer", display: "flex", gap: 9, alignItems: "center" }}>
                 <span style={{ width: 16, height: 16, borderRadius: 4, border: `1.5px solid ${on ? color.brand.primary : color.line.strong}`, background: on ? color.brand.primary : "transparent", color: "#fff", fontSize: 11, display: "flex", alignItems: "center", justifyContent: "center" }}>{on ? "✓" : ""}</span>
-                <span style={{ minWidth: 0 }}><span style={{ display: "block", fontSize: 13, fontWeight: 600, color: color.ink.DEFAULT, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{c.name || c.phone}</span><span style={{ fontSize: 11.5, color: color.ink.soft }}>{c.phone}</span></span>
+                <span style={{ minWidth: 0 }}><span style={{ display: "block", fontSize: 13, fontWeight: 600, color: color.ink.DEFAULT, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{c.name || c.phone}</span><span style={{ fontSize: 12, color: color.ink.soft }}>{c.phone}</span></span>
               </button>
             ); })}
           </div>
@@ -155,7 +155,7 @@ export default function InboxPage() {
             <Input placeholder="Search…" value={q} onChange={(e) => setQ(e.target.value)} style={{ width: "100%" }} />
             <span style={{ display: "inline-flex", border: `1px solid ${color.line.strong}`, borderRadius: 8, overflow: "hidden", width: "fit-content" }}>
               {([["all", `All (${convs.length})`], ["unread", `Unread (${convs.filter((c) => c.unread > 0).length})`], ["qualifying", `Qualifying (${qualifying})`]] as const).map(([id, lab]) => (
-                <button key={id} onClick={() => setFilter(id)} style={{ border: 0, background: filter === id ? color.brand.primaryTint : color.surface.card, color: filter === id ? color.brand.primary : color.ink.mid, fontSize: 11.5, fontWeight: 600, padding: "5px 10px", cursor: "pointer" }}>{lab}</button>
+                <button key={id} onClick={() => setFilter(id)} style={{ border: 0, background: filter === id ? color.brand.primaryTint : color.surface.card, color: filter === id ? color.brand.primary : color.ink.mid, fontSize: 12, fontWeight: 600, padding: "5px 10px", cursor: "pointer" }}>{lab}</button>
               ))}
             </span>
           </div>
@@ -167,7 +167,7 @@ export default function InboxPage() {
                     <span style={{ width: 38, height: 38, borderRadius: "50%", background: color.surface.sunken, color: color.ink.mid, display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 700, fontSize: 13, flexShrink: 0 }}>{initials(c.name || c.phone)}</span>
                     <span style={{ minWidth: 0, flex: 1 }}>
                       <span style={{ display: "flex", justifyContent: "space-between", gap: 6 }}>
-                        <span style={{ fontWeight: 600, fontSize: 13.5, color: color.ink.DEFAULT, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{c.name || c.phone}</span>
+                        <span style={{ fontWeight: 600, fontSize: 14, color: color.ink.DEFAULT, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{c.name || c.phone}</span>
                         {c.unread > 0 ? <span style={{ background: WA_GREEN, color: "#fff", fontSize: 10, fontWeight: 700, borderRadius: 999, padding: "1px 6px" }}>{c.unread}</span> : null}
                       </span>
                       <span style={{ display: "block", fontSize: 12, color: color.ink.soft, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{c.preview || "—"}</span>
@@ -188,7 +188,7 @@ export default function InboxPage() {
                   {[["✦", "AI replies automatically", "Switch a chat to AI handling"], ["🏪", "Auto-list rejected leads", "Mark Not interested → listed"], ["📣", "Broadcast to all leads", "Send one message to many"]].map(([ic, t, s]) => (
                     <div key={t} style={{ border: `1px solid ${color.line.DEFAULT}`, borderRadius: 12, padding: 14, textAlign: "center", background: color.surface.card }}>
                       <div style={{ fontSize: 20 }}>{ic}</div>
-                      <div style={{ fontSize: 12.5, fontWeight: 700, color: color.ink.DEFAULT, marginTop: 4 }}>{t}</div>
+                      <div style={{ fontSize: 13, fontWeight: 700, color: color.ink.DEFAULT, marginTop: 4 }}>{t}</div>
                       <div style={{ fontSize: 11, color: color.ink.soft, marginTop: 2 }}>{s}</div>
                     </div>
                   ))}
@@ -215,22 +215,22 @@ export default function InboxPage() {
                   </>
                 ) : null}
               </div>
-              <div style={{ padding: "6px 14px", borderBottom: `1px solid ${color.line.DEFAULT}`, fontSize: 11.5, color: color.ink.soft, display: "flex", gap: 14, flexWrap: "wrap", background: color.surface.page }}>
+              <div style={{ padding: "6px 14px", borderBottom: `1px solid ${color.line.DEFAULT}`, fontSize: 12, color: color.ink.soft, display: "flex", gap: 14, flexWrap: "wrap", background: color.surface.page }}>
                 <span>STATUS <strong style={{ color: color.ink.DEFAULT }}>{leadInfo(active.leadStatus).label}</strong></span>
                 <span>HANDLING <strong style={{ color: color.ink.DEFAULT }}>{active.mode === "AI" ? "AI agent" : "Manual"}</strong></span>
                 {note ? <span style={{ color: color.status.positive, fontWeight: 600 }}>{note}</span> : null}
               </div>
               {aiSummary || aiLoading ? (
-                <div style={{ margin: "10px 14px 0", border: `1px solid ${color.brand.primary}`, background: color.brand.primaryTint, borderRadius: 10, padding: "10px 13px", fontSize: 12.5, color: color.ink.DEFAULT, lineHeight: "18px" }}>
+                <div style={{ margin: "10px 14px 0", border: `1px solid ${color.brand.primary}`, background: color.brand.primaryTint, borderRadius: 10, padding: "10px 13px", fontSize: 13, color: color.ink.DEFAULT, lineHeight: "18px" }}>
                   <strong style={{ color: color.brand.primary }}>✦ AI analysis</strong><br />{aiLoading ? "Analysing the conversation…" : aiSummary}
                 </div>
               ) : null}
               <div style={{ flex: 1, overflowY: "auto", padding: 16, background: color.surface.page, display: "flex", flexDirection: "column", gap: 8 }}>
                 {msgs.length === 0 ? <div style={{ color: color.ink.soft, fontSize: 13, textAlign: "center", marginTop: 20 }}>No messages.</div>
                   : msgs.map((m, i) => { const out = m.direction === "OUTBOUND"; return (
-                    <div key={i} style={{ alignSelf: out ? "flex-end" : "flex-start", maxWidth: "72%", background: out ? "#DCF8C6" : color.surface.card, color: color.ink.DEFAULT, border: out ? "none" : `1px solid ${color.line.DEFAULT}`, borderRadius: 12, padding: "8px 12px", fontSize: 13.5, lineHeight: "18px" }}>
+                    <div key={i} style={{ alignSelf: out ? "flex-end" : "flex-start", maxWidth: "72%", background: out ? "#DCF8C6" : color.surface.card, color: color.ink.DEFAULT, border: out ? "none" : `1px solid ${color.line.DEFAULT}`, borderRadius: 12, padding: "8px 12px", fontSize: 14, lineHeight: "18px" }}>
                       {m.body || `[${m.type}]`}
-                      <span style={{ display: "block", fontSize: 10.5, color: color.ink.soft, marginTop: 3 }}>{m.isAi ? "AI · " : ""}{fmt(m.timestamp)}</span>
+                      <span style={{ display: "block", fontSize: 11, color: color.ink.soft, marginTop: 3 }}>{m.isAi ? "AI · " : ""}{fmt(m.timestamp)}</span>
                     </div>
                   ); })}
               </div>
@@ -248,25 +248,25 @@ export default function InboxPage() {
             <div style={{ textAlign: "center" }}>
               <span style={{ width: 56, height: 56, borderRadius: "50%", background: color.surface.sunken, color: color.ink.mid, display: "inline-flex", alignItems: "center", justifyContent: "center", fontWeight: 700, fontSize: 18 }}>{initials(active.name || active.phone)}</span>
               <div style={{ fontWeight: 700, color: color.ink.DEFAULT, marginTop: 8 }}>{active.name || active.phone}</div>
-              <div style={{ fontSize: 12.5, color: color.ink.soft }}>{active.phone}</div>
+              <div style={{ fontSize: 13, color: color.ink.soft }}>{active.phone}</div>
               <div style={{ marginTop: 8, display: "flex", gap: 6, justifyContent: "center", flexWrap: "wrap" }}><LeadPill ls={active.leadStatus} /><ListedPill phone={active.phone} big /></div>
             </div>
             {isOperator ? (
               <>
                 <div style={{ borderTop: `1px solid ${color.line.DEFAULT}`, paddingTop: 12 }}>
                   <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: 0.4, color: color.ink.soft, textTransform: "uppercase", marginBottom: 8 }}>CRM contact</div>
-                  <button onClick={() => qualify(active.id, "INTERESTED")} style={{ width: "100%", height: 36, borderRadius: 9, border: `1px solid ${color.line.strong}`, background: color.surface.card, color: color.ink.mid, fontSize: 12.5, fontWeight: 600, cursor: "pointer" }}>＋ Add to CRM</button>
+                  <button onClick={() => qualify(active.id, "INTERESTED")} style={{ width: "100%", height: 36, borderRadius: 9, border: `1px solid ${color.line.strong}`, background: color.surface.card, color: color.ink.mid, fontSize: 13, fontWeight: 600, cursor: "pointer" }}>＋ Add to CRM</button>
                 </div>
                 <div style={{ borderTop: `1px solid ${color.line.DEFAULT}`, paddingTop: 12, display: "flex", flexDirection: "column", gap: 8 }}>
                   <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: 0.4, color: color.ink.soft, textTransform: "uppercase" }}>Actions</div>
-                  {listedFor(active.phone)?.status !== "SOLD" ? <button onClick={listOnMarketplace} style={{ width: "100%", height: 38, borderRadius: 9, border: 0, background: color.brand.primary, color: color.ink.onPrimary, fontSize: 13, fontWeight: 700, cursor: "pointer" }}>🏪 {listedFor(active.phone) ? "Re-list on marketplace" : "List on marketplace"}</button> : <div style={{ fontSize: 12.5, color: color.status.positive, fontWeight: 600 }}>✓ Sold on the marketplace.</div>}
-                  <button onClick={() => setStatus(active.id, "RESOLVED")} style={{ width: "100%", height: 34, borderRadius: 9, border: `1px solid ${color.line.strong}`, background: color.surface.card, color: color.ink.mid, fontSize: 12.5, fontWeight: 600, cursor: "pointer" }}>✓ Mark as resolved</button>
-                  <button onClick={() => setStatus(active.id, "ARCHIVED")} style={{ width: "100%", height: 34, borderRadius: 9, border: `1px solid ${color.line.strong}`, background: color.surface.card, color: color.ink.mid, fontSize: 12.5, fontWeight: 600, cursor: "pointer" }}>🗄 Archive</button>
-                  <button onClick={() => { setBcSel(new Set([active.id])); setView("broadcast"); }} style={{ width: "100%", height: 34, borderRadius: 9, border: `1px solid ${color.line.strong}`, background: color.surface.card, color: color.ink.mid, fontSize: 12.5, fontWeight: 600, cursor: "pointer" }}>📣 Add to broadcast</button>
-                  <button onClick={() => del(active.id)} style={{ width: "100%", height: 34, borderRadius: 9, border: `1px solid ${color.status.negative}`, background: color.surface.card, color: color.status.negative, fontSize: 12.5, fontWeight: 600, cursor: "pointer" }}>🗑 Delete chat</button>
+                  {listedFor(active.phone)?.status !== "SOLD" ? <button onClick={listOnMarketplace} style={{ width: "100%", height: 38, borderRadius: 9, border: 0, background: color.brand.primary, color: color.ink.onPrimary, fontSize: 13, fontWeight: 700, cursor: "pointer" }}>🏪 {listedFor(active.phone) ? "Re-list on marketplace" : "List on marketplace"}</button> : <div style={{ fontSize: 13, color: color.status.positive, fontWeight: 600 }}>✓ Sold on the marketplace.</div>}
+                  <button onClick={() => setStatus(active.id, "RESOLVED")} style={{ width: "100%", height: 34, borderRadius: 9, border: `1px solid ${color.line.strong}`, background: color.surface.card, color: color.ink.mid, fontSize: 13, fontWeight: 600, cursor: "pointer" }}>✓ Mark as resolved</button>
+                  <button onClick={() => setStatus(active.id, "ARCHIVED")} style={{ width: "100%", height: 34, borderRadius: 9, border: `1px solid ${color.line.strong}`, background: color.surface.card, color: color.ink.mid, fontSize: 13, fontWeight: 600, cursor: "pointer" }}>🗄 Archive</button>
+                  <button onClick={() => { setBcSel(new Set([active.id])); setView("broadcast"); }} style={{ width: "100%", height: 34, borderRadius: 9, border: `1px solid ${color.line.strong}`, background: color.surface.card, color: color.ink.mid, fontSize: 13, fontWeight: 600, cursor: "pointer" }}>📣 Add to broadcast</button>
+                  <button onClick={() => del(active.id)} style={{ width: "100%", height: 34, borderRadius: 9, border: `1px solid ${color.status.negative}`, background: color.surface.card, color: color.status.negative, fontSize: 13, fontWeight: 600, cursor: "pointer" }}>🗑 Delete chat</button>
                 </div>
               </>
-            ) : <div style={{ borderTop: `1px solid ${color.line.DEFAULT}`, paddingTop: 12, fontSize: 12.5, color: color.ink.soft }}>Lead-supply actions are available to the Mediflow operator.</div>}
+            ) : <div style={{ borderTop: `1px solid ${color.line.DEFAULT}`, paddingTop: 12, fontSize: 13, color: color.ink.soft }}>Lead-supply actions are available to the Mediflow operator.</div>}
           </div>
         ) : null}
       </div>

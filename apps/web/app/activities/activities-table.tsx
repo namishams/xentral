@@ -34,7 +34,7 @@ function Node({ r, last }: { r: ActivityRow; last: boolean }) {
           <span style={{ fontSize: 12, color: color.ink.soft }}>{fmtDate(r.when)}</span>
           {r.by ? <span style={{ fontSize: 12, color: color.ink.soft }}>· {r.by}</span> : null}
         </div>
-        <div style={{ fontSize: 13.5, color: color.ink.DEFAULT, marginTop: 3 }}>{r.summary || "—"}</div>
+        <div style={{ fontSize: 14, color: color.ink.DEFAULT, marginTop: 3 }}>{r.summary || "—"}</div>
       </div>
     </div>
   );

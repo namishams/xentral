@@ -68,7 +68,7 @@ export default function RoleRecordPage({ params }: { params: { id: string } }) {
           <Panel title="Module access">
             {MODULES.map((mod, i) => (
               <div key={mod} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "10px 0", borderTop: i === 0 ? "none" : `1px solid ${color.line.DEFAULT}` }}>
-                <span style={{ fontSize: 13.5, color: color.ink.DEFAULT }}>{mod}</span>
+                <span style={{ fontSize: 14, color: color.ink.DEFAULT }}>{mod}</span>
                 <span style={{ fontSize: 13, fontWeight: 600, color: g[i] ? color.status.positive : color.ink.soft }}>{g[i] ? "✓ Allowed" : "— No access"}</span>
               </div>
             ))}
@@ -80,8 +80,8 @@ export default function RoleRecordPage({ params }: { params: { id: string } }) {
             <SumRow label="Members">{r.members}</SumRow>
             <SumRow label="Permissions">{r.permissions}</SumRow>
           </Panel>
-          <Panel title="Members" action={<a href="/users" style={{ fontSize: 12.5, color: color.brand.primary, textDecoration: "none" }}>Manage ↗</a>}>
-            <div style={{ fontSize: 12.5, color: color.ink.soft, padding: "4px 0" }}>{r.members} member(s) hold this role.</div>
+          <Panel title="Members" action={<a href="/users" style={{ fontSize: 13, color: color.brand.primary, textDecoration: "none" }}>Manage ↗</a>}>
+            <div style={{ fontSize: 13, color: color.ink.soft, padding: "4px 0" }}>{r.members} member(s) hold this role.</div>
           </Panel>
         </div>
       </div>

@@ -71,8 +71,8 @@ export default function InvoiceDetailPage({ params }: { params: { id: string } }
   if (!inv) return <AppShell active="invoice"><div style={{ padding: 40, textAlign: "center", color: color.ink.soft }}>Invoice not found. <a href="/invoices" style={{ color: color.brand.primary }}>Back to invoices</a></div></AppShell>;
 
   const overdue = ["SENT", "PARTIALLY_PAID"].includes(inv.status) && !!inv.dueDateRaw && new Date(inv.dueDateRaw).getTime() < Date.now();
-  const fieldS: React.CSSProperties = { width: "100%", boxSizing: "border-box", height: 38, border: `1px solid ${color.line.strong}`, borderRadius: 8, padding: "0 11px", fontSize: 13.5, color: color.ink.DEFAULT, background: color.surface.card, marginBottom: 12 };
-  const lbl: React.CSSProperties = { display: "block", fontSize: 11.5, fontWeight: 700, letterSpacing: 0.3, color: color.ink.soft, textTransform: "uppercase", marginBottom: 5 };
+  const fieldS: React.CSSProperties = { width: "100%", boxSizing: "border-box", height: 38, border: `1px solid ${color.line.strong}`, borderRadius: 8, padding: "0 11px", fontSize: 14, color: color.ink.DEFAULT, background: color.surface.card, marginBottom: 12 };
+  const lbl: React.CSSProperties = { display: "block", fontSize: 12, fontWeight: 700, letterSpacing: 0.3, color: color.ink.soft, textTransform: "uppercase", marginBottom: 5 };
   const th: React.CSSProperties = { padding: "9px 16px", fontSize: 11, fontWeight: 600, letterSpacing: 0.2, color: color.ink.mid, textTransform: "uppercase", background: color.surface.page, borderBottom: `1px solid ${color.line.strong}` };
   const td: React.CSSProperties = { padding: "11px 16px", fontSize: 13, color: color.ink.DEFAULT, borderBottom: `1px solid ${color.line.DEFAULT}`, verticalAlign: "top" };
 
@@ -100,7 +100,7 @@ export default function InvoiceDetailPage({ params }: { params: { id: string } }
           <div style={{ minWidth: 0 }}>
             <div style={{ fontSize: 12, color: color.ink.soft, marginBottom: 4 }}>Billed to</div>
             <div style={{ fontSize: 18, fontWeight: 700, color: color.ink.DEFAULT }}>{inv.customer || "—"}</div>
-            <div style={{ fontSize: 12.5, color: color.ink.mid }}>{inv.customerEmail || "No email on file"}</div>
+            <div style={{ fontSize: 13, color: color.ink.mid }}>{inv.customerEmail || "No email on file"}</div>
           </div>
           <div style={{ textAlign: "right" }}>
             <div style={{ fontSize: 12, color: color.ink.soft, marginBottom: 2 }}>{bal > 0 ? "Balance due" : "Total"}</div>
@@ -154,10 +154,10 @@ export default function InvoiceDetailPage({ params }: { params: { id: string } }
                 <Row k="VAT" v={aed(inv.vatTotal, inv.currency)} />
                 <div style={{ display: "flex", justifyContent: "space-between", fontSize: 15, fontWeight: 800, padding: "8px 0", borderTop: `2px solid ${color.ink.DEFAULT}`, marginTop: 4, color: color.ink.DEFAULT }}><span>Total</span><span>{aed(inv.total, inv.currency)}</span></div>
                 {inv.amountPaid > 0 ? <Row k="Paid" v={`− ${aed(inv.amountPaid, inv.currency)}`} /> : null}
-                {bal > 0 ? <div style={{ display: "flex", justifyContent: "space-between", fontSize: 13.5, fontWeight: 700, color: color.status.negative, padding: "4px 0" }}><span>Balance due</span><span>{aed(bal, inv.currency)}</span></div> : null}
+                {bal > 0 ? <div style={{ display: "flex", justifyContent: "space-between", fontSize: 14, fontWeight: 700, color: color.status.negative, padding: "4px 0" }}><span>Balance due</span><span>{aed(bal, inv.currency)}</span></div> : null}
               </div>
             </div>
-            {inv.notes ? <div style={{ padding: "14px 16px", fontSize: 12.5, color: color.ink.mid, borderTop: `1px solid ${color.line.DEFAULT}`, background: color.surface.page }}><b style={{ color: color.ink.DEFAULT }}>Notes</b><br />{inv.notes}</div> : null}
+            {inv.notes ? <div style={{ padding: "14px 16px", fontSize: 13, color: color.ink.mid, borderTop: `1px solid ${color.line.DEFAULT}`, background: color.surface.page }}><b style={{ color: color.ink.DEFAULT }}>Notes</b><br />{inv.notes}</div> : null}
           </PanelBody>
         </Panel>
 
@@ -167,10 +167,10 @@ export default function InvoiceDetailPage({ params }: { params: { id: string } }
             <PanelBody flush>
               {(inv.payments && inv.payments.length > 0) ? inv.payments.map((pmt) => (
                 <div key={pmt.id} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "10px 16px", borderBottom: `1px solid ${color.line.DEFAULT}` }}>
-                  <span style={{ minWidth: 0 }}><span style={{ display: "block", fontSize: 13, fontWeight: 600, color: color.ink.DEFAULT }}>{aed(pmt.amount, inv.currency)}</span><span style={{ fontSize: 11.5, color: color.ink.soft }}>{(pmt.method || "").replace("_", " ").toLowerCase()}{pmt.reference ? ` · ${pmt.reference}` : ""}{pmt.date ? ` · ${pmt.date}` : ""}</span></span>
+                  <span style={{ minWidth: 0 }}><span style={{ display: "block", fontSize: 13, fontWeight: 600, color: color.ink.DEFAULT }}>{aed(pmt.amount, inv.currency)}</span><span style={{ fontSize: 12, color: color.ink.soft }}>{(pmt.method || "").replace("_", " ").toLowerCase()}{pmt.reference ? ` · ${pmt.reference}` : ""}{pmt.date ? ` · ${pmt.date}` : ""}</span></span>
                   <span style={{ fontSize: 16, color: color.status.positive }}>✓</span>
                 </div>
-              )) : <div style={{ padding: 16, textAlign: "center", fontSize: 12.5, color: color.ink.soft }}>No payments recorded yet.</div>}
+              )) : <div style={{ padding: 16, textAlign: "center", fontSize: 13, color: color.ink.soft }}>No payments recorded yet.</div>}
             </PanelBody>
           </Panel>
           <Panel>
@@ -185,7 +185,7 @@ export default function InvoiceDetailPage({ params }: { params: { id: string } }
             <PanelBody>
               <div style={{ fontSize: 12, color: color.ink.soft, wordBreak: "break-all", background: color.surface.sunken, borderRadius: 8, padding: "8px 10px", marginBottom: 10 }}>{payUrl}</div>
               <div style={{ display: "flex", gap: 8 }}><Button onClick={copyLink}>Copy link</Button><a href={payUrl} target="_blank" rel="noreferrer"><Button>Open</Button></a></div>
-              <p style={{ fontSize: 11.5, color: color.ink.soft, marginTop: 14, lineHeight: 1.5 }}>“Send to customer” emails a branded invoice with a secure <b>Pay with Telr</b> button and the PDF attached.</p>
+              <p style={{ fontSize: 12, color: color.ink.soft, marginTop: 14, lineHeight: 1.5 }}>“Send to customer” emails a branded invoice with a secure <b>Pay with Telr</b> button and the PDF attached.</p>
             </PanelBody>
           </Panel>
           <DocTimeline docType="INVOICE" docId={params.id} />
@@ -220,7 +220,7 @@ export default function InvoiceDetailPage({ params }: { params: { id: string } }
               <h2 style={{ margin: 0, fontSize: 17, fontWeight: 700, color: color.ink.DEFAULT }}>Record payment</h2>
               <button aria-label="Close" onClick={() => setPay(null)} style={{ border: 0, background: "transparent", fontSize: 20, color: color.ink.soft, cursor: "pointer" }}>×</button>
             </div>
-            <p style={{ fontSize: 12.5, color: color.ink.soft, margin: "0 0 14px" }}>Outstanding: <b style={{ color: color.status.negative }}>{aed(bal, inv.currency)}</b></p>
+            <p style={{ fontSize: 13, color: color.ink.soft, margin: "0 0 14px" }}>Outstanding: <b style={{ color: color.status.negative }}>{aed(bal, inv.currency)}</b></p>
             <label style={lbl}>Amount ({inv.currency})</label>
             <input value={pay.amount} inputMode="decimal" onChange={(e) => setPay({ ...pay, amount: e.target.value })} style={fieldS} />
             <label style={lbl}>Method</label>

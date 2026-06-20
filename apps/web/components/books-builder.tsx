@@ -203,7 +203,7 @@ export function BooksBuilder({ kind, editId }: { kind: Kind; editId?: string }) 
                 <Button variant="primary" onClick={addLine}>+ Add line</Button>
               </div>
             </div>
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 64px 110px 62px 62px 116px 52px", gap: 8, fontSize: 10.5, fontWeight: 700, color: color.ink.soft, textTransform: "uppercase", letterSpacing: 0.3, padding: "0 2px 6px" }}>
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 64px 110px 62px 62px 116px 52px", gap: 8, fontSize: 11, fontWeight: 700, color: color.ink.soft, textTransform: "uppercase", letterSpacing: 0.3, padding: "0 2px 6px" }}>
               <span>Item</span><span>Qty</span><span>Unit price</span><span>VAT %</span><span>Disc %</span><span style={{ textAlign: "right" }}>Amount</span><span />
             </div>
             {lines.map((l, i) => {
@@ -212,7 +212,7 @@ export function BooksBuilder({ kind, editId }: { kind: Kind; editId?: string }) 
               return (
                 <div key={i} style={{ marginBottom: 10, paddingBottom: 10, borderBottom: i < lines.length - 1 ? `1px solid ${color.line.DEFAULT}` : "none" }}>
                   {items.length > 0 ? (
-                    <select value={l.itemId} onChange={(e) => pickItem(i, e.target.value)} style={{ ...cell, height: 36, marginBottom: 6, fontSize: 12.5, color: l.itemId ? color.ink.DEFAULT : color.ink.soft }}>
+                    <select value={l.itemId} onChange={(e) => pickItem(i, e.target.value)} style={{ ...cell, height: 36, marginBottom: 6, fontSize: 13, color: l.itemId ? color.ink.DEFAULT : color.ink.soft }}>
                       <option value="">Custom line… (or pick from catalog)</option>
                       {items.map((it) => <option key={it.id} value={it.id}>{it.name} — {currency} {fmt(Number(it.unitPrice) || 0)}</option>)}
                     </select>
@@ -265,10 +265,10 @@ export function BooksBuilder({ kind, editId }: { kind: Kind; editId?: string }) 
                 <div style={{ minWidth: 0 }}>
                   {settings.logoUrl ? <img src={String(settings.logoUrl)} alt="" style={{ height: 26, marginBottom: 4 }} /> : <div style={{ fontWeight: 800, fontSize: 13 }}>{merchant}</div>}
                 </div>
-                <div style={{ textAlign: "right" }}><div style={{ fontSize: 14, fontWeight: 800, color: accent }}>{cfg.noun.toUpperCase()}</div><div style={{ fontSize: 10.5, color: "#5b6b7b" }}>Draft</div></div>
+                <div style={{ textAlign: "right" }}><div style={{ fontSize: 14, fontWeight: 800, color: accent }}>{cfg.noun.toUpperCase()}</div><div style={{ fontSize: 11, color: "#5b6b7b" }}>Draft</div></div>
               </div>
               <div style={{ fontSize: 10, color: "#8a97a5", textTransform: "uppercase" }}>Bill to</div>
-              <div style={{ fontSize: 12.5, fontWeight: 600, marginBottom: subject ? 4 : 10 }}>{custLabel}</div>{subject ? <div style={{ fontSize: 12, color: "#5b6b7b", marginBottom: 10 }}><span style={{ color: "#8a97a5" }}>Subject: </span>{subject}</div> : null}
+              <div style={{ fontSize: 13, fontWeight: 600, marginBottom: subject ? 4 : 10 }}>{custLabel}</div>{subject ? <div style={{ fontSize: 12, color: "#5b6b7b", marginBottom: 10 }}><span style={{ color: "#8a97a5" }}>Subject: </span>{subject}</div> : null}
               <div style={{ borderTop: "1px solid #eef1f5" }}>
                 {lines.filter((l) => l.name.trim() || parseFloat(l.unitPrice)).slice(0, 6).map((l, i) => { const net = (parseFloat(l.qty) || 0) * (parseFloat(l.unitPrice) || 0) * (1 - (parseFloat(l.discountPct) || 0) / 100); return (
                   <div key={i} style={{ display: "flex", justifyContent: "space-between", gap: 8, padding: "5px 0", fontSize: 12, borderBottom: "1px solid #f4f6f9" }}><span style={{ minWidth: 0, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{l.name || "—"} <span style={{ color: "#8a97a5" }}>×{parseFloat(l.qty) || 0}</span></span><span style={{ fontVariantNumeric: "tabular-nums" }}>{fmt(net)}</span></div>
@@ -302,7 +302,7 @@ export function BooksBuilder({ kind, editId }: { kind: Kind; editId?: string }) 
                   <button key={it.id} onClick={() => setSel((cur) => cur.includes(it.id) ? cur.filter((x) => x !== it.id) : [...cur, it.id])} style={{ width: "100%", textAlign: "left", display: "flex", justifyContent: "space-between", alignItems: "center", gap: 12, padding: "10px 14px", border: 0, borderBottom: `1px solid ${color.line.DEFAULT}`, background: on ? color.brand.primaryTint : color.surface.card, cursor: "pointer" }}>
                     <span style={{ display: "inline-flex", alignItems: "center", gap: 11, minWidth: 0 }}>
                       <span aria-hidden style={{ width: 18, height: 18, flexShrink: 0, borderRadius: 5, border: `1.5px solid ${on ? color.brand.primary : color.line.strong}`, background: on ? color.brand.primary : "transparent", color: "#fff", display: "inline-flex", alignItems: "center", justifyContent: "center", fontSize: 12 }}>{on ? "✓" : ""}</span>
-                      <span style={{ minWidth: 0 }}><span style={{ display: "block", fontSize: 13.5, fontWeight: 600, color: color.ink.DEFAULT, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{it.name}</span>{it.description ? <span style={{ display: "block", fontSize: 12, color: color.ink.soft, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{it.description}</span> : null}</span>
+                      <span style={{ minWidth: 0 }}><span style={{ display: "block", fontSize: 14, fontWeight: 600, color: color.ink.DEFAULT, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{it.name}</span>{it.description ? <span style={{ display: "block", fontSize: 12, color: color.ink.soft, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{it.description}</span> : null}</span>
                     </span>
                     <span style={{ flexShrink: 0, fontSize: 13, fontWeight: 600, color: color.brand.primary }}>{currency} {fmt(Number(it.unitPrice) || 0)}</span>
                   </button>

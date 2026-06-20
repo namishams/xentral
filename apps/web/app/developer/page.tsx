@@ -12,8 +12,8 @@ const HOOKS: Hook[] = [
 ];
 const TONE: Record<Hook["status"], BadgeTone> = { active: "positive", failing: "critical" };
 const HCols: Column<Hook>[] = [
-  { key: "event", header: "Event", width: 170, render: (r) => <span style={{ fontWeight: 600, color: color.ink.DEFAULT, fontFamily: "monospace", fontSize: 12.5 }}>{r.event}</span> },
-  { key: "url", header: "Endpoint", render: (r) => <span style={{ color: color.ink.soft, fontSize: 12.5 }}>{r.url}</span> },
+  { key: "event", header: "Event", width: 170, render: (r) => <span style={{ fontWeight: 600, color: color.ink.DEFAULT, fontFamily: "monospace", fontSize: 13 }}>{r.event}</span> },
+  { key: "url", header: "Endpoint", render: (r) => <span style={{ color: color.ink.soft, fontSize: 13 }}>{r.url}</span> },
   { key: "status", header: "Status", width: 110, render: (r) => <StatusBadge tone={TONE[r.status]} label={r.status} /> },
 ];
 
@@ -31,7 +31,7 @@ export default function DeveloperPage() {
         {[["REST API", "Full CRUD over every module"], ["Webhooks", "Real-time event push"], ["White-label", "Your brand, your domain"], ["LLM-ready", "MCP + structured endpoints"]].map(([t, d]) => (
           <div key={t} style={{ background: color.surface.card, border: `1px solid ${color.line.DEFAULT}`, borderRadius: 10, padding: "14px 16px" }}>
             <div style={{ fontSize: 14, fontWeight: 600, color: color.ink.DEFAULT }}>{t}</div>
-            <div style={{ fontSize: 12.5, color: color.ink.soft, marginTop: 3 }}>{d}</div>
+            <div style={{ fontSize: 13, color: color.ink.soft, marginTop: 3 }}>{d}</div>
           </div>
         ))}
       </div>

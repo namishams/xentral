@@ -112,11 +112,11 @@ export default function DealsPage() {
 
       <Modal open={open} onClose={() => setOpen(false)} title="New deal" footer={<><Button onClick={() => setOpen(false)}>Cancel</Button><Button variant="primary" onClick={submit}>Create deal</Button></>}>
         <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-          <label style={{ display: "block" }}><span style={{ display: "block", fontSize: 12.5, fontWeight: 600, color: color.ink.mid, marginBottom: 5 }}>Deal name</span><Input autoFocus placeholder="e.g. Office relocation" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} style={{ width: "100%" }} /></label>
-          <label style={{ display: "block" }}><span style={{ display: "block", fontSize: 12.5, fontWeight: 600, color: color.ink.mid, marginBottom: 5 }}>Contact / account</span><Input placeholder="e.g. Gulf Trading" value={form.account} onChange={(e) => setForm({ ...form, account: e.target.value })} style={{ width: "100%" }} /></label>
+          <label style={{ display: "block" }}><span style={{ display: "block", fontSize: 13, fontWeight: 600, color: color.ink.mid, marginBottom: 5 }}>Deal name</span><Input autoFocus placeholder="e.g. Office relocation" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} style={{ width: "100%" }} /></label>
+          <label style={{ display: "block" }}><span style={{ display: "block", fontSize: 13, fontWeight: 600, color: color.ink.mid, marginBottom: 5 }}>Contact / account</span><Input placeholder="e.g. Gulf Trading" value={form.account} onChange={(e) => setForm({ ...form, account: e.target.value })} style={{ width: "100%" }} /></label>
           <div style={{ display: "flex", gap: 12 }}>
-            <label style={{ flex: 1 }}><span style={{ display: "block", fontSize: 12.5, fontWeight: 600, color: color.ink.mid, marginBottom: 5 }}>Value (AED)</span><Input type="number" placeholder="0" value={form.value} onChange={(e) => setForm({ ...form, value: e.target.value })} style={{ width: "100%" }} /></label>
-            <label style={{ flex: 1 }}><span style={{ display: "block", fontSize: 12.5, fontWeight: 600, color: color.ink.mid, marginBottom: 5 }}>Stage</span>
+            <label style={{ flex: 1 }}><span style={{ display: "block", fontSize: 13, fontWeight: 600, color: color.ink.mid, marginBottom: 5 }}>Value (AED)</span><Input type="number" placeholder="0" value={form.value} onChange={(e) => setForm({ ...form, value: e.target.value })} style={{ width: "100%" }} /></label>
+            <label style={{ flex: 1 }}><span style={{ display: "block", fontSize: 13, fontWeight: 600, color: color.ink.mid, marginBottom: 5 }}>Stage</span>
               <select value={form.stage} onChange={(e) => setForm({ ...form, stage: e.target.value as DealStage })} style={{ width: "100%", height: 40, borderRadius: 8, border: `1px solid ${color.line.strong}`, background: color.surface.card, color: color.ink.DEFAULT, fontSize: 13, padding: "0 10px" }}>
                 {STAGES.map((s) => <option key={s} value={s}>{s.charAt(0).toUpperCase() + s.slice(1)}</option>)}
               </select>

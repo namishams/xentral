@@ -32,7 +32,7 @@ export default function PortalPage() {
   return (
     <Shell>
       <h1 style={{ fontSize: 22, fontWeight: 700, margin: "0 0 4px" }}>Welcome back, Gulf Trading</h1>
-      <p style={{ fontSize: 13.5, color: color.ink.mid, margin: "0 0 20px" }}>Your invoices, quotes and documents — all in one place.</p>
+      <p style={{ fontSize: 14, color: color.ink.mid, margin: "0 0 20px" }}>Your invoices, quotes and documents — all in one place.</p>
 
       <div style={{ display: "flex", gap: 12, flexWrap: "wrap", marginBottom: 20 }}>
         {[["Balance due", aed(due), color.status.critical], ["Open quotes", String(quotes.length), color.ink.DEFAULT], ["Documents", "4", color.ink.DEFAULT]].map(([l, v, t]) => (

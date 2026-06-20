@@ -11,12 +11,12 @@ const empty: Cfg = { agentName: "", agentTone: "", agentBusinessType: "", agentK
 function Field({ label, hint, children }: { label: string; hint?: string; children: React.ReactNode }) {
   return (
     <label style={{ display: "block", marginBottom: 16 }}>
-      <span style={{ display: "block", fontSize: 12.5, fontWeight: 600, color: color.ink.mid, marginBottom: 5 }}>{label}{hint ? <span style={{ color: color.ink.soft, fontWeight: 400 }}> · {hint}</span> : null}</span>
+      <span style={{ display: "block", fontSize: 13, fontWeight: 600, color: color.ink.mid, marginBottom: 5 }}>{label}{hint ? <span style={{ color: color.ink.soft, fontWeight: 400 }}> · {hint}</span> : null}</span>
       {children}
     </label>
   );
 }
-const area: React.CSSProperties = { width: "100%", minHeight: 90, border: `1px solid ${color.line.strong}`, borderRadius: 9, padding: "9px 12px", fontSize: 13.5, color: color.ink.DEFAULT, background: color.surface.card, outline: "none", boxSizing: "border-box", fontFamily: "inherit", lineHeight: "19px", resize: "vertical" };
+const area: React.CSSProperties = { width: "100%", minHeight: 90, border: `1px solid ${color.line.strong}`, borderRadius: 9, padding: "9px 12px", fontSize: 14, color: color.ink.DEFAULT, background: color.surface.card, outline: "none", boxSizing: "border-box", fontFamily: "inherit", lineHeight: "19px", resize: "vertical" };
 
 export default function AiHubPage() {
   const [cfg, setCfg] = React.useState<Cfg>(empty);
@@ -71,7 +71,7 @@ export default function AiHubPage() {
 
           <div style={{ background: color.surface.card, border: `1px solid ${color.line.DEFAULT}`, borderRadius: 12, padding: 18, boxShadow: "0 1px 2px rgba(16,24,40,0.04)" }}>
             <div style={{ fontSize: 14, fontWeight: 700, color: color.ink.DEFAULT, marginBottom: 6 }}>OpenAI key</div>
-            <p style={{ fontSize: 12.5, color: color.ink.soft, margin: "0 0 12px" }}>{cfg.openaiKeySet ? "A key is set for this workspace. Leave blank to keep it; enter a new one to replace." : "No key set — the platform key is used as fallback. Add your own to use your account."}</p>
+            <p style={{ fontSize: 13, color: color.ink.soft, margin: "0 0 12px" }}>{cfg.openaiKeySet ? "A key is set for this workspace. Leave blank to keep it; enter a new one to replace." : "No key set — the platform key is used as fallback. Add your own to use your account."}</p>
             <Field label="API key"><Input type="password" value={keyInput} onChange={(e) => setKeyInput(e.target.value)} placeholder={cfg.openaiKeySet ? "•••••••••• (set)" : "sk-…"} style={{ width: "100%" }} /></Field>
             <div style={{ fontSize: 12, color: color.ink.soft, marginTop: 8, lineHeight: "17px" }}>The auto-reply itself is switched on by the platform flag <code style={{ background: color.surface.sunken, padding: "1px 5px", borderRadius: 4 }}>XENTRAL_WA_AI</code>. Per-chat you can also set a conversation to manual in the inbox.</div>
           </div>

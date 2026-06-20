@@ -41,7 +41,7 @@ export default function ChatPage() {
                 <button key={c.id} onClick={() => setActiveId(c.id)} style={{ display: "flex", gap: 10, width: "100%", textAlign: "left", border: "none", background: on ? color.brand.primaryTint : "transparent", padding: "9px 16px", cursor: "pointer", alignItems: "center" }}>
                   <span style={{ width: 26, height: 26, flexShrink: 0, borderRadius: c.kind === "dm" ? "50%" : 7, background: color.surface.sunken, color: color.ink.mid, fontSize: 12, fontWeight: 600, display: "flex", alignItems: "center", justifyContent: "center" }}>{c.kind === "channel" ? "#" : c.name.split(" ").map((w) => w[0]).join("")}</span>
                   <span style={{ flex: 1, minWidth: 0 }}>
-                    <span style={{ display: "block", fontSize: 13.5, fontWeight: 600, color: on ? color.brand.primary : color.ink.DEFAULT }}>{c.kind === "channel" ? "#" + c.name : c.name}</span>
+                    <span style={{ display: "block", fontSize: 14, fontWeight: 600, color: on ? color.brand.primary : color.ink.DEFAULT }}>{c.kind === "channel" ? "#" + c.name : c.name}</span>
                     <span style={{ display: "block", fontSize: 12, color: color.ink.soft, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{c.preview}</span>
                   </span>
                   {c.unread ? <span style={{ flexShrink: 0, minWidth: 18, height: 18, borderRadius: 9, background: color.brand.primary, color: color.ink.onPrimary, fontSize: 11, fontWeight: 700, display: "flex", alignItems: "center", justifyContent: "center", padding: "0 5px" }}>{c.unread}</span> : null}

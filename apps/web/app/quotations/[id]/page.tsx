@@ -73,8 +73,8 @@ export default function QuoteDetailPage({ params }: { params: { id: string } }) 
 
   const expired = ["SENT", "DRAFT"].includes(q.status) && !!q.validRaw && new Date(q.validRaw).getTime() < Date.now();
   const isDraft = q.status === "DRAFT";
-  const fieldS: React.CSSProperties = { width: "100%", boxSizing: "border-box", height: 38, border: `1px solid ${color.line.strong}`, borderRadius: 8, padding: "0 11px", fontSize: 13.5, color: color.ink.DEFAULT, background: color.surface.card, marginBottom: 12 };
-  const lbl: React.CSSProperties = { display: "block", fontSize: 11.5, fontWeight: 700, letterSpacing: 0.3, color: color.ink.soft, textTransform: "uppercase", marginBottom: 5 };
+  const fieldS: React.CSSProperties = { width: "100%", boxSizing: "border-box", height: 38, border: `1px solid ${color.line.strong}`, borderRadius: 8, padding: "0 11px", fontSize: 14, color: color.ink.DEFAULT, background: color.surface.card, marginBottom: 12 };
+  const lbl: React.CSSProperties = { display: "block", fontSize: 12, fontWeight: 700, letterSpacing: 0.3, color: color.ink.soft, textTransform: "uppercase", marginBottom: 5 };
   const th: React.CSSProperties = { padding: "9px 16px", fontSize: 11, fontWeight: 600, letterSpacing: 0.2, color: color.ink.mid, textTransform: "uppercase", background: color.surface.page, borderBottom: `1px solid ${color.line.strong}` };
   const td: React.CSSProperties = { padding: "11px 16px", fontSize: 13, color: color.ink.DEFAULT, borderBottom: `1px solid ${color.line.DEFAULT}`, verticalAlign: "top" };
 
@@ -109,7 +109,7 @@ export default function QuoteDetailPage({ params }: { params: { id: string } }) 
           <div style={{ minWidth: 0 }}>
             <div style={{ fontSize: 12, color: color.ink.soft, marginBottom: 4 }}>Quote for</div>
             <div style={{ fontSize: 18, fontWeight: 700, color: color.ink.DEFAULT }}>{q.customer || "—"}</div>
-            <div style={{ fontSize: 12.5, color: color.ink.mid }}>{q.customerEmail || "No email on file"}</div>
+            <div style={{ fontSize: 13, color: color.ink.mid }}>{q.customerEmail || "No email on file"}</div>
           </div>
           <div style={{ textAlign: "right" }}>
             <div style={{ fontSize: 12, color: color.ink.soft, marginBottom: 2 }}>Quote total</div>
@@ -162,7 +162,7 @@ export default function QuoteDetailPage({ params }: { params: { id: string } }) 
                 <div style={{ display: "flex", justifyContent: "space-between", fontSize: 15, fontWeight: 800, padding: "8px 0", borderTop: `2px solid ${color.ink.DEFAULT}`, marginTop: 4, color: color.ink.DEFAULT }}><span>Total</span><span>{aed(q.total, q.currency)}</span></div>
               </div>
             </div>
-            {q.notes ? <div style={{ padding: "14px 16px", fontSize: 12.5, color: color.ink.mid, borderTop: `1px solid ${color.line.DEFAULT}`, background: color.surface.page }}><b style={{ color: color.ink.DEFAULT }}>Notes</b><br />{q.notes}</div> : null}
+            {q.notes ? <div style={{ padding: "14px 16px", fontSize: 13, color: color.ink.mid, borderTop: `1px solid ${color.line.DEFAULT}`, background: color.surface.page }}><b style={{ color: color.ink.DEFAULT }}>Notes</b><br />{q.notes}</div> : null}
           </PanelBody>
         </Panel>
 
@@ -179,7 +179,7 @@ export default function QuoteDetailPage({ params }: { params: { id: string } }) 
             <PanelBody>
               <div style={{ fontSize: 12, color: color.ink.soft, wordBreak: "break-all", background: color.surface.sunken, borderRadius: 8, padding: "8px 10px", marginBottom: 10 }}>{viewUrl}</div>
               <div style={{ display: "flex", gap: 8 }}><Button onClick={copyLink}>Copy link</Button><a href={viewUrl} target="_blank" rel="noreferrer"><Button>Open</Button></a></div>
-              <p style={{ fontSize: 11.5, color: color.ink.soft, marginTop: 14, lineHeight: 1.5 }}>“Send to customer” emails a branded quote with an <b>Accept online</b> button. The customer can accept directly from the share link.</p>
+              <p style={{ fontSize: 12, color: color.ink.soft, marginTop: 14, lineHeight: 1.5 }}>“Send to customer” emails a branded quote with an <b>Accept online</b> button. The customer can accept directly from the share link.</p>
             </PanelBody>
           </Panel>
           <AttachmentsPanel docType="QUOTE" docId={params.id} />

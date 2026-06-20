@@ -68,12 +68,12 @@ export default function SalesPerformancePage() {
         <Panel>
           <PanelHeader title="By team" subtitle="Won this period" />
           <PanelBody flush>
-            {rollup.length === 0 ? <div style={{ padding: 16, textAlign: "center", fontSize: 12.5, color: color.ink.soft }}>No teams yet. <a href="/sales-teams" style={{ color: color.brand.primary }}>Create one →</a></div>
+            {rollup.length === 0 ? <div style={{ padding: 16, textAlign: "center", fontSize: 13, color: color.ink.soft }}>No teams yet. <a href="/sales-teams" style={{ color: color.brand.primary }}>Create one →</a></div>
               : rollup.map((t) => (
                 <button key={t.id} onClick={() => setTeam(t.id)} style={{ display: "block", width: "100%", textAlign: "left", padding: "11px 16px", borderBottom: `1px solid ${color.line.DEFAULT}`, background: "transparent", border: 0, cursor: "pointer" }}>
                   <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", marginBottom: 5 }}>
                     <span style={{ fontSize: 13, fontWeight: 600, color: color.ink.DEFAULT }}>{t.name} <span style={{ fontSize: 11, color: color.ink.soft, fontWeight: 400 }}>· {t.reps}</span></span>
-                    <span style={{ fontSize: 12.5, fontWeight: 700, color: color.status.positive, fontVariantNumeric: "tabular-nums" }}>{t.won > 0 ? aedShort(t.won) : "—"}</span>
+                    <span style={{ fontSize: 13, fontWeight: 700, color: color.status.positive, fontVariantNumeric: "tabular-nums" }}>{t.won > 0 ? aedShort(t.won) : "—"}</span>
                   </div>
                   <div style={{ height: 6, borderRadius: 4, background: color.surface.sunken, overflow: "hidden" }}><div style={{ height: "100%", width: `${Math.min(100, (t.won / topWon) * 100)}%`, background: color.status.positive, borderRadius: 4 }} /></div>
                   <div style={{ fontSize: 11, color: color.ink.soft, marginTop: 4 }}>{aedShort(t.pipeline)} pipeline · {winRate(t.wc, t.lc)}% win</div>

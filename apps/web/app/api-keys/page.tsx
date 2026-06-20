@@ -10,7 +10,7 @@ const TONE: Record<ApiKeyStatus, BadgeTone> = { active: "positive", revoked: "ne
 
 const COLUMNS: Column<ApiKeyRow>[] = [
   { key: "name", header: "Name", render: (r) => <span style={{ fontWeight: 600, color: color.ink.DEFAULT }}>{r.name}</span> },
-  { key: "prefix", header: "Key", width: 160, render: (r) => <span style={{ fontFamily: "var(--font-mono, monospace)", fontSize: 12.5, color: color.ink.mid }}>{r.prefix}</span> },
+  { key: "prefix", header: "Key", width: 160, render: (r) => <span style={{ fontFamily: "var(--font-mono, monospace)", fontSize: 13, color: color.ink.mid }}>{r.prefix}</span> },
   { key: "created", header: "Created", width: 100, render: (r) => <span style={{ color: color.ink.mid }}>{r.created}</span> },
   { key: "lastUsed", header: "Last used", width: 110, render: (r) => <span style={{ color: color.ink.mid }}>{r.lastUsed}</span> },
   { key: "status", header: "Status", width: 110, render: (r) => <StatusBadge tone={TONE[r.status]} label={r.status} /> },

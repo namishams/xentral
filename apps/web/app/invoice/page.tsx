@@ -32,13 +32,13 @@ export default function InvoicePage() {
       {/* QuickActionsBar */}
       <div style={{ display: "flex", gap: 8, background: color.surface.card, border: `1px solid ${color.line.DEFAULT}`, borderRadius: 8, padding: "0 12px", height: uiConstants.quickActions.barHeight, alignItems: "center", marginBottom: 16 }}>
         {ACTIONS.map((a, i) => (
-          <span key={a} style={{ fontSize: 12.5, color: i === 0 ? color.ink.DEFAULT : color.ink.mid, fontWeight: i === 0 ? 600 : 400, padding: "0 6px" }}>{a}</span>
+          <span key={a} style={{ fontSize: 13, color: i === 0 ? color.ink.DEFAULT : color.ink.mid, fontWeight: i === 0 ? 600 : 400, padding: "0 6px" }}>{a}</span>
         ))}
       </div>
 
       <div style={{ display: "grid", gridTemplateColumns: "2fr 1fr", gap: 16, alignItems: "start" }}>
         <div style={{ background: color.surface.card, border: `1px solid ${color.line.DEFAULT}`, borderRadius: 12, padding: 18 }}>
-          <div style={{ display: "flex", justifyContent: "space-between", fontSize: 12.5, marginBottom: 14 }}>
+          <div style={{ display: "flex", justifyContent: "space-between", fontSize: 13, marginBottom: 14 }}>
             <div><div style={{ color: color.ink.soft, fontSize: 11 }}>Bill to</div><div style={{ fontWeight: 600, color: color.ink.DEFAULT }}>Al Noor Real Estate</div><div style={{ color: color.ink.mid }}>Business Bay, Dubai</div></div>
             <div style={{ textAlign: "right" }}><div style={{ color: color.ink.soft, fontSize: 11 }}>Issued · Due</div><div style={{ color: color.ink.DEFAULT }}>10 Jun · 24 Jun 2026</div></div>
           </div>
@@ -46,30 +46,30 @@ export default function InvoicePage() {
             <span style={{ flex: 1 }}>Description</span><span style={{ width: 40, textAlign: "right" }}>Qty</span><span style={{ width: 80, textAlign: "right" }}>Price</span><span style={{ width: 80, textAlign: "right" }}>Total</span>
           </div>
           {LINES.map((l) => (
-            <div key={l.desc} style={{ display: "flex", fontSize: 12.5, alignItems: "center", borderBottom: `1px solid ${color.line.DEFAULT}`, height: uiConstants.table.rowHeight.default, color: color.ink.DEFAULT }}>
+            <div key={l.desc} style={{ display: "flex", fontSize: 13, alignItems: "center", borderBottom: `1px solid ${color.line.DEFAULT}`, height: uiConstants.table.rowHeight.default, color: color.ink.DEFAULT }}>
               <span style={{ flex: 1 }}>{l.desc}</span><span style={{ width: 40, textAlign: "right" }}>{l.qty}</span><span style={{ width: 80, textAlign: "right" }}>{l.price.toLocaleString()}</span><span style={{ width: 80, textAlign: "right" }}>{(l.qty * l.price).toLocaleString()}</span>
             </div>
           ))}
-          <div style={{ marginLeft: "auto", width: 220, fontSize: 12.5, marginTop: 12 }}>
+          <div style={{ marginLeft: "auto", width: 220, fontSize: 13, marginTop: 12 }}>
             <Row label="Subtotal" value={aed(subtotal)} muted />
             <Row label="VAT 5%" value={aed(vat)} muted />
             <Row label="Total" value={aed(total)} bold top />
             <Row label="Paid" value={`− ${aed(amountPaid)}`} cl={color.status.positive} />
             <Row label="Balance due" value={aed(balance)} bold top cl={color.status.critical} />
           </div>
-          <div style={{ fontSize: 10.5, color: color.ink.soft, marginTop: 6 }}>Totals computed via @xentral/kernel · outstanding() = {aed(balance)}</div>
+          <div style={{ fontSize: 11, color: color.ink.soft, marginTop: 6 }}>Totals computed via @xentral/kernel · outstanding() = {aed(balance)}</div>
         </div>
 
         <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
           <DashboardCard size="medium" title="Balance due" className="!h-auto">
             <div style={{ fontSize: 22, fontWeight: 700, color: color.status.critical }}>{aed(balance)}</div>
-            <div style={{ fontSize: 11.5, color: color.ink.mid, marginBottom: 10 }}>Due 24 Jun 2026</div>
-            <div style={{ background: color.brand.primaryTint, color: color.brand.primary, borderRadius: 8, textAlign: "center", fontSize: 12.5, fontWeight: 600, padding: 9 }}>Copy pay link</div>
+            <div style={{ fontSize: 12, color: color.ink.mid, marginBottom: 10 }}>Due 24 Jun 2026</div>
+            <div style={{ background: color.brand.primaryTint, color: color.brand.primary, borderRadius: 8, textAlign: "center", fontSize: 13, fontWeight: 600, padding: 9 }}>Copy pay link</div>
           </DashboardCard>
           <div style={{ background: color.surface.card, border: `1px solid ${color.line.DEFAULT}`, borderRadius: 12, padding: 14 }}>
             <div style={{ fontSize: 13, fontWeight: 600, color: color.ink.DEFAULT, marginBottom: 8 }}>Activity</div>
             {TIMELINE.map(([a, b, t2], i) => (
-              <div key={i} style={{ display: "flex", justifyContent: "space-between", fontSize: 11.5, padding: "6px 0", borderTop: `1px solid ${color.line.DEFAULT}` }}>
+              <div key={i} style={{ display: "flex", justifyContent: "space-between", fontSize: 12, padding: "6px 0", borderTop: `1px solid ${color.line.DEFAULT}` }}>
                 <span style={{ color: t2 as string }}>{a as string}</span><span style={{ color: color.ink.mid }}>{b as string}</span>
               </div>
             ))}

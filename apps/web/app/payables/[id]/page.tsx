@@ -19,7 +19,7 @@ function Panel({ title, sub, action, children }: { title: string; sub?: string; 
   return (
     <section style={{ background: color.surface.card, border: `1px solid ${color.line.DEFAULT}`, borderRadius: 12, padding: "16px 18px", boxShadow: shadow.card }}>
       <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 12, marginBottom: 12 }}>
-        <div><h2 style={{ fontSize: 14, fontWeight: 600, color: color.ink.DEFAULT, margin: 0 }}>{title}</h2>{sub ? <div style={{ fontSize: 12.5, color: color.ink.soft, marginTop: 2 }}>{sub}</div> : null}</div>
+        <div><h2 style={{ fontSize: 14, fontWeight: 600, color: color.ink.DEFAULT, margin: 0 }}>{title}</h2>{sub ? <div style={{ fontSize: 13, color: color.ink.soft, marginTop: 2 }}>{sub}</div> : null}</div>
         {action}
       </div>
       {children}
@@ -84,7 +84,7 @@ export default function BillRecordPage({ params }: { params: { id: string } }) {
           <Panel title="Line items"><DataTable columns={COLUMNS} rows={lines} getKey={(r) => String(r.n)} /></Panel>
           <Panel title="Approval" sub="Three-way match and sign-off before payment">
             <div style={{ marginBottom: 8 }}><StatusBadge tone={st.tone} label={st.label} /></div>
-            <div style={{ fontSize: 12.5, color: color.ink.soft }}>{b.status === "paid" ? "Paid in full." : b.status === "overdue" ? "Overdue — prioritise payment to avoid late fees." : "Awaiting approval before scheduling payment."}</div>
+            <div style={{ fontSize: 13, color: color.ink.soft }}>{b.status === "paid" ? "Paid in full." : b.status === "overdue" ? "Overdue — prioritise payment to avoid late fees." : "Awaiting approval before scheduling payment."}</div>
           </Panel>
         </div>
         <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
@@ -95,7 +95,7 @@ export default function BillRecordPage({ params }: { params: { id: string } }) {
             <SumRow label="Supplier"><a href="/suppliers" style={{ color: color.brand.primary, textDecoration: "none" }}>{b.supplier}</a></SumRow>
           </Panel>
           <Panel title="Attachments" action={<Button>Upload</Button>}>
-            <div style={{ fontSize: 12.5, color: color.ink.soft, padding: "4px 0" }}>No files yet — supplier invoice, GRN.</div>
+            <div style={{ fontSize: 13, color: color.ink.soft, padding: "4px 0" }}>No files yet — supplier invoice, GRN.</div>
           </Panel>
         </div>
       </div>

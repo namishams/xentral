@@ -66,9 +66,9 @@ export default function BillingPage() {
               <div style={{ display: "grid", gridTemplateColumns: "minmax(0,1fr) minmax(0,1fr)", gap: 16, marginBottom: 18 }}>
                 <Panel><PanelHeader title="Usage this period" /><PanelBody>
                   <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
-                    <div><div style={{ display: "flex", justifyContent: "space-between", fontSize: 12.5 }}><span style={{ color: color.ink.mid }}>Seats</span><span style={{ color: color.ink.DEFAULT, fontWeight: 600 }}>{d.usage.seatsUsed} / {d.usage.seatsCap}</span></div><Bar used={d.usage.seatsUsed} cap={d.usage.seatsCap} /></div>
-                    <div><div style={{ display: "flex", justifyContent: "space-between", fontSize: 12.5 }}><span style={{ color: color.ink.mid }}>AI credits (balance)</span><span style={{ color: color.ink.DEFAULT, fontWeight: 600 }}>{N(d.usage.aiCreditsBalance).toLocaleString()} / {N(d.usage.aiCreditsIncluded).toLocaleString()}</span></div><Bar used={Math.max(0, d.usage.aiCreditsIncluded - d.usage.aiCreditsBalance)} cap={d.usage.aiCreditsIncluded} /></div>
-                    <div><div style={{ display: "flex", justifyContent: "space-between", fontSize: 12.5 }}><span style={{ color: color.ink.mid }}>Automations</span><span style={{ color: color.ink.DEFAULT, fontWeight: 600 }}>{d.usage.automationsUsed} / {d.usage.automationsCap}</span></div><Bar used={d.usage.automationsUsed} cap={d.usage.automationsCap} /></div>
+                    <div><div style={{ display: "flex", justifyContent: "space-between", fontSize: 13 }}><span style={{ color: color.ink.mid }}>Seats</span><span style={{ color: color.ink.DEFAULT, fontWeight: 600 }}>{d.usage.seatsUsed} / {d.usage.seatsCap}</span></div><Bar used={d.usage.seatsUsed} cap={d.usage.seatsCap} /></div>
+                    <div><div style={{ display: "flex", justifyContent: "space-between", fontSize: 13 }}><span style={{ color: color.ink.mid }}>AI credits (balance)</span><span style={{ color: color.ink.DEFAULT, fontWeight: 600 }}>{N(d.usage.aiCreditsBalance).toLocaleString()} / {N(d.usage.aiCreditsIncluded).toLocaleString()}</span></div><Bar used={Math.max(0, d.usage.aiCreditsIncluded - d.usage.aiCreditsBalance)} cap={d.usage.aiCreditsIncluded} /></div>
+                    <div><div style={{ display: "flex", justifyContent: "space-between", fontSize: 13 }}><span style={{ color: color.ink.mid }}>Automations</span><span style={{ color: color.ink.DEFAULT, fontWeight: 600 }}>{d.usage.automationsUsed} / {d.usage.automationsCap}</span></div><Bar used={d.usage.automationsUsed} cap={d.usage.automationsCap} /></div>
                   </div>
                 </PanelBody></Panel>
                 <Panel><PanelHeader title="Plan features" subtitle={d.plan.name} /><PanelBody>
@@ -84,7 +84,7 @@ export default function BillingPage() {
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
                 <h2 style={{ fontSize: 14, fontWeight: 700, color: color.ink.DEFAULT, margin: 0 }}>Change plan</h2>
                 <div style={{ display: "inline-flex", border: `1px solid ${color.line.strong}`, borderRadius: 8, overflow: "hidden" }}>
-                  {(["monthly", "annual"] as const).map((c) => <button key={c} onClick={() => setCycle(c)} style={{ padding: "6px 14px", fontSize: 12.5, fontWeight: 600, border: "none", cursor: "pointer", background: cycle === c ? color.brand.primary : color.surface.card, color: cycle === c ? color.ink.onPrimary : color.ink.mid, textTransform: "capitalize" }}>{c}{c === "annual" ? " (2 mo free)" : ""}</button>)}
+                  {(["monthly", "annual"] as const).map((c) => <button key={c} onClick={() => setCycle(c)} style={{ padding: "6px 14px", fontSize: 13, fontWeight: 600, border: "none", cursor: "pointer", background: cycle === c ? color.brand.primary : color.surface.card, color: cycle === c ? color.ink.onPrimary : color.ink.mid, textTransform: "capitalize" }}>{c}{c === "annual" ? " (2 mo free)" : ""}</button>)}
                 </div>
               </div>
 
@@ -117,7 +117,7 @@ export default function BillingPage() {
                 })}
               </div>
 
-              <div style={{ marginTop: 16, padding: "10px 14px", background: color.surface.sunken, borderRadius: 10, fontSize: 12.5, color: color.ink.mid }}>
+              <div style={{ marginTop: 16, padding: "10px 14px", background: color.surface.sunken, borderRadius: 10, fontSize: 13, color: color.ink.mid }}>
                 All subscription and customer payments are processed through <b style={{ color: "#0098a6" }}>Telr</b> — UAE&rsquo;s leading payment gateway. VAT invoices are issued automatically for every charge.
               </div>
             </>

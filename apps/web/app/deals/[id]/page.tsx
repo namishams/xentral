@@ -100,7 +100,7 @@ export default function DealRecordPage({ params }: { params: { id: string } }) {
                     <span style={{ fontSize: 11, color: color.ink.soft }}>{e.when}</span>
                     <StatusBadge tone="neutral" label={e.kind} />
                   </div>
-                  <div style={{ fontSize: 13.5, color: color.ink.mid, marginTop: 2 }}>{e.text}</div>
+                  <div style={{ fontSize: 14, color: color.ink.mid, marginTop: 2 }}>{e.text}</div>
                 </div>
               ))}
             </div>
@@ -125,7 +125,7 @@ export default function DealRecordPage({ params }: { params: { id: string } }) {
             <SumRow label="Contact"><a href="/contacts" style={{ color: color.brand.primary, textDecoration: "none" }}>View contact ↗</a></SumRow>
           </Panel>
           <Panel title="Attachments" action={<Button>Upload</Button>}>
-            <div style={{ fontSize: 12.5, color: color.ink.soft, padding: "4px 0" }}>No files yet — proposals, drawings, BOQs.</div>
+            <div style={{ fontSize: 13, color: color.ink.soft, padding: "4px 0" }}>No files yet — proposals, drawings, BOQs.</div>
           </Panel>
         </div>
       </div>

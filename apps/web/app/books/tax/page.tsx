@@ -73,15 +73,15 @@ export default function TaxPage() {
                     <div style={{ display: "flex", justifyContent: "space-between", borderTop: `1px solid ${color.line.DEFAULT}`, paddingTop: 9, marginTop: 6, fontSize: 14, fontWeight: 800, color: color.ink.DEFAULT }}>
                       <span>Net payable</span><span style={{ fontVariantNumeric: "tabular-nums" }}>{aed(d.kpis.netPayable)}</span>
                     </div>
-                    <div style={{ fontSize: 11.5, color: color.ink.soft, marginTop: 8 }}>Standard UAE VAT rate is 5%. File via the FTA EmaraTax portal by the due date.</div>
+                    <div style={{ fontSize: 12, color: color.ink.soft, marginTop: 8 }}>Standard UAE VAT rate is 5%. File via the FTA EmaraTax portal by the due date.</div>
                   </div>
 
                   <div style={box}>
                     <h3 style={{ fontSize: 13, fontWeight: 700, color: color.ink.DEFAULT, margin: "0 0 10px" }}>Corporate Tax (9%)</h3>
-                    <div style={{ fontSize: 12.5, color: color.ink.mid, lineHeight: 1.5 }}>
+                    <div style={{ fontSize: 13, color: color.ink.mid, lineHeight: 1.5 }}>
                       UAE Corporate Tax is <strong>0%</strong> on the first <strong>AED 375,000</strong> of taxable profit and <strong>9%</strong> above it. Free-zone QFZP income can qualify for 0%.
                     </div>
-                    <div style={{ marginTop: 10, padding: "9px 11px", background: color.surface.sunken, borderRadius: 8, fontSize: 12.5, color: color.ink.mid }}>
+                    <div style={{ marginTop: 10, padding: "9px 11px", background: color.surface.sunken, borderRadius: 8, fontSize: 13, color: color.ink.mid }}>
                       Indicative liability on YTD net (sales): <strong style={{ color: color.ink.DEFAULT }}>{aed(Math.max(0, (d.kpis.outputNet - 375000)) * 0.09)}</strong>
                       <div style={{ fontSize: 11, color: color.ink.soft, marginTop: 3 }}>Estimate only — final CT is on audited annual profit, not revenue.</div>
                     </div>

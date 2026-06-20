@@ -21,7 +21,7 @@ export default function PaymentsPage() {
 
   const COLS: Column<Row>[] = [
     { key: "ref", header: "Reference", width: 130, render: (r) => <span style={{ fontWeight: 600, color: color.brand.primary }}>{r.ref || r.invoiceNo || "—"}</span> },
-    { key: "customer", header: "Customer", render: (r) => <span style={{ display: "inline-flex", alignItems: "center", gap: 10 }}><span style={{ width: 26, height: 26, borderRadius: 7, background: color.surface.sunken, color: color.ink.mid, fontSize: 10.5, fontWeight: 700, display: "inline-flex", alignItems: "center", justifyContent: "center" }}>{initials(r.customer || "?")}</span><span style={{ color: color.ink.DEFAULT }}>{r.customer || "—"}</span></span> },
+    { key: "customer", header: "Customer", render: (r) => <span style={{ display: "inline-flex", alignItems: "center", gap: 10 }}><span style={{ width: 26, height: 26, borderRadius: 7, background: color.surface.sunken, color: color.ink.mid, fontSize: 11, fontWeight: 700, display: "inline-flex", alignItems: "center", justifyContent: "center" }}>{initials(r.customer || "?")}</span><span style={{ color: color.ink.DEFAULT }}>{r.customer || "—"}</span></span> },
     { key: "invoice", header: "Invoice", width: 120, render: (r) => <span style={{ color: color.ink.mid }}>{r.invoiceNo || "—"}</span> },
     { key: "method", header: "Method", width: 130, render: (r) => <span style={{ color: color.ink.mid }}>{r.method || "—"}</span> },
     { key: "status", header: "Status", width: 110, render: () => <StatusBadge tone="positive" label="received" /> },

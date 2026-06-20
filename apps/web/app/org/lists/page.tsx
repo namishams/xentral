@@ -39,14 +39,14 @@ export default function ListsPage() {
 
   const lists = rows.filter((r) => r.kind !== "segment");
   const segments = rows.filter((r) => r.kind === "segment");
-  const lab: React.CSSProperties = { display: "block", fontSize: 10.5, fontWeight: 700, letterSpacing: 0.3, color: color.ink.soft, textTransform: "uppercase", marginBottom: 5 };
-  const inS: React.CSSProperties = { width: "100%", boxSizing: "border-box", height: 36, border: `1px solid ${color.line.strong}`, borderRadius: 8, padding: "0 11px", fontSize: 13.5, color: color.ink.DEFAULT, background: color.surface.card, outline: "none" };
+  const lab: React.CSSProperties = { display: "block", fontSize: 11, fontWeight: 700, letterSpacing: 0.3, color: color.ink.soft, textTransform: "uppercase", marginBottom: 5 };
+  const inS: React.CSSProperties = { width: "100%", boxSizing: "border-box", height: 36, border: `1px solid ${color.line.strong}`, borderRadius: 8, padding: "0 11px", fontSize: 14, color: color.ink.DEFAULT, background: color.surface.card, outline: "none" };
 
   const Card = ({ l }: { l: L }) => (
     <div style={{ display: "flex", alignItems: "center", gap: 12, padding: "12px 14px", border: `1px solid ${color.line.DEFAULT}`, borderRadius: 10, background: color.surface.card }}>
       <span style={{ width: 10, height: 10, borderRadius: 3, background: l.color || color.brand.primary, flexShrink: 0 }} />
       <div style={{ minWidth: 0, flex: 1 }}>
-        <div style={{ fontSize: 13.5, fontWeight: 600, color: color.ink.DEFAULT }}>{l.name}{l.isPinned ? " ★" : ""}</div>
+        <div style={{ fontSize: 14, fontWeight: 600, color: color.ink.DEFAULT }}>{l.name}{l.isPinned ? " ★" : ""}</div>
         <div style={{ fontSize: 12, color: color.ink.soft }}>{l.description || ENTITIES.find((e) => e[0] === l.entityType)?.[1] || l.entityType}</div>
       </div>
       <StatusBadge tone="neutral" label={`${l.memberCount} ${l.memberCount === 1 ? "record" : "records"}`} />

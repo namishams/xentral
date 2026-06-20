@@ -60,7 +60,7 @@ export default function CompanyDetailPage({ params }: { params: { id: string } }
   }
 
   const fieldS: React.CSSProperties = { width: "100%", boxSizing: "border-box", height: 36, border: `1px solid ${color.line.strong}`, borderRadius: 8, padding: "0 10px", fontSize: 13, color: color.ink.DEFAULT, background: color.surface.card, outline: "none" };
-  const labelS: React.CSSProperties = { display: "block", fontSize: 10.5, fontWeight: 700, letterSpacing: 0.3, color: color.ink.soft, textTransform: "uppercase", marginBottom: 4 };
+  const labelS: React.CSSProperties = { display: "block", fontSize: 11, fontWeight: 700, letterSpacing: 0.3, color: color.ink.soft, textTransform: "uppercase", marginBottom: 4 };
   const linkRow: React.CSSProperties = { display: "flex", alignItems: "center", gap: 10, padding: "9px 16px", borderBottom: `1px solid ${color.line.DEFAULT}`, textDecoration: "none", color: color.ink.DEFAULT, fontSize: 13 };
 
   if (loading) return <AppShell active="companies"><div style={{ padding: 40, textAlign: "center", color: color.ink.soft }}>Loading…</div></AppShell>;
@@ -237,7 +237,7 @@ export default function CompanyDetailPage({ params }: { params: { id: string } }
                           <span style={{ fontSize: 11, color: color.ink.soft, marginLeft: "auto", flexShrink: 0 }}>{act.at}</span>
                         </div>
                         {act.content ? <div style={{ fontSize: 12, color: color.ink.mid, marginTop: 2, whiteSpace: "pre-wrap" }}>{act.content}</div> : null}
-                        {act.author ? <div style={{ fontSize: 10.5, color: color.ink.soft, marginTop: 3 }}>by {act.author}</div> : null}
+                        {act.author ? <div style={{ fontSize: 11, color: color.ink.soft, marginTop: 3 }}>by {act.author}</div> : null}
                       </div>
                     </div>
                   ); })}</div>}

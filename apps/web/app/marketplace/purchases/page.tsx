@@ -46,7 +46,7 @@ export default function PurchasesPage() {
     { key: "lead", header: "Lead", render: (p) => (
       <span style={{ minWidth: 0 }}>
         <span style={{ display: "block", fontWeight: 600, color: color.ink.DEFAULT }}>{name(p)}</span>
-        <span style={{ display: "block", fontSize: 11.5, color: color.ink.soft }}>{[p.specialty, p.category].filter(Boolean).join(" · ") || "—"}</span>
+        <span style={{ display: "block", fontSize: 12, color: color.ink.soft }}>{[p.specialty, p.category].filter(Boolean).join(" · ") || "—"}</span>
       </span>
     ) },
     { key: "phone", header: "Phone", width: 160, render: (p) => <span style={{ color: color.ink.mid, fontVariantNumeric: "tabular-nums" }}>{p.phone || "—"}</span> },
@@ -56,7 +56,7 @@ export default function PurchasesPage() {
     { key: "date", header: "Purchased", width: 110, align: "right", render: (p) => <span style={{ color: color.ink.soft }}>{fmt(p.purchasedAt)}</span> },
     { key: "actions", header: "", width: 100, align: "right", render: (p) => (
       disputed.has(p.id)
-        ? <span style={{ fontSize: 11.5, fontWeight: 600, color: color.status.critical }}>Disputed</span>
+        ? <span style={{ fontSize: 12, fontWeight: 600, color: color.status.critical }}>Disputed</span>
         : <button onClick={() => dispute(p)} style={{ height: 28, padding: "0 10px", borderRadius: 7, border: `1px solid ${color.line.strong}`, background: color.surface.card, color: color.ink.mid, fontSize: 12, fontWeight: 600, cursor: "pointer" }}>Report issue</button>
     ) },
   ];

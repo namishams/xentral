@@ -71,7 +71,7 @@ export default function InventoryRecordPage({ params }: { params: { id: string }
             <SumRow label="Available">{available}</SumRow>
           </Panel>
           <Panel title="Recent movement">
-            <div style={{ fontSize: 12.5, color: color.ink.soft }}>{available <= 0 ? "No stock available — reorder to fulfil open orders." : "No recent movements recorded."}</div>
+            <div style={{ fontSize: 13, color: color.ink.soft }}>{available <= 0 ? "No stock available — reorder to fulfil open orders." : "No recent movements recorded."}</div>
           </Panel>
         </div>
         <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
@@ -80,8 +80,8 @@ export default function InventoryRecordPage({ params }: { params: { id: string }
             <SumRow label="Warehouse"><a href="/warehouses" style={{ color: color.brand.primary, textDecoration: "none" }}>{it.warehouse}</a></SumRow>
             <SumRow label="Status"><StatusBadge tone={ss.tone} label={ss.label} /></SumRow>
           </Panel>
-          <Panel title="Linked product" action={<a href="/products" style={{ fontSize: 12.5, color: color.brand.primary, textDecoration: "none" }}>Open ↗</a>}>
-            <div style={{ fontSize: 12.5, color: color.ink.soft, padding: "4px 0" }}>Catalog item {it.sku}.</div>
+          <Panel title="Linked product" action={<a href="/products" style={{ fontSize: 13, color: color.brand.primary, textDecoration: "none" }}>Open ↗</a>}>
+            <div style={{ fontSize: 13, color: color.ink.soft, padding: "4px 0" }}>Catalog item {it.sku}.</div>
           </Panel>
         </div>
       </div>

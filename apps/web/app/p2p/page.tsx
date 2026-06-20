@@ -34,7 +34,7 @@ export default function P2PPage() {
             <div style={{ flex: "1 1 0", minWidth: 150, background: color.surface.card, border: `1px solid ${color.line.DEFAULT}`, borderRadius: 11, padding: "14px 16px", display: "flex", flexDirection: "column", gap: 6 }}>
               <span style={{ display: "inline-flex", alignItems: "center", gap: 7 }}><span style={{ width: 8, height: 8, borderRadius: 2, background: s.accent }} /><span style={{ fontSize: 13, fontWeight: 600, color: color.ink.DEFAULT }}>{s.label}</span></span>
               <span style={{ fontSize: 24, fontWeight: 700, color: color.ink.DEFAULT, lineHeight: "28px" }}>{s.count}</span>
-              <span style={{ fontSize: 12.5, color: color.ink.mid }}>{s.value > 0 ? aed(s.value) : s.hint}</span>
+              <span style={{ fontSize: 13, color: color.ink.mid }}>{s.value > 0 ? aed(s.value) : s.hint}</span>
             </div>
             {i < stages.length - 1 ? <span style={{ alignSelf: "center", color: color.ink.soft, fontSize: 18, flexShrink: 0 }}>→</span> : null}
           </React.Fragment>
@@ -47,8 +47,8 @@ export default function P2PPage() {
           <a key={b.id} href={`/payables/${b.id}`} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 10, padding: "10px 0", borderTop: `1px solid ${color.line.DEFAULT}`, textDecoration: "none" }}>
             <span style={{ display: "inline-flex", alignItems: "center", gap: 10 }}>
               <span style={{ width: 8, height: 8, borderRadius: 2, background: B_TONE[b.status] }} />
-              <span style={{ fontSize: 13.5, fontWeight: 600, color: color.ink.DEFAULT }}>{b.number}</span>
-              <span style={{ fontSize: 12.5, color: color.ink.soft }}>{b.supplier} · {b.status}</span>
+              <span style={{ fontSize: 14, fontWeight: 600, color: color.ink.DEFAULT }}>{b.number}</span>
+              <span style={{ fontSize: 13, color: color.ink.soft }}>{b.supplier} · {b.status}</span>
             </span>
             <span style={{ fontSize: 13, fontWeight: 600, color: color.ink.DEFAULT }}>{aed(b.amount)} · due {b.dueDate}</span>
           </a>

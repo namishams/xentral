@@ -66,16 +66,16 @@ export default function SupplierRecordPage({ params }: { params: { id: string } 
       <div style={{ display: "grid", gridTemplateColumns: "minmax(0,1fr) 320px", gap: 16, alignItems: "start" }}>
         <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
           <Panel title="Bills (accounts payable)" action={<Button>+ New bill</Button>}>
-            {bills.length === 0 ? <div style={{ fontSize: 12.5, color: color.ink.soft }}>No bills recorded.</div> :
+            {bills.length === 0 ? <div style={{ fontSize: 13, color: color.ink.soft }}>No bills recorded.</div> :
               bills.map((b) => (
                 <a key={b.id} href={`/payables/${b.id}`} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "10px 0", borderTop: `1px solid ${color.line.DEFAULT}`, textDecoration: "none" }}>
-                  <span style={{ display: "inline-flex", alignItems: "center", gap: 10 }}><span style={{ fontSize: 13.5, fontWeight: 600, color: color.ink.DEFAULT }}>{b.number}</span><StatusBadge tone={BILL_TONE[b.status]} label={b.status} /></span>
+                  <span style={{ display: "inline-flex", alignItems: "center", gap: 10 }}><span style={{ fontSize: 14, fontWeight: 600, color: color.ink.DEFAULT }}>{b.number}</span><StatusBadge tone={BILL_TONE[b.status]} label={b.status} /></span>
                   <span style={{ fontSize: 13, fontWeight: 600, color: color.ink.DEFAULT }}>{aed(b.amount)} · due {b.dueDate}</span>
                 </a>
               ))}
           </Panel>
           <Panel title="Purchasing">
-            <div style={{ fontSize: 12.5, color: color.ink.soft }}>{v.openOrders > 0 ? `${v.openOrders} open purchase order(s) with this supplier.` : "No open purchase orders."}</div>
+            <div style={{ fontSize: 13, color: color.ink.soft }}>{v.openOrders > 0 ? `${v.openOrders} open purchase order(s) with this supplier.` : "No open purchase orders."}</div>
           </Panel>
         </div>
         <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
@@ -86,7 +86,7 @@ export default function SupplierRecordPage({ params }: { params: { id: string } 
             <SumRow label="Outstanding">{aed(outstanding)}</SumRow>
           </Panel>
           <Panel title="Attachments" action={<Button>Upload</Button>}>
-            <div style={{ fontSize: 12.5, color: color.ink.soft, padding: "4px 0" }}>No files yet — trade licence, agreements.</div>
+            <div style={{ fontSize: 13, color: color.ink.soft, padding: "4px 0" }}>No files yet — trade licence, agreements.</div>
           </Panel>
         </div>
       </div>

@@ -80,7 +80,7 @@ export default function ForecastingPage() {
                           {d.trend.map((t, i) => (
                             <div key={t.label + i} style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", gap: 5 }}>
                               <div style={{ width: "100%", height: `${Math.max(4, (t.total / maxTrend) * 96)}px`, background: color.brand.primary, borderRadius: "5px 5px 0 0", opacity: 0.85 }} title={aed(t.total)} />
-                              <span style={{ fontSize: 10.5, color: color.ink.soft }}>{t.label}</span>
+                              <span style={{ fontSize: 11, color: color.ink.soft }}>{t.label}</span>
                             </div>
                           ))}
                         </div>
@@ -93,7 +93,7 @@ export default function ForecastingPage() {
                       {d.top.length === 0 ? <div style={{ padding: 16, fontSize: 13, color: color.ink.soft, textAlign: "center" }}>No customers yet.</div>
                         : d.top.map((c, i) => (
                           <div key={c.name + i} style={{ padding: "9px 16px", borderBottom: `1px solid ${color.line.DEFAULT}` }}>
-                            <div style={{ display: "flex", justifyContent: "space-between", fontSize: 12.5, marginBottom: 4 }}><span style={{ color: color.ink.DEFAULT, fontWeight: 600, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", maxWidth: 180 }}>{c.name}</span><span style={{ color: color.ink.mid, fontVariantNumeric: "tabular-nums" }}>{aed(c.billed)}</span></div>
+                            <div style={{ display: "flex", justifyContent: "space-between", fontSize: 13, marginBottom: 4 }}><span style={{ color: color.ink.DEFAULT, fontWeight: 600, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", maxWidth: 180 }}>{c.name}</span><span style={{ color: color.ink.mid, fontVariantNumeric: "tabular-nums" }}>{aed(c.billed)}</span></div>
                             <div style={{ height: 5, background: color.surface.sunken, borderRadius: 3 }}><div style={{ height: 5, width: `${(c.billed / maxTop) * 100}%`, background: color.brand.primary, borderRadius: 3 }} /></div>
                           </div>
                         ))}

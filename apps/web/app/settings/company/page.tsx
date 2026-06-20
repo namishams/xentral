@@ -69,8 +69,8 @@ export default function CompanySettingsPage() {
     try { const r = await fetch("/api/settings/company/logo", { method: "DELETE" }); if (r.ok) setLogo(null); } finally { setLogoBusy(false); }
   }
 
-  const fieldS: React.CSSProperties = { width: "100%", boxSizing: "border-box", height: 36, border: `1px solid ${color.line.strong}`, borderRadius: 8, padding: "0 11px", fontSize: 13.5, color: color.ink.DEFAULT, background: color.surface.card, outline: "none" };
-  const labelS: React.CSSProperties = { display: "block", fontSize: 10.5, fontWeight: 700, letterSpacing: 0.3, color: color.ink.soft, textTransform: "uppercase", marginBottom: 5 };
+  const fieldS: React.CSSProperties = { width: "100%", boxSizing: "border-box", height: 36, border: `1px solid ${color.line.strong}`, borderRadius: 8, padding: "0 11px", fontSize: 14, color: color.ink.DEFAULT, background: color.surface.card, outline: "none" };
+  const labelS: React.CSSProperties = { display: "block", fontSize: 11, fontWeight: 700, letterSpacing: 0.3, color: color.ink.soft, textTransform: "uppercase", marginBottom: 5 };
 
   if (loading) return <AppShell active="settings"><div style={{ padding: 40, textAlign: "center", color: color.ink.soft }}>Loading…</div></AppShell>;
   if (!form || !c) return <AppShell active="settings"><div style={{ padding: 40, textAlign: "center", color: color.ink.soft }}>Company settings unavailable. <a href="/settings" style={{ color: color.brand.primary }}>Back to settings</a></div></AppShell>;
@@ -79,7 +79,7 @@ export default function CompanySettingsPage() {
     <AppShell active="settings">
       <PageTitleRow title="Company profile" breadcrumb="Settings · Company"
         badge={<StatusBadge tone="info" label={`${c.plan || "FREE"} plan`} />}
-        actions={dirty ? <Button variant="primary" onClick={save} disabled={busy}>{busy ? "Saving…" : "Save changes"}</Button> : (saved ? <span style={{ fontSize: 12.5, fontWeight: 600, color: color.status.positive }}>✓ Saved</span> : null)} />
+        actions={dirty ? <Button variant="primary" onClick={save} disabled={busy}>{busy ? "Saving…" : "Save changes"}</Button> : (saved ? <span style={{ fontSize: 13, fontWeight: 600, color: color.status.positive }}>✓ Saved</span> : null)} />
 
       <div style={{ display: "grid", gridTemplateColumns: "minmax(0,1fr) minmax(0,1fr)", gap: 16, alignItems: "start" }}>
         <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
@@ -98,7 +98,7 @@ export default function CompanySettingsPage() {
                     <Button variant="primary" onClick={() => fileRef.current?.click()} disabled={logoBusy}>{logoBusy ? "Uploading…" : logo ? "Replace logo" : "Upload logo"}</Button>
                     {logo ? <Button onClick={removeLogo} disabled={logoBusy}>Remove</Button> : null}
                   </div>
-                  <div style={{ fontSize: 11.5, color: color.ink.soft, marginTop: 7 }}>PNG, JPG, SVG or WebP · max 2 MB · square or wide works best.</div>
+                  <div style={{ fontSize: 12, color: color.ink.soft, marginTop: 7 }}>PNG, JPG, SVG or WebP · max 2 MB · square or wide works best.</div>
                   {logoErr ? <div style={{ fontSize: 12, color: color.status.negative, marginTop: 5 }}>{logoErr}</div> : null}
                 </div>
               </div>

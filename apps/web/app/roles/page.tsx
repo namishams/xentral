@@ -16,7 +16,7 @@ function PermMeter({ n }: { n: number }) {
       <span style={{ position: "relative", flex: 1, height: 6, borderRadius: 3, background: color.surface.sunken, overflow: "hidden" }}>
         <span style={{ position: "absolute", inset: 0, width: `${pct}%`, background: c, borderRadius: 3 }} />
       </span>
-      <span style={{ fontSize: 12.5, fontWeight: 700, color: color.ink.mid, minWidth: 24, textAlign: "right", fontVariantNumeric: "tabular-nums" }}>{n}</span>
+      <span style={{ fontSize: 13, fontWeight: 700, color: color.ink.mid, minWidth: 24, textAlign: "right", fontVariantNumeric: "tabular-nums" }}>{n}</span>
     </span>
   );
 }

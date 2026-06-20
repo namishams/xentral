@@ -46,16 +46,16 @@ export default function QuoteTokenPage({ params }: { params: { token: string } }
                   <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 20 }}>
                     <div>
                       {q.logoUrl ? <img src={q.logoUrl} alt={q.merchant} style={{ height: 34, marginBottom: 6 }} /> : <div style={{ fontSize: 18, fontWeight: 800, color: accent }}>{q.merchant}</div>}
-                      <div style={{ fontSize: 12.5, color: MUT }}>Quotation for {q.customer}</div>
+                      <div style={{ fontSize: 13, color: MUT }}>Quotation for {q.customer}</div>
                     </div>
                     <div style={{ textAlign: "right" }}>
                       <div style={{ fontSize: 20, fontWeight: 800, color: accent }}>QUOTE</div>
-                      <div style={{ fontSize: 12.5, color: MUT }}>{q.number}</div>
-                      {q.valid ? <div style={{ fontSize: 11.5, color: MUT }}>Valid until {q.valid}</div> : null}
+                      <div style={{ fontSize: 13, color: MUT }}>{q.number}</div>
+                      {q.valid ? <div style={{ fontSize: 12, color: MUT }}>Valid until {q.valid}</div> : null}
                     </div>
                   </div>
 
-                  <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 13.5, marginBottom: 8 }}>
+                  <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 14, marginBottom: 8 }}>
                     <thead><tr style={{ borderBottom: `1px solid ${LINE}`, color: MUT, textAlign: "left" }}><th style={{ padding: "8px 0" }}>Item</th><th style={{ textAlign: "right" }}>Qty</th><th style={{ textAlign: "right" }}>Amount</th></tr></thead>
                     <tbody>{q.lines.map((l, i) => <tr key={i} style={{ borderBottom: `1px solid ${LINE}` }}><td style={{ padding: "9px 0" }}>{l.name}</td><td style={{ textAlign: "right", color: MUT }}>{Number(l.qty)}</td><td style={{ textAlign: "right", fontWeight: 600 }}>{money(l.lineTotal, q.currency)}</td></tr>)}</tbody>
                   </table>
@@ -66,7 +66,7 @@ export default function QuoteTokenPage({ params }: { params: { token: string } }
                       <div style={{ display: "flex", justifyContent: "space-between", fontSize: 16, fontWeight: 800, padding: "8px 0", borderTop: `2px solid ${accent}`, color: accent }}><span>Total</span><span>{money(q.total, q.currency)}</span></div>
                     </div>
                   </div>
-                  {q.notes ? <div style={{ fontSize: 12.5, color: MUT, borderTop: `1px solid ${LINE}`, paddingTop: 12, marginBottom: 18 }}>{q.notes}</div> : null}
+                  {q.notes ? <div style={{ fontSize: 13, color: MUT, borderTop: `1px solid ${LINE}`, paddingTop: 12, marginBottom: 18 }}>{q.notes}</div> : null}
 
                   {decided ? (
                     <div style={{ textAlign: "center", padding: "16px", borderRadius: 12, background: decided === "ACCEPTED" || decided === "INVOICED" ? "#e7f7ee" : "#fdeceb", color: decided === "ACCEPTED" || decided === "INVOICED" ? "#188918" : "#b3261e", fontWeight: 700 }}>

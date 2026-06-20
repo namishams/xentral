@@ -50,7 +50,7 @@ export default function BuildConsole() {
               <div key={p} style={{ display: "flex", alignItems: "center", gap: 12 }}>
                 <span style={{ width: 64, fontSize: 12, fontWeight: 700, color: c.ink.soft }}>{p}</span>
                 <span style={{ width: 8, height: 8, borderRadius: 99, background: TONE[st] }} />
-                <span style={{ fontSize: 13.5, color: c.ink.DEFAULT }}>{label}</span>
+                <span style={{ fontSize: 14, color: c.ink.DEFAULT }}>{label}</span>
                 <span style={{ marginLeft: "auto", fontSize: 11, fontWeight: 700, color: TONE[st], textTransform: "uppercase" }}>{st}</span>
               </div>
             ))}
@@ -88,7 +88,7 @@ export default function BuildConsole() {
         <p style={{ fontSize: 12, color: c.ink.soft, margin: "0 0 12px" }}>Each is a contract-bounded package (typecheck + boundaries + tests green). 49/49 CI tasks. Kernel contracts carved: tenancy · permissions · party · document · email · money.</p>
         <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
           {["marketing","portal","payments","crm","books","erp","comms","ai","marketplace","payroll","developer","platform"].map((m) => (
-            <span key={m} style={{ display: "inline-flex", alignItems: "center", gap: 6, padding: "6px 12px", borderRadius: 999, background: "var(--surface-card)", border: `1px solid ${c.line.DEFAULT}`, fontSize: 12.5, color: c.ink.DEFAULT }}>
+            <span key={m} style={{ display: "inline-flex", alignItems: "center", gap: 6, padding: "6px 12px", borderRadius: 999, background: "var(--surface-card)", border: `1px solid ${c.line.DEFAULT}`, fontSize: 13, color: c.ink.DEFAULT }}>
               <span style={{ width: 7, height: 7, borderRadius: 99, background: c.status.positive }} /> @xentral/module-{m}
             </span>
           ))}

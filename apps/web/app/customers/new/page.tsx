@@ -28,8 +28,8 @@ type F = {
 };
 const EMPTY: F = { customerType: "business", salutation: "", firstName: "", lastName: "", companyName: "", displayName: "", email: "", phone: "", mobile: "", taxTreatment: "", vatNumber: "", placeOfSupply: "", currency: "AED", paymentTerms: "due_on_receipt", addressLine1: "", addressLine2: "", city: "", country: "United Arab Emirates", shipAddressLine1: "", shipAddressLine2: "", shipCity: "", shipCountry: "", notes: "" };
 
-const lab: React.CSSProperties = { display: "block", fontSize: 10.5, fontWeight: 700, letterSpacing: 0.3, color: color.ink.soft, textTransform: "uppercase", marginBottom: 5 };
-const inS: React.CSSProperties = { width: "100%", boxSizing: "border-box", height: 36, border: `1px solid ${color.line.strong}`, borderRadius: 8, padding: "0 11px", fontSize: 13.5, color: color.ink.DEFAULT, background: color.surface.card, outline: "none" };
+const lab: React.CSSProperties = { display: "block", fontSize: 11, fontWeight: 700, letterSpacing: 0.3, color: color.ink.soft, textTransform: "uppercase", marginBottom: 5 };
+const inS: React.CSSProperties = { width: "100%", boxSizing: "border-box", height: 36, border: `1px solid ${color.line.strong}`, borderRadius: 8, padding: "0 11px", fontSize: 14, color: color.ink.DEFAULT, background: color.surface.card, outline: "none" };
 const grid2: React.CSSProperties = { display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 };
 
 export default function NewCustomerPage() {
@@ -96,7 +96,7 @@ export default function NewCustomerPage() {
                 <div>
                   <label style={lab}>Display name *</label>
                   <input value={f.displayName} placeholder={autoDisplay || "How this customer appears on invoices"} onChange={(e) => set("displayName", e.target.value)} style={inS} />
-                  {!f.displayName && autoDisplay ? <div style={{ fontSize: 11.5, color: color.ink.soft, marginTop: 4 }}>Defaults to &ldquo;{autoDisplay}&rdquo;.</div> : null}
+                  {!f.displayName && autoDisplay ? <div style={{ fontSize: 12, color: color.ink.soft, marginTop: 4 }}>Defaults to &ldquo;{autoDisplay}&rdquo;.</div> : null}
                 </div>
                 <div style={grid2}>
                   {field("email", "Email", "billing@company.ae", "email")}
@@ -132,7 +132,7 @@ export default function NewCustomerPage() {
                   <div>
                     <label style={lab}>TRN (Tax Registration Number){trnRequired ? " *" : ""}</label>
                     <input value={f.vatNumber} placeholder="15 digits" maxLength={15} onChange={(e) => set("vatNumber", e.target.value.replace(/\D/g, ""))} style={inS} />
-                    <div style={{ fontSize: 11.5, color: f.vatNumber && !/^\d{15}$/.test(f.vatNumber) ? color.status.negative : color.ink.soft, marginTop: 4 }}>{f.vatNumber ? `${f.vatNumber.length}/15 digits` : "Required for VAT-registered customers."}</div>
+                    <div style={{ fontSize: 12, color: f.vatNumber && !/^\d{15}$/.test(f.vatNumber) ? color.status.negative : color.ink.soft, marginTop: 4 }}>{f.vatNumber ? `${f.vatNumber.length}/15 digits` : "Required for VAT-registered customers."}</div>
                   </div>
                 ) : null}
                 {showSupply ? (
@@ -174,7 +174,7 @@ export default function NewCustomerPage() {
           <Panel>
             <PanelHeader title="Notes" />
             <PanelBody>
-              <textarea value={f.notes} onChange={(e) => set("notes", e.target.value)} rows={3} placeholder="Internal notes about this customer" style={{ width: "100%", boxSizing: "border-box", padding: "8px 11px", borderRadius: 8, border: `1px solid ${color.line.strong}`, fontSize: 13.5, color: color.ink.DEFAULT, resize: "vertical", fontFamily: "inherit" }} />
+              <textarea value={f.notes} onChange={(e) => set("notes", e.target.value)} rows={3} placeholder="Internal notes about this customer" style={{ width: "100%", boxSizing: "border-box", padding: "8px 11px", borderRadius: 8, border: `1px solid ${color.line.strong}`, fontSize: 14, color: color.ink.DEFAULT, resize: "vertical", fontFamily: "inherit" }} />
             </PanelBody>
           </Panel>
         </div>

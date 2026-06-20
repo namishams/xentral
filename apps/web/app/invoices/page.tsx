@@ -44,7 +44,7 @@ export default function InvoicesPage() {
 
   const COLS: Column<Row>[] = [
     { key: "number", header: "Invoice", width: 130, render: (r) => <span style={{ fontWeight: 600, color: color.brand.primary }}>{r.number}</span>, sort: (r) => r.number, filterText: (r) => `${r.number} ${r.customer || ""}` },
-    { key: "customer", header: "Customer", render: (r) => <span style={{ display: "inline-flex", alignItems: "center", gap: 10, minWidth: 0 }}><span style={{ width: 26, height: 26, flexShrink: 0, borderRadius: 7, background: color.surface.sunken, color: color.ink.mid, fontSize: 10.5, fontWeight: 700, display: "inline-flex", alignItems: "center", justifyContent: "center" }}>{initials(r.customer)}</span><span style={{ color: color.ink.DEFAULT, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{r.customer || "—"}</span></span>, sort: (r) => (r.customer || "").toLowerCase() },
+    { key: "customer", header: "Customer", render: (r) => <span style={{ display: "inline-flex", alignItems: "center", gap: 10, minWidth: 0 }}><span style={{ width: 26, height: 26, flexShrink: 0, borderRadius: 7, background: color.surface.sunken, color: color.ink.mid, fontSize: 11, fontWeight: 700, display: "inline-flex", alignItems: "center", justifyContent: "center" }}>{initials(r.customer)}</span><span style={{ color: color.ink.DEFAULT, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{r.customer || "—"}</span></span>, sort: (r) => (r.customer || "").toLowerCase() },
     { key: "status", header: "Status", width: 116, render: (r) => { const s = (r.status || "").toUpperCase(); const tone = r.overdue ? "critical" : (TONE[s] ?? "neutral"); return <StatusBadge tone={tone} label={r.overdue ? "overdue" : s.replace("_", " ").toLowerCase()} />; }, sort: (r) => r.status },
     { key: "issued", header: "Issued", width: 116, render: (r) => <span style={{ color: color.ink.mid }}>{r.issued || "—"}</span>, sort: (r) => dnum(r.issued) },
     { key: "due", header: "Due", width: 116, render: (r) => <span style={{ color: r.overdue ? color.status.critical : color.ink.mid, fontWeight: r.overdue ? 600 : 400 }}>{r.due || "—"}</span>, sort: (r) => dnum(r.due) },
@@ -54,14 +54,14 @@ export default function InvoicesPage() {
 
   const bar = (label: string, pct: number, c: string) => (
     <div style={{ marginBottom: 10 }}>
-      <div style={{ display: "flex", justifyContent: "space-between", fontSize: 12.5, marginBottom: 4 }}><span style={{ color: color.ink.mid }}>{label}</span><span style={{ fontWeight: 700, color: color.ink.DEFAULT }}>{pct}%</span></div>
+      <div style={{ display: "flex", justifyContent: "space-between", fontSize: 13, marginBottom: 4 }}><span style={{ color: color.ink.mid }}>{label}</span><span style={{ fontWeight: 700, color: color.ink.DEFAULT }}>{pct}%</span></div>
       <div style={{ height: 7, borderRadius: 4, background: color.surface.sunken, overflow: "hidden" }}><div style={{ height: "100%", width: `${Math.min(100, pct)}%`, background: c, borderRadius: 4 }} /></div>
     </div>
   );
 
   const step = (n: number, title: string, body: string) => (
     <div style={{ display: "flex", gap: 10, marginBottom: 12 }}>
-      <span style={{ width: 22, height: 22, flexShrink: 0, borderRadius: 999, background: color.brand.primaryTint, color: color.brand.primary, fontSize: 11.5, fontWeight: 700, display: "inline-flex", alignItems: "center", justifyContent: "center" }}>{n}</span>
+      <span style={{ width: 22, height: 22, flexShrink: 0, borderRadius: 999, background: color.brand.primaryTint, color: color.brand.primary, fontSize: 12, fontWeight: 700, display: "inline-flex", alignItems: "center", justifyContent: "center" }}>{n}</span>
       <span><span style={{ display: "block", fontSize: 13, fontWeight: 600, color: color.ink.DEFAULT }}>{title}</span><span style={{ fontSize: 12, color: color.ink.soft }}>{body}</span></span>
     </div>
   );
@@ -95,7 +95,7 @@ export default function InvoicesPage() {
               <div style={{ fontSize: 12, color: color.ink.soft, marginBottom: 14 }}>collected of billed</div>
               {bar("Outstanding", outstandingPct, color.status.critical)}
               {bar("Overdue", overduePct, color.status.negative)}
-              <div style={{ fontSize: 11.5, color: color.ink.soft, marginTop: 6 }}>{aed(outstanding)} outstanding · {aed(overdueAmt)} overdue · {customers} customer{customers === 1 ? "" : "s"}</div>
+              <div style={{ fontSize: 12, color: color.ink.soft, marginTop: 6 }}>{aed(outstanding)} outstanding · {aed(overdueAmt)} overdue · {customers} customer{customers === 1 ? "" : "s"}</div>
             </PanelBody>
           </Panel>
           <Panel>

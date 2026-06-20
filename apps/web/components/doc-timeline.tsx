@@ -43,7 +43,7 @@ export function DocTimeline({ docType, docId }: { docType: "QUOTE" | "INVOICE"; 
               style={{ flex: 1, height: 36, border: `1px solid ${color.line.strong}`, borderRadius: 8, padding: "0 11px", fontSize: 13, color: color.ink.DEFAULT, background: color.surface.card, outline: "none" }} />
             <Button variant="primary" onClick={addNote} disabled={busy || !draft.trim()}>{busy ? "…" : "Add"}</Button>
           </div>
-          {feed.length === 0 ? <div style={{ fontSize: 12.5, color: color.ink.soft, paddingTop: 4 }}>No activity yet. Notes and lifecycle events appear here.</div> : (
+          {feed.length === 0 ? <div style={{ fontSize: 13, color: color.ink.soft, paddingTop: 4 }}>No activity yet. Notes and lifecycle events appear here.</div> : (
             <div style={{ position: "relative", paddingLeft: 22 }}>
               <div style={{ position: "absolute", left: 7, top: 4, bottom: 4, width: 2, background: color.line.DEFAULT }} />
               {feed.map((f, i) => (
@@ -65,13 +65,13 @@ export function DocTimeline({ docType, docId }: { docType: "QUOTE" | "INVOICE"; 
             {d!.comms.whatsapp.map((w) => (
               <div key={w.id} style={{ display: "flex", gap: 10, padding: "9px 16px", borderBottom: `1px solid ${color.line.DEFAULT}` }}>
                 <span style={{ flexShrink: 0 }}>💬</span>
-                <div style={{ minWidth: 0 }}><div style={{ fontSize: 12.5, fontWeight: 500, color: color.ink.DEFAULT }}>{w.contactPhone} <span style={{ color: color.ink.soft, fontWeight: 400 }}>· {w.lastMessageAt}</span></div>{w.lastMessageBody ? <div style={{ fontSize: 11.5, color: color.ink.soft, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{w.lastMessageBody}</div> : null}</div>
+                <div style={{ minWidth: 0 }}><div style={{ fontSize: 13, fontWeight: 500, color: color.ink.DEFAULT }}>{w.contactPhone} <span style={{ color: color.ink.soft, fontWeight: 400 }}>· {w.lastMessageAt}</span></div>{w.lastMessageBody ? <div style={{ fontSize: 12, color: color.ink.soft, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{w.lastMessageBody}</div> : null}</div>
               </div>
             ))}
             {d!.comms.activities.map((a) => (
               <div key={a.id} style={{ display: "flex", gap: 10, padding: "9px 16px", borderBottom: `1px solid ${color.line.DEFAULT}` }}>
                 <span style={{ flexShrink: 0 }}>{GLYPH[a.type] || "•"}</span>
-                <div style={{ minWidth: 0 }}><div style={{ fontSize: 12.5, fontWeight: 500, color: color.ink.DEFAULT }}>{a.subject || a.type}</div><div style={{ fontSize: 11, color: color.ink.soft }}>{a.at}</div></div>
+                <div style={{ minWidth: 0 }}><div style={{ fontSize: 13, fontWeight: 500, color: color.ink.DEFAULT }}>{a.subject || a.type}</div><div style={{ fontSize: 11, color: color.ink.soft }}>{a.at}</div></div>
               </div>
             ))}
           </PanelBody>

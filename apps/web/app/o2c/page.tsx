@@ -38,7 +38,7 @@ export default function O2CPage() {
                 <span style={{ fontSize: 13, fontWeight: 600, color: color.ink.DEFAULT }}>{s.label}</span>
               </span>
               <span style={{ fontSize: 24, fontWeight: 700, color: color.ink.DEFAULT, lineHeight: "28px" }}>{s.count}</span>
-              <span style={{ fontSize: 12.5, color: color.ink.mid }}>{s.value > 0 ? aed(s.value) : s.hint}</span>
+              <span style={{ fontSize: 13, color: color.ink.mid }}>{s.value > 0 ? aed(s.value) : s.hint}</span>
               <span style={{ fontSize: 11, color: color.ink.soft }}>{s.value > 0 ? s.hint : ""}</span>
             </div>
             {i < stages.length - 1 ? <span style={{ alignSelf: "center", color: color.ink.soft, fontSize: 18, flexShrink: 0 }}>→</span> : null}
@@ -59,7 +59,7 @@ function Section({ title, items }: { title: string; items: { k: string; a: strin
   return (
     <section style={{ background: color.surface.card, border: `1px solid ${color.line.DEFAULT}`, borderRadius: 10, padding: "14px 16px" }}>
       <h2 style={{ fontSize: 14, fontWeight: 600, color: color.ink.DEFAULT, margin: "0 0 8px" }}>{title}</h2>
-      {items.length === 0 ? <div style={{ fontSize: 12.5, color: color.ink.soft }}>Nothing here.</div> :
+      {items.length === 0 ? <div style={{ fontSize: 13, color: color.ink.soft }}>Nothing here.</div> :
         items.map((it) => (
           <a key={it.k} href={it.href} style={{ display: "flex", justifyContent: "space-between", gap: 10, padding: "9px 0", borderTop: `1px solid ${color.line.DEFAULT}`, textDecoration: "none" }}>
             <span style={{ fontSize: 13, color: color.ink.DEFAULT, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{it.a}</span>

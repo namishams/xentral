@@ -59,7 +59,7 @@ export default function PipelinesPage() {
                   <span style={{ fontSize: 13, fontWeight: 600, color: color.ink.DEFAULT }}>{s.label}</span>
                   <span style={{ fontSize: 12, color: color.ink.soft }}>{s.cards.length}</span>
                 </span>
-                <span style={{ fontSize: 11.5, color: color.ink.soft }}>{aed(sum)}</span>
+                <span style={{ fontSize: 12, color: color.ink.soft }}>{aed(sum)}</span>
               </div>
               <div style={{ display: "flex", flexDirection: "column", gap: 9 }}>
                 {s.cards.map((c) => <CardTile key={c.id} c={c} />)}

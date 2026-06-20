@@ -27,7 +27,7 @@ export default function WarehousesPage() {
     setOpen(false); setF({ name: "", code: "", location: "" }); load();
   }
 
-  const lab: React.CSSProperties = { display: "block", fontSize: 10.5, fontWeight: 700, letterSpacing: 0.3, color: color.ink.soft, textTransform: "uppercase", marginBottom: 5 };
+  const lab: React.CSSProperties = { display: "block", fontSize: 11, fontWeight: 700, letterSpacing: 0.3, color: color.ink.soft, textTransform: "uppercase", marginBottom: 5 };
 
   return (
     <AppShell active="warehouses">
@@ -47,9 +47,9 @@ export default function WarehousesPage() {
                 <div key={w.id} style={{ border: `1px solid ${color.line.DEFAULT}`, borderRadius: 12, padding: "14px 16px", background: color.surface.card }}>
                   <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 6 }}>
                     <span style={{ width: 34, height: 34, borderRadius: 9, background: color.brand.primaryTint, color: color.brand.primary, display: "inline-flex", alignItems: "center", justifyContent: "center", fontWeight: 800 }}>▤</span>
-                    <div style={{ minWidth: 0 }}><div style={{ fontSize: 14, fontWeight: 700, color: color.ink.DEFAULT, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{w.name}</div>{w.code ? <div style={{ fontSize: 11.5, color: color.ink.soft, fontFamily: "ui-monospace, monospace" }}>{w.code}</div> : null}</div>
+                    <div style={{ minWidth: 0 }}><div style={{ fontSize: 14, fontWeight: 700, color: color.ink.DEFAULT, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{w.name}</div>{w.code ? <div style={{ fontSize: 12, color: color.ink.soft, fontFamily: "ui-monospace, monospace" }}>{w.code}</div> : null}</div>
                   </div>
-                  <div style={{ fontSize: 12.5, color: color.ink.mid }}>{w.location || "No location set"}</div>
+                  <div style={{ fontSize: 13, color: color.ink.mid }}>{w.location || "No location set"}</div>
                 </div>
               ))}
             </div>

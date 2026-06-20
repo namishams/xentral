@@ -16,7 +16,7 @@ function Panel({ title, sub, action, children }: { title: string; sub?: string; 
   return (
     <section style={{ background: color.surface.card, border: `1px solid ${color.line.DEFAULT}`, borderRadius: 12, padding: "16px 18px", boxShadow: shadow.card }}>
       <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 12, marginBottom: 12 }}>
-        <div><h2 style={{ fontSize: 14, fontWeight: 600, color: color.ink.DEFAULT, margin: 0 }}>{title}</h2>{sub ? <div style={{ fontSize: 12.5, color: color.ink.soft, marginTop: 2 }}>{sub}</div> : null}</div>
+        <div><h2 style={{ fontSize: 14, fontWeight: 600, color: color.ink.DEFAULT, margin: 0 }}>{title}</h2>{sub ? <div style={{ fontSize: 13, color: color.ink.soft, marginTop: 2 }}>{sub}</div> : null}</div>
         {action}
       </div>
       {children}
@@ -68,10 +68,10 @@ export default function PaymentRecordPage({ params }: { params: { id: string } }
         <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
           <Panel title="Allocation" sub="Which invoice(s) this payment is applied to">
             <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "10px 0", borderTop: `1px solid ${color.line.DEFAULT}` }}>
-              <a href="/invoices" style={{ fontSize: 13.5, fontWeight: 600, color: color.brand.primary, textDecoration: "none" }}>Applied to open invoice ↗</a>
+              <a href="/invoices" style={{ fontSize: 14, fontWeight: 600, color: color.brand.primary, textDecoration: "none" }}>Applied to open invoice ↗</a>
               <span style={{ fontSize: 13, fontWeight: 600, color: color.ink.DEFAULT }}>{aed(p.amount)}</span>
             </div>
-            <div style={{ fontSize: 12.5, color: color.ink.soft, marginTop: 8 }}>{p.status === "received" ? "Fully reconciled against the customer balance." : p.status === "failed" ? "Payment failed — no allocation made." : "Awaiting confirmation before allocation."}</div>
+            <div style={{ fontSize: 13, color: color.ink.soft, marginTop: 8 }}>{p.status === "received" ? "Fully reconciled against the customer balance." : p.status === "failed" ? "Payment failed — no allocation made." : "Awaiting confirmation before allocation."}</div>
           </Panel>
           <Panel title="Activity &amp; notes" action={<Button>+ Note</Button>}>
             <div style={{ display: "flex", gap: 10 }}>
@@ -88,7 +88,7 @@ export default function PaymentRecordPage({ params }: { params: { id: string } }
             <SumRow label="Amount" strong>{aed(p.amount)}</SumRow>
           </Panel>
           <Panel title="Attachments" action={<Button>Upload</Button>}>
-            <div style={{ fontSize: 12.5, color: color.ink.soft, padding: "4px 0" }}>No files yet — remittance advice.</div>
+            <div style={{ fontSize: 13, color: color.ink.soft, padding: "4px 0" }}>No files yet — remittance advice.</div>
           </Panel>
         </div>
       </div>

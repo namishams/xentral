@@ -29,7 +29,7 @@ export default function AuditLogsPage() {
   const actors = new Set(rows.map((r) => r.actor)).size;
 
   const COLS: Column<Row>[] = [
-    { key: "when", header: "When", width: 160, render: (r) => <span style={{ color: color.ink.mid, fontSize: 12.5, fontVariantNumeric: "tabular-nums" }}>{r.when}</span> },
+    { key: "when", header: "When", width: 160, render: (r) => <span style={{ color: color.ink.mid, fontSize: 13, fontVariantNumeric: "tabular-nums" }}>{r.when}</span> },
     { key: "actor", header: "Actor", width: 190, render: (r) => <span style={{ display: "inline-flex", alignItems: "center", gap: 8 }}><span style={{ width: 24, height: 24, borderRadius: 7, background: color.surface.sunken, color: color.ink.mid, fontSize: 10, fontWeight: 700, display: "inline-flex", alignItems: "center", justifyContent: "center" }}>{initials(r.actor)}</span><span style={{ color: color.ink.DEFAULT, fontSize: 13 }}>{r.actor}</span></span> },
     { key: "action", header: "Action", width: 200, render: (r) => <StatusBadge tone={toneFor(r.action)} label={r.action} /> },
     { key: "targetType", header: "Target", render: (r) => <span style={{ color: color.ink.mid }}>{r.targetType ? `${r.targetType}${r.targetId ? ` · ${r.targetId.slice(0, 12)}` : ""}` : "—"}</span> },

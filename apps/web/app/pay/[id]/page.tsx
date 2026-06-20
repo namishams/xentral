@@ -51,8 +51,8 @@ export default function PayPage({ params }: { params: { id: string } }) {
 
   const wrap: React.CSSProperties = { minHeight: "100vh", background: "linear-gradient(160deg,#eef3f7,#e2ecf0)", display: "flex", alignItems: "flex-start", justifyContent: "center", padding: "48px 16px", fontFamily: "Inter, system-ui, sans-serif", color: INK };
   const cardBox: React.CSSProperties = { width: "100%", maxWidth: 460, background: "#fff", borderRadius: 16, boxShadow: "0 20px 60px -20px rgba(20,40,60,0.28)", overflow: "hidden" };
-  const field: React.CSSProperties = { width: "100%", boxSizing: "border-box", height: 44, border: `1px solid ${LINE}`, borderRadius: 9, padding: "0 13px", fontSize: 14.5, color: INK, outline: "none", marginBottom: 12 };
-  const lab: React.CSSProperties = { display: "block", fontSize: 11.5, fontWeight: 700, letterSpacing: 0.3, color: MUT, textTransform: "uppercase", marginBottom: 5 };
+  const field: React.CSSProperties = { width: "100%", boxSizing: "border-box", height: 44, border: `1px solid ${LINE}`, borderRadius: 9, padding: "0 13px", fontSize: 14, color: INK, outline: "none", marginBottom: 12 };
+  const lab: React.CSSProperties = { display: "block", fontSize: 12, fontWeight: 700, letterSpacing: 0.3, color: MUT, textTransform: "uppercase", marginBottom: 5 };
 
   return (
     <div style={wrap}>
@@ -76,7 +76,7 @@ export default function PayPage({ params }: { params: { id: string } }) {
           </div>
         ) : step === "review" ? (
           <div style={{ padding: "28px 28px 24px" }}>
-            <div style={{ fontSize: 12.5, color: MUT, marginBottom: 6 }}>Invoice {inv?.number} · {inv?.customer}</div>
+            <div style={{ fontSize: 13, color: MUT, marginBottom: 6 }}>Invoice {inv?.number} · {inv?.customer}</div>
             <div style={{ fontSize: 38, fontWeight: 800, letterSpacing: -1, marginBottom: 4 }}>{money(amt, inv?.currency)}</div>
             <div style={{ fontSize: 13, color: MUT, marginBottom: 22 }}>{inv?.due ? `Due ${inv.due}` : "Amount due"}</div>
             <div style={{ borderTop: `1px solid ${LINE}`, borderBottom: `1px solid ${LINE}`, padding: "14px 0", margin: "0 0 22px", display: "flex", flexDirection: "column", gap: 9 }}>
@@ -103,7 +103,7 @@ export default function PayPage({ params }: { params: { id: string } }) {
               <div style={{ flex: 1 }}><label style={lab}>CVV</label><input style={field} value={card.cvv} inputMode="numeric" onChange={(e) => setCard({ ...card, cvv: e.target.value.replace(/[^\d]/g, "").slice(0, 4) })} placeholder="123" /></div>
             </div>
             <button onClick={pay} disabled={!cardValid || paying} style={{ width: "100%", height: 50, border: 0, borderRadius: 11, background: cardValid && !paying ? TEAL : "#9fc7cd", color: "#fff", fontSize: 16, fontWeight: 700, cursor: cardValid && !paying ? "pointer" : "default", marginTop: 6 }}>{paying ? "Authorising…" : `Pay ${money(amt, inv?.currency)}`}</button>
-            <div style={{ marginTop: 14, display: "flex", alignItems: "center", justifyContent: "center", gap: 8, color: MUT, fontSize: 11.5 }}><span>VISA</span><span>Mastercard</span><span>·</span><span>3-D Secure</span></div>
+            <div style={{ marginTop: 14, display: "flex", alignItems: "center", justifyContent: "center", gap: 8, color: MUT, fontSize: 12 }}><span>VISA</span><span>Mastercard</span><span>·</span><span>3-D Secure</span></div>
           </div>
         )}
       </div>
@@ -112,5 +112,5 @@ export default function PayPage({ params }: { params: { id: string } }) {
 }
 
 function Row({ k, v, bold }: { k: string; v: string; bold?: boolean }) {
-  return <div style={{ display: "flex", justifyContent: "space-between", fontSize: 13.5 }}><span style={{ color: MUT }}>{k}</span><span style={{ color: INK, fontWeight: bold ? 700 : 500 }}>{v}</span></div>;
+  return <div style={{ display: "flex", justifyContent: "space-between", fontSize: 14 }}><span style={{ color: MUT }}>{k}</span><span style={{ color: INK, fontWeight: bold ? 700 : 500 }}>{v}</span></div>;
 }

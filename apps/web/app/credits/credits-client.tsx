@@ -61,14 +61,14 @@ export function CreditsClient() {
         <div style={{ ...card, background: color.brand.primary, color: color.ink.onPrimary, border: 0 }}>
           <div style={{ ...lbl, color: "rgba(255,255,255,0.8)" }}>Available balance</div>
           <div style={{ fontSize: 40, fontWeight: 800, marginTop: 6 }}>{aed(credits)}</div>
-          <div style={{ fontSize: 12.5, marginTop: 6, color: "rgba(255,255,255,0.85)" }}>Credits never expire and apply to every marketplace purchase.</div>
+          <div style={{ fontSize: 13, marginTop: 6, color: "rgba(255,255,255,0.85)" }}>Credits never expire and apply to every marketplace purchase.</div>
         </div>
 
         <div style={card}>
           <div style={lbl}>Request a top-up</div>
           <div style={{ display: "flex", gap: 8, marginTop: 10, flexWrap: "wrap" }}>
             {[1000, 2500, 5000, 10000].map((v) => (
-              <button key={v} onClick={() => setAmount(String(v))} style={{ height: 32, padding: "0 12px", borderRadius: 8, border: `1px solid ${Number(amount) === v ? color.brand.primary : color.line.strong}`, background: Number(amount) === v ? color.brand.primaryTint : color.surface.card, color: Number(amount) === v ? color.brand.primary : color.ink.mid, fontSize: 12.5, fontWeight: 600, cursor: "pointer" }}>{aed(v)}</button>
+              <button key={v} onClick={() => setAmount(String(v))} style={{ height: 32, padding: "0 12px", borderRadius: 8, border: `1px solid ${Number(amount) === v ? color.brand.primary : color.line.strong}`, background: Number(amount) === v ? color.brand.primaryTint : color.surface.card, color: Number(amount) === v ? color.brand.primary : color.ink.mid, fontSize: 13, fontWeight: 600, cursor: "pointer" }}>{aed(v)}</button>
             ))}
           </div>
           <div style={{ marginTop: 10 }}>
@@ -80,7 +80,7 @@ export function CreditsClient() {
             <Input value={reference} onChange={(e) => setReference(e.target.value)} placeholder="e.g. your company name on the transfer" style={{ width: "100%", marginTop: 4 }} />
           </div>
           <button onClick={request} disabled={busy} style={{ marginTop: 12, width: "100%", height: 40, borderRadius: 9, border: 0, background: busy ? color.line.strong : color.brand.primary, color: color.ink.onPrimary, fontSize: 14, fontWeight: 700, cursor: busy ? "default" : "pointer" }}>{busy ? "Submitting…" : "Submit top-up request"}</button>
-          {msg ? <div style={{ marginTop: 10, fontSize: 12.5, fontWeight: 600, color: msg.startsWith("✓") ? color.status.positive : color.status.negative }}>{msg}</div> : null}
+          {msg ? <div style={{ marginTop: 10, fontSize: 13, fontWeight: 600, color: msg.startsWith("✓") ? color.status.positive : color.status.negative }}>{msg}</div> : null}
         </div>
       </div>
 
@@ -99,10 +99,10 @@ export function CreditsClient() {
         <div style={card}>
           <div style={lbl}>Top-up requests</div>
           <div style={{ marginTop: 8 }}>
-            {topups.length === 0 ? <div style={{ fontSize: 12.5, color: color.ink.soft, padding: "10px 0" }}>No requests yet.</div> :
+            {topups.length === 0 ? <div style={{ fontSize: 13, color: color.ink.soft, padding: "10px 0" }}>No requests yet.</div> :
               topups.map((t) => (
                 <div key={t.id} style={row}>
-                  <span><span style={{ fontWeight: 700, color: color.ink.DEFAULT }}>{aed(t.amount)}</span> <span style={{ color: color.ink.soft, fontSize: 11.5 }}>· {fmt(t.createdAt)}</span></span>
+                  <span><span style={{ fontWeight: 700, color: color.ink.DEFAULT }}>{aed(t.amount)}</span> <span style={{ color: color.ink.soft, fontSize: 12 }}>· {fmt(t.createdAt)}</span></span>
                   <span style={{ fontSize: 11, fontWeight: 700, color: STATUS_TONE[String(t.status).toUpperCase()] || color.ink.soft }}>{String(t.status).toUpperCase()}</span>
                 </div>
               ))}
@@ -112,10 +112,10 @@ export function CreditsClient() {
         <div style={card}>
           <div style={lbl}>Transaction history</div>
           <div style={{ marginTop: 8, maxHeight: 360, overflowY: "auto" }}>
-            {txns.length === 0 ? <div style={{ fontSize: 12.5, color: color.ink.soft, padding: "10px 0" }}>No transactions yet.</div> :
+            {txns.length === 0 ? <div style={{ fontSize: 13, color: color.ink.soft, padding: "10px 0" }}>No transactions yet.</div> :
               txns.map((t) => (
                 <div key={t.id} style={row}>
-                  <span style={{ maxWidth: "60%" }}><span style={{ color: color.ink.DEFAULT }}>{t.description || t.type}</span><br /><span style={{ color: color.ink.soft, fontSize: 11.5 }}>{fmt(t.createdAt)}</span></span>
+                  <span style={{ maxWidth: "60%" }}><span style={{ color: color.ink.DEFAULT }}>{t.description || t.type}</span><br /><span style={{ color: color.ink.soft, fontSize: 12 }}>{fmt(t.createdAt)}</span></span>
                   <span style={{ fontWeight: 700, color: Number(t.amount) < 0 ? color.status.negative : color.status.positive }}>{Number(t.amount) < 0 ? "" : "+"}{aed(t.amount)}</span>
                 </div>
               ))}

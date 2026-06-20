@@ -41,8 +41,8 @@ export default function ProductDetailPage({ params }: { params: { id: string } }
 
   const incVat = it.unitPrice * (1 + (Number(it.vatRate) || 0) / 100);
   const isService = String(it.kind).toUpperCase() === "SERVICE";
-  const fieldS: React.CSSProperties = { width: "100%", boxSizing: "border-box", height: 38, border: `1px solid ${color.line.strong}`, borderRadius: 8, padding: "0 11px", fontSize: 13.5, color: color.ink.DEFAULT, background: color.surface.card, marginBottom: 12 };
-  const lbl: React.CSSProperties = { display: "block", fontSize: 11.5, fontWeight: 700, letterSpacing: 0.3, color: color.ink.soft, textTransform: "uppercase", marginBottom: 5 };
+  const fieldS: React.CSSProperties = { width: "100%", boxSizing: "border-box", height: 38, border: `1px solid ${color.line.strong}`, borderRadius: 8, padding: "0 11px", fontSize: 14, color: color.ink.DEFAULT, background: color.surface.card, marginBottom: 12 };
+  const lbl: React.CSSProperties = { display: "block", fontSize: 12, fontWeight: 700, letterSpacing: 0.3, color: color.ink.soft, textTransform: "uppercase", marginBottom: 5 };
 
   return (
     <AppShell active="products">
@@ -100,7 +100,7 @@ export default function ProductDetailPage({ params }: { params: { id: string } }
         <Panel>
           <PanelHeader title="Usage" />
           <PanelBody>
-            <p style={{ fontSize: 12.5, color: color.ink.soft, margin: 0, lineHeight: 1.6 }}>
+            <p style={{ fontSize: 13, color: color.ink.soft, margin: 0, lineHeight: 1.6 }}>
               This item is available in the line-item picker (“Add from catalog”) on every invoice and quote. Edit the price or VAT here and it flows to new documents automatically.
             </p>
           </PanelBody>

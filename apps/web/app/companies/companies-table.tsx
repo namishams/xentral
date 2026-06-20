@@ -30,7 +30,7 @@ const COLUMNS: Column<CompanyRow>[] = [
       <Logo name={r.name} />
       <span style={{ minWidth: 0 }}>
         <span style={{ display: "block", fontWeight: 600, color: color.ink.DEFAULT, lineHeight: "16px" }}>{r.name}</span>
-        <span style={{ display: "block", fontSize: 11.5, color: color.ink.soft, lineHeight: "15px" }}>{r.segment || "No segment"}</span>
+        <span style={{ display: "block", fontSize: 12, color: color.ink.soft, lineHeight: "15px" }}>{r.segment || "No segment"}</span>
       </span>
     </span>
   ) },
@@ -40,7 +40,7 @@ const COLUMNS: Column<CompanyRow>[] = [
   { key: "city", header: "Location", width: 170, render: (r) => (
     <span style={{ minWidth: 0 }}>
       <span style={{ display: "block", color: color.ink.mid, lineHeight: "16px" }}>{r.city || "-"}</span>
-      {r.country ? <span style={{ display: "block", fontSize: 11.5, color: color.ink.soft, lineHeight: "14px" }}>{r.country}</span> : null}
+      {r.country ? <span style={{ display: "block", fontSize: 12, color: color.ink.soft, lineHeight: "14px" }}>{r.country}</span> : null}
     </span>
   ) },
   { key: "contacts", header: "Contacts", width: 110, render: (r) => <span style={{ color: r.contacts > 0 ? color.ink.mid : color.ink.soft, fontVariantNumeric: "tabular-nums" }}>{r.contacts || 0}</span> },
@@ -59,7 +59,7 @@ function Card({ r }: { r: CompanyRow }) {
         </span>
       </div>
       <div style={{ height: 1, background: color.line.DEFAULT }} />
-      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", fontSize: 12.5, color: color.ink.mid }}>
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", fontSize: 13, color: color.ink.mid }}>
         <span>{[r.city, r.country].filter(Boolean).join(", ") || "-"}</span>
         <span style={{ display: "inline-flex", gap: 8, alignItems: "center" }}>
           <span style={{ fontSize: 12, color: color.ink.soft }}>{r.contacts || 0} contacts</span>

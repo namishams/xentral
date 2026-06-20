@@ -82,7 +82,7 @@ export default function ContactDetailPage({ params }: { params: { id: string } }
   }
   const set = (k: keyof Form, v: string) => setForm((f) => (f ? { ...f, [k]: v } : f));
   const fieldS: React.CSSProperties = { width: "100%", boxSizing: "border-box", height: 34, border: `1px solid ${color.line.strong}`, borderRadius: 8, padding: "0 10px", fontSize: 13, color: color.ink.DEFAULT, background: color.surface.card, outline: "none" };
-  const labelS: React.CSSProperties = { display: "block", fontSize: 10.5, fontWeight: 700, letterSpacing: 0.3, color: color.ink.soft, textTransform: "uppercase", marginBottom: 4 };
+  const labelS: React.CSSProperties = { display: "block", fontSize: 11, fontWeight: 700, letterSpacing: 0.3, color: color.ink.soft, textTransform: "uppercase", marginBottom: 4 };
 
   if (loading) return <AppShell active="contacts"><div style={{ padding: 40, textAlign: "center", color: color.ink.soft }}>Loading…</div></AppShell>;
   if (!d) return <AppShell active="contacts"><div style={{ padding: 40, textAlign: "center", color: color.ink.soft }}>Contact not found. <a href="/contacts" style={{ color: color.brand.primary }}>Back to contacts</a></div></AppShell>;
@@ -251,7 +251,7 @@ export default function ContactDetailPage({ params }: { params: { id: string } }
                           <span style={{ fontSize: 11, color: color.ink.soft, marginLeft: "auto", flexShrink: 0 }}>{a.at}</span>
                         </div>
                         {a.content ? <div style={{ fontSize: 12, color: color.ink.mid, marginTop: 2, whiteSpace: "pre-wrap" }}>{a.content}</div> : null}
-                        {a.author ? <div style={{ fontSize: 10.5, color: color.ink.soft, marginTop: 3 }}>by {a.author}</div> : null}
+                        {a.author ? <div style={{ fontSize: 11, color: color.ink.soft, marginTop: 3 }}>by {a.author}</div> : null}
                       </div>
                     </div>
                   ); })}</div>}

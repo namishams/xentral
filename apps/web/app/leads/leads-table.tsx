@@ -27,7 +27,7 @@ function ScoreMeter({ score }: { score: number }) {
       <span style={{ position: "relative", width: 54, height: 6, borderRadius: 3, background: color.surface.sunken, overflow: "hidden" }}>
         <span style={{ position: "absolute", inset: 0, width: `${score}%`, background: c, borderRadius: 3 }} />
       </span>
-      <span style={{ fontSize: 12.5, fontWeight: 700, color: c, fontVariantNumeric: "tabular-nums" }}>{score}</span>
+      <span style={{ fontSize: 13, fontWeight: 700, color: c, fontVariantNumeric: "tabular-nums" }}>{score}</span>
     </span>
   );
 }
@@ -38,7 +38,7 @@ const COLUMNS: Column<LeadRow>[] = [
       <Avatar name={r.name} />
       <span style={{ minWidth: 0 }}>
         <span style={{ display: "block", fontWeight: 600, color: color.ink.DEFAULT, lineHeight: "16px" }}>{r.name}</span>
-        <span style={{ display: "block", fontSize: 11.5, color: color.ink.soft, lineHeight: "15px" }}>{r.company || "-"}</span>
+        <span style={{ display: "block", fontSize: 12, color: color.ink.soft, lineHeight: "15px" }}>{r.company || "-"}</span>
       </span>
     </span>
   ) },

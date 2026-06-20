@@ -187,7 +187,7 @@ export default function AdminPage() {
   const cardS: React.CSSProperties = { border: `1px solid ${color.line.DEFAULT}`, borderRadius: 12, background: color.surface.card, overflow: "hidden" };
   const th: React.CSSProperties = { textAlign: "left", fontSize: 11, fontWeight: 700, letterSpacing: 0.3, color: color.ink.soft, textTransform: "uppercase", padding: "9px 14px", borderBottom: `1px solid ${color.line.DEFAULT}` };
   const td: React.CSSProperties = { padding: "10px 14px", borderBottom: `1px solid ${color.line.DEFAULT}`, fontSize: 13, color: color.ink.DEFAULT };
-  const fieldS: React.CSSProperties = { width: "100%", boxSizing: "border-box", height: 38, border: `1px solid ${color.line.strong}`, borderRadius: 9, padding: "0 11px", fontSize: 13.5, background: color.surface.card, color: color.ink.DEFAULT, outline: "none" };
+  const fieldS: React.CSSProperties = { width: "100%", boxSizing: "border-box", height: 38, border: `1px solid ${color.line.strong}`, borderRadius: 9, padding: "0 11px", fontSize: 14, background: color.surface.card, color: color.ink.DEFAULT, outline: "none" };
   const lbl: React.CSSProperties = { display: "block", fontSize: 11, fontWeight: 700, letterSpacing: 0.3, color: color.ink.soft, marginBottom: 5 };
   const sec: React.CSSProperties = { fontSize: 11, fontWeight: 700, letterSpacing: 0.5, textTransform: "uppercase", color: color.brand.primary, margin: "4px 0 2px" };
   const ImgIcon = ({ s = 28 }: { s?: number }) => (
@@ -218,7 +218,7 @@ export default function AdminPage() {
           const badge = t === "Credits" ? (totals.pendingTopups ?? 0) : t === "Demo Requests" ? (totals.pendingDemos ?? 0) : t === "Questions" ? (totals.openQuestions ?? 0) : t === "Resellers" ? (totals.pendingPayouts ?? 0) : 0;
           return (
             <button key={t} onClick={() => setTab(t)} style={{ background: "none", border: "none", cursor: "pointer", fontSize: 13, fontWeight: tab === t ? 600 : 500, color: tab === t ? color.brand.primary : color.ink.mid, padding: "8px 0", borderBottom: tab === t ? `2px solid ${color.brand.primary}` : "2px solid transparent", display: "inline-flex", alignItems: "center", gap: 6 }}>
-              {t}{badge > 0 ? <span style={{ fontSize: 10.5, fontWeight: 700, color: "#fff", background: color.status.critical, borderRadius: 999, padding: "0 6px", lineHeight: "16px" }}>{badge}</span> : null}
+              {t}{badge > 0 ? <span style={{ fontSize: 11, fontWeight: 700, color: "#fff", background: color.status.critical, borderRadius: 999, padding: "0 6px", lineHeight: "16px" }}>{badge}</span> : null}
             </button>
           );
         })}
@@ -238,10 +238,10 @@ export default function AdminPage() {
               </div>
               <div style={cardS}>
                 <div style={th}>Top customers (by spend)</div>
-                {(d.topCustomers || []).filter((t) => t.spent > 0).length === 0 ? <div style={{ padding: 14, fontSize: 12.5, color: color.ink.soft }}>No marketplace spend yet.</div>
+                {(d.topCustomers || []).filter((t) => t.spent > 0).length === 0 ? <div style={{ padding: 14, fontSize: 13, color: color.ink.soft }}>No marketplace spend yet.</div>
                   : (d.topCustomers || []).filter((t) => t.spent > 0).map((t) => (
                     <div key={t.id} style={{ display: "flex", justifyContent: "space-between", padding: "10px 14px", borderBottom: `1px solid ${color.line.DEFAULT}` }}>
-                      <span style={{ fontWeight: 600, fontSize: 13 }}>{t.name}<span style={{ fontSize: 11.5, color: color.ink.soft, fontWeight: 400 }}> · {t.users} users</span></span>
+                      <span style={{ fontWeight: 600, fontSize: 13 }}>{t.name}<span style={{ fontSize: 12, color: color.ink.soft, fontWeight: 400 }}> · {t.users} users</span></span>
                       <span style={{ fontWeight: 700, fontSize: 13 }}>{aed(t.spent)}</span>
                     </div>
                   ))}
@@ -253,7 +253,7 @@ export default function AdminPage() {
             <div>
               <div style={{ display: "flex", gap: 8, alignItems: "center", marginBottom: 12, flexWrap: "wrap" }}>
                 {["ALL", "AVAILABLE", "SOLD", "DRAFT"].map((x) => <button key={x} onClick={() => setMFilter(x)} style={{ fontSize: 12, fontWeight: 600, padding: "5px 12px", borderRadius: 999, cursor: "pointer", border: `1px solid ${mFilter === x ? color.ink.DEFAULT : color.line.strong}`, background: mFilter === x ? color.ink.DEFAULT : color.surface.card, color: mFilter === x ? color.surface.card : color.ink.mid }}>{x}</button>)}
-                <span style={{ flex: 1 }} /><span style={{ fontSize: 12.5, color: color.ink.soft }}>{leads.length} leads</span>
+                <span style={{ flex: 1 }} /><span style={{ fontSize: 13, color: color.ink.soft }}>{leads.length} leads</span>
                 <Button variant="primary" onClick={openAdd}>+ Add Lead</Button>
               </div>
               <div style={{ ...cardS, overflowX: "auto" }}>
@@ -266,11 +266,11 @@ export default function AdminPage() {
                           <td style={td}><span style={{ fontWeight: 600 }}>{l.name}</span> <StatusBadge tone={QTONE[l.quality] ?? "info"} label={l.quality} /></td>
                           <td style={td}>{l.category}</td>
                           <td style={td}>{l.origin}</td>
-                          <td style={td}><span style={{ fontSize: 11.5, color: color.ink.soft }}>{l.kind === "best_offer" ? "Best Offer" : l.kind === "exclusive" ? "Exclusive" : "Shared"}</span></td>
+                          <td style={td}><span style={{ fontSize: 12, color: color.ink.soft }}>{l.kind === "best_offer" ? "Best Offer" : l.kind === "exclusive" ? "Exclusive" : "Shared"}</span></td>
                           <td style={{ ...td, textAlign: "right", fontWeight: 600 }}>{aed(l.price)}</td>
                           <td style={{ ...td, textAlign: "right" }}>{l.buyers}/{l.cap}</td>
                           <td style={td}><StatusBadge tone={QTONE[l.status] ?? "neutral"} label={l.status} /></td>
-                          <td style={{ ...td, textAlign: "right", whiteSpace: "nowrap" }}><Button onClick={() => openEdit(l)}>Edit</Button> <button onClick={() => { if (confirm("Delete this lead?")) act({ kind: "mkt.delete", id: l.id }); }} disabled={busy} style={{ height: 32, padding: "0 10px", borderRadius: 8, border: `1px solid ${color.line.strong}`, background: color.surface.card, color: color.status.negative, cursor: "pointer", fontSize: 12.5 }}>Delete</button></td>
+                          <td style={{ ...td, textAlign: "right", whiteSpace: "nowrap" }}><Button onClick={() => openEdit(l)}>Edit</Button> <button onClick={() => { if (confirm("Delete this lead?")) act({ kind: "mkt.delete", id: l.id }); }} disabled={busy} style={{ height: 32, padding: "0 10px", borderRadius: 8, border: `1px solid ${color.line.strong}`, background: color.surface.card, color: color.status.negative, cursor: "pointer", fontSize: 13 }}>Delete</button></td>
                         </tr>
                       ))}
                   </tbody>
@@ -286,14 +286,14 @@ export default function AdminPage() {
                 <span style={{ width: 26, height: 26, borderRadius: 7, background: "linear-gradient(135deg,#0064d9,#22D3A6)", color: "#fff", display: "inline-flex", alignItems: "center", justifyContent: "center", fontSize: 14 }}>✦</span>
                 <span style={{ fontSize: 18, fontWeight: 700, color: color.ink.DEFAULT }}>AI Lead Import</span>
               </div>
-              <div style={{ fontSize: 13.5, color: color.ink.mid, marginBottom: 18 }}>Upload up to 3 screenshots — GPT-4 Vision analyses them all together and extracts the lead data automatically.</div>
+              <div style={{ fontSize: 14, color: color.ink.mid, marginBottom: 18 }}>Upload up to 3 screenshots — GPT-4 Vision analyses them all together and extracts the lead data automatically.</div>
 
               <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 16, marginBottom: 16 }}>
                 {[0, 1, 2].map((i) => (
                   <button key={i} onClick={() => fileRef.current?.click()} style={{ height: 150, border: `1.5px dashed ${color.line.strong}`, borderRadius: 12, background: imgs[i] ? color.surface.card : color.surface.page, cursor: "pointer", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 8, overflow: "hidden", padding: 0 }}>
                     {imgs[i]
                       ? <img src={imgs[i]} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
-                      : <><ImgIcon s={30} /><span style={{ fontSize: 12.5, color: color.ink.soft }}>{i === 0 ? "Add screenshot" : `Screenshot ${i + 1}`}</span></>}
+                      : <><ImgIcon s={30} /><span style={{ fontSize: 13, color: color.ink.soft }}>{i === 0 ? "Add screenshot" : `Screenshot ${i + 1}`}</span></>}
                   </button>
                 ))}
               </div>
@@ -301,17 +301,17 @@ export default function AdminPage() {
               <button onClick={() => fileRef.current?.click()} style={{ width: "100%", border: `1.5px dashed ${color.line.strong}`, borderRadius: 14, background: color.surface.page, padding: "34px 16px", cursor: "pointer", display: "flex", flexDirection: "column", alignItems: "center", gap: 9 }}>
                 <ImgIcon s={40} />
                 <span style={{ fontSize: 15, fontWeight: 700, color: color.ink.DEFAULT }}>Drop screenshots here or click to upload</span>
-                <span style={{ fontSize: 12.5, color: color.ink.soft }}>Upload up to 3 screenshots of the same lead for best results</span>
+                <span style={{ fontSize: 13, color: color.ink.soft }}>Upload up to 3 screenshots of the same lead for best results</span>
                 <span style={{ display: "inline-flex", alignItems: "center", gap: 7, marginTop: 8, height: 38, padding: "0 16px", borderRadius: 9, background: color.brand.primaryTint, color: color.brand.primary, fontWeight: 600, fontSize: 13 }}>⬆ Choose Screenshots</span>
               </button>
 
-              {imgs.length > 0 && !extracted && <div style={{ marginTop: 16 }}><Button variant="primary" onClick={runImport} disabled={busy}>{busy ? "Analysing…" : `Analyse ${imgs.length} screenshot${imgs.length > 1 ? "s" : ""}`}</Button> <button onClick={() => { setImgs([]); setAiMsg(""); }} style={{ marginLeft: 8, height: 32, padding: "0 12px", borderRadius: 8, border: `1px solid ${color.line.strong}`, background: color.surface.card, color: color.ink.mid, cursor: "pointer", fontSize: 12.5 }}>Clear</button></div>}
+              {imgs.length > 0 && !extracted && <div style={{ marginTop: 16 }}><Button variant="primary" onClick={runImport} disabled={busy}>{busy ? "Analysing…" : `Analyse ${imgs.length} screenshot${imgs.length > 1 ? "s" : ""}`}</Button> <button onClick={() => { setImgs([]); setAiMsg(""); }} style={{ marginLeft: 8, height: 32, padding: "0 12px", borderRadius: 8, border: `1px solid ${color.line.strong}`, background: color.surface.card, color: color.ink.mid, cursor: "pointer", fontSize: 13 }}>Clear</button></div>}
               {aiMsg && <div style={{ marginTop: 14, fontSize: 13, color: color.status.critical }}>{aiMsg}</div>}
 
               {extracted && (
                 <div style={{ marginTop: 18, border: `1px solid ${color.status.positive}`, borderRadius: 14, overflow: "hidden", background: color.surface.card }}>
                   <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "12px 16px", borderBottom: `1px solid ${color.line.DEFAULT}`, background: "rgba(34,211,166,0.10)" }}>
-                    <span style={{ display: "inline-flex", alignItems: "center", gap: 8, fontSize: 13.5, fontWeight: 700, color: color.status.positive }}>✓ Lead Data Extracted Successfully</span>
+                    <span style={{ display: "inline-flex", alignItems: "center", gap: 8, fontSize: 14, fontWeight: 700, color: color.status.positive }}>✓ Lead Data Extracted Successfully</span>
                     <button onClick={useAiData} style={{ display: "inline-flex", alignItems: "center", gap: 7, height: 36, padding: "0 14px", borderRadius: 9, border: 0, background: color.status.positive, color: "#fff", fontWeight: 700, fontSize: 13, cursor: "pointer" }}>＋ Use This Data → Open Form</button>
                   </div>
                   <div style={{ padding: 16, display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: 10 }}>
@@ -322,8 +322,8 @@ export default function AdminPage() {
                       const disp = isBool ? (v ? "✓ Yes" : "✗ No") : String(v);
                       return (
                         <div key={k} style={{ display: "flex", gap: 8 }}>
-                          <span style={{ fontSize: 11.5, color: color.ink.soft, width: 130, flexShrink: 0 }}>{label}</span>
-                          <span style={{ fontSize: 12.5, fontWeight: 600, color: isBool ? (v ? color.status.positive : color.ink.soft) : color.ink.DEFAULT }}>{disp}</span>
+                          <span style={{ fontSize: 12, color: color.ink.soft, width: 130, flexShrink: 0 }}>{label}</span>
+                          <span style={{ fontSize: 13, fontWeight: 600, color: isBool ? (v ? color.status.positive : color.ink.soft) : color.ink.DEFAULT }}>{disp}</span>
                         </div>
                       );
                     })}
@@ -341,7 +341,7 @@ export default function AdminPage() {
                   ["💼", "LinkedIn Message", "Screenshot a DM from a professional seeking UAE licensing or career help."]].map(([icon, title, desc]) => (
                   <div key={title} style={{ border: `1px solid ${color.line.DEFAULT}`, borderRadius: 12, background: color.surface.card, padding: 16 }}>
                     <div style={{ fontSize: 22, marginBottom: 8 }}>{icon}</div>
-                    <div style={{ fontSize: 13.5, fontWeight: 700, color: color.ink.DEFAULT, marginBottom: 4 }}>{title}</div>
+                    <div style={{ fontSize: 14, fontWeight: 700, color: color.ink.DEFAULT, marginBottom: 4 }}>{title}</div>
                     <div style={{ fontSize: 12, color: color.ink.soft, lineHeight: 1.5 }}>{desc}</div>
                   </div>
                 ))}
@@ -353,10 +353,10 @@ export default function AdminPage() {
             <div style={{ display: "grid", gridTemplateColumns: "minmax(0,1fr) minmax(0,1fr)", gap: 16, alignItems: "start" }}>
               <div style={cardS}>
                 <div style={th}>Top-up requests</div>
-                {(d.topups || []).length === 0 ? <div style={{ padding: 14, fontSize: 12.5, color: color.ink.soft }}>No requests.</div>
+                {(d.topups || []).length === 0 ? <div style={{ padding: 14, fontSize: 13, color: color.ink.soft }}>No requests.</div>
                   : (d.topups || []).map((t) => (
                     <div key={t.id} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "11px 14px", borderBottom: `1px solid ${color.line.DEFAULT}` }}>
-                      <div><div style={{ fontWeight: 600, fontSize: 13 }}>{t.company || "—"}</div><div style={{ fontSize: 11.5, color: color.ink.soft }}>{aed(t.amount)} · {t.date} · balance {t.balance.toLocaleString()}</div></div>
+                      <div><div style={{ fontWeight: 600, fontSize: 13 }}>{t.company || "—"}</div><div style={{ fontSize: 12, color: color.ink.soft }}>{aed(t.amount)} · {t.date} · balance {t.balance.toLocaleString()}</div></div>
                       {String(t.status).toLowerCase() === "pending" ? <span style={{ display: "inline-flex", gap: 6 }}><Button variant="primary" onClick={() => act({ kind: "credit.approve", id: t.id })} disabled={busy}>Approve</Button><Button onClick={() => { if (window.confirm("Reject this top-up request?")) act({ kind: "credit.reject", id: t.id }); }} disabled={busy}>Reject</Button></span> : <span style={{ fontSize: 12, fontWeight: 600, color: String(t.status).toLowerCase() === "rejected" ? color.status.negative : color.status.positive }}>{String(t.status).toLowerCase() === "rejected" ? "✗" : "✓"} {t.status}</span>}
                     </div>
                   ))}
@@ -365,7 +365,7 @@ export default function AdminPage() {
                 <div style={th}>Manual credit adjustment</div>
                 {(d.tenants || []).map((t) => (
                   <div key={t.id} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "11px 14px", borderBottom: `1px solid ${color.line.DEFAULT}` }}>
-                    <div><div style={{ fontWeight: 600, fontSize: 13 }}>{t.name}</div><div style={{ fontSize: 11.5, color: color.ink.soft }}>Balance: {t.credits.toLocaleString()}</div></div>
+                    <div><div style={{ fontWeight: 600, fontSize: 13 }}>{t.name}</div><div style={{ fontSize: 12, color: color.ink.soft }}>Balance: {t.credits.toLocaleString()}</div></div>
                     <Button onClick={() => { const v = window.prompt(`Adjust credits for ${t.name} (+grant / −deduct):`, "100"); const n = Number((v || "").replace(/[^\d.-]/g, "")); if (n) act({ kind: "credit.add", companyId: t.id, delta: n }); }} disabled={busy}>+ Add Credits</Button>
                   </div>
                 ))}
@@ -376,12 +376,12 @@ export default function AdminPage() {
           {tab === "Bids" && (
             <div style={cardS}>
               <div style={th}>Best-offer bids</div>
-              {(d.bids || []).length === 0 ? <div style={{ padding: 14, fontSize: 12.5, color: color.ink.soft }}>No bids yet.</div>
+              {(d.bids || []).length === 0 ? <div style={{ padding: 14, fontSize: 13, color: color.ink.soft }}>No bids yet.</div>
                 : (d.bids || []).map((bd) => { const st = String(bd.status).toUpperCase(); const open = st === "PENDING" || st === "OUTBID"; return (
                   <div key={bd.id} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "11px 14px", borderBottom: `1px solid ${color.line.DEFAULT}`, gap: 10 }}>
                     <div style={{ minWidth: 0 }}>
                       <div style={{ fontWeight: 600, fontSize: 13, color: color.ink.DEFAULT }}>{bd.lead} · <span style={{ color: color.brand.primary }}>{aed(bd.amount)}</span></div>
-                      <div style={{ fontSize: 11.5, color: color.ink.soft }}>{bd.company || "—"} · balance {bd.balance.toLocaleString()} · {st}{bd.balance < bd.amount ? " · ⚠ low balance" : ""}</div>
+                      <div style={{ fontSize: 12, color: color.ink.soft }}>{bd.company || "—"} · balance {bd.balance.toLocaleString()} · {st}{bd.balance < bd.amount ? " · ⚠ low balance" : ""}</div>
                     </div>
                     {open ? <span style={{ display: "inline-flex", gap: 6, flexShrink: 0 }}>
                       <Button variant="primary" onClick={() => { if (window.confirm(`Accept ${aed(bd.amount)} bid from ${bd.company}? This sells the lead and charges their credits.`)) act({ kind: "bid.accept", id: bd.id }); }} disabled={busy}>Accept</Button>
@@ -395,12 +395,12 @@ export default function AdminPage() {
           {tab === "Disputes" && (
             <div style={cardS}>
               <div style={th}>Open disputes</div>
-              {(d.disputes || []).length === 0 ? <div style={{ padding: 14, fontSize: 12.5, color: color.ink.soft }}>No open disputes.</div>
+              {(d.disputes || []).length === 0 ? <div style={{ padding: 14, fontSize: 13, color: color.ink.soft }}>No open disputes.</div>
                 : (d.disputes || []).map((dp) => (
                   <div key={dp.id} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "11px 14px", borderBottom: `1px solid ${color.line.DEFAULT}`, gap: 10 }}>
                     <div style={{ minWidth: 0 }}>
                       <div style={{ fontWeight: 600, fontSize: 13, color: color.ink.DEFAULT }}>{dp.lead} · <span style={{ color: color.status.critical }}>{dp.reason}</span></div>
-                      <div style={{ fontSize: 11.5, color: color.ink.soft }}>{dp.company || "—"} · paid {aed(dp.paid)} · {dp.date}{dp.details ? ` · ${dp.details}` : ""}</div>
+                      <div style={{ fontSize: 12, color: color.ink.soft }}>{dp.company || "—"} · paid {aed(dp.paid)} · {dp.date}{dp.details ? ` · ${dp.details}` : ""}</div>
                     </div>
                     <span style={{ display: "inline-flex", gap: 6, flexShrink: 0 }}>
                       <Button variant="primary" onClick={() => { if (window.confirm(`Refund ${aed(dp.paid)} to ${dp.company} and resolve?`)) act({ kind: "dispute.resolve", id: dp.id, refund: true }); }} disabled={busy}>Refund &amp; resolve</Button>
@@ -435,11 +435,11 @@ export default function AdminPage() {
           {tab === "Questions" && (
             <div style={cardS}>
               <div style={th}>Lead questions</div>
-              {(d.questions || []).length === 0 ? <div style={{ padding: 14, fontSize: 12.5, color: color.ink.soft }}>No questions.</div>
+              {(d.questions || []).length === 0 ? <div style={{ padding: 14, fontSize: 13, color: color.ink.soft }}>No questions.</div>
                 : (d.questions || []).map((qq) => (
                   <div key={qq.id} style={{ padding: "11px 14px", borderBottom: `1px solid ${color.line.DEFAULT}` }}>
                     <div style={{ display: "flex", justifyContent: "space-between", gap: 10 }}>
-                      <div style={{ minWidth: 0 }}><div style={{ fontSize: 13, color: color.ink.DEFAULT }}>{qq.question}</div><div style={{ fontSize: 11.5, color: color.ink.soft }}>{qq.company || "—"} · {qq.date}{qq.answer ? ` · A: ${qq.answer}` : ""}</div></div>
+                      <div style={{ minWidth: 0 }}><div style={{ fontSize: 13, color: color.ink.DEFAULT }}>{qq.question}</div><div style={{ fontSize: 12, color: color.ink.soft }}>{qq.company || "—"} · {qq.date}{qq.answer ? ` · A: ${qq.answer}` : ""}</div></div>
                       {String(qq.status).toLowerCase() !== "answered" ? <Button onClick={() => { const a = window.prompt("Answer:"); if (a && a.trim()) act({ kind: "question.answer", id: qq.id, answer: a.trim() }); }} disabled={busy}>Answer</Button> : <StatusBadge tone="positive" label="answered" />}
                     </div>
                   </div>
@@ -455,7 +455,7 @@ export default function AdminPage() {
                   {(d.demos || []).length === 0 ? <tr><td style={{ ...td, textAlign: "center", color: color.ink.soft }} colSpan={6}>No demo requests.</td></tr>
                     : (d.demos || []).map((m) => (
                       <tr key={m.id}>
-                        <td style={td}><span style={{ fontWeight: 600 }}>{m.name}</span><div style={{ fontSize: 11.5, color: color.ink.soft }}>{m.email}</div></td>
+                        <td style={td}><span style={{ fontWeight: 600 }}>{m.name}</span><div style={{ fontSize: 12, color: color.ink.soft }}>{m.email}</div></td>
                         <td style={td}>{m.company || "—"}</td>
                         <td style={td}>{m.country || "—"}</td>
                         <td style={{ ...td, maxWidth: 280 }}>{m.useCase || "—"}</td>
@@ -472,20 +472,20 @@ export default function AdminPage() {
             <div style={{ display: "grid", gridTemplateColumns: "minmax(0,1fr) minmax(0,1fr)", gap: 16, alignItems: "start" }}>
               <div style={cardS}>
                 <div style={th}>Resellers</div>
-                {(d.resellers || []).length === 0 ? <div style={{ padding: 14, fontSize: 12.5, color: color.ink.soft }}>No resellers.</div>
+                {(d.resellers || []).length === 0 ? <div style={{ padding: 14, fontSize: 13, color: color.ink.soft }}>No resellers.</div>
                   : (d.resellers || []).map((r) => (
                     <div key={r.id} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "11px 14px", borderBottom: `1px solid ${color.line.DEFAULT}` }}>
-                      <div><div style={{ fontWeight: 600, fontSize: 13 }}>{r.company || "—"}</div><div style={{ fontSize: 11.5, color: color.ink.soft }}>{Math.round(r.rate * 100)}% · earned {aed(r.earned)} · pending {aed(r.pending)}</div></div>
+                      <div><div style={{ fontWeight: 600, fontSize: 13 }}>{r.company || "—"}</div><div style={{ fontSize: 12, color: color.ink.soft }}>{Math.round(r.rate * 100)}% · earned {aed(r.earned)} · pending {aed(r.pending)}</div></div>
                       {r.approved ? <StatusBadge tone="positive" label="approved" /> : <Button variant="primary" onClick={() => act({ kind: "reseller.approve", id: r.id })} disabled={busy}>Approve</Button>}
                     </div>
                   ))}
               </div>
               <div style={cardS}>
                 <div style={th}>Payout requests</div>
-                {(d.payouts || []).length === 0 ? <div style={{ padding: 14, fontSize: 12.5, color: color.ink.soft }}>No payouts.</div>
+                {(d.payouts || []).length === 0 ? <div style={{ padding: 14, fontSize: 13, color: color.ink.soft }}>No payouts.</div>
                   : (d.payouts || []).map((po) => (
                     <div key={po.id} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "11px 14px", borderBottom: `1px solid ${color.line.DEFAULT}` }}>
-                      <div><div style={{ fontWeight: 600, fontSize: 13 }}>{po.company || "—"}</div><div style={{ fontSize: 11.5, color: color.ink.soft }}>{aed(po.amount)} · {po.method || "—"} · {po.date}</div></div>
+                      <div><div style={{ fontWeight: 600, fontSize: 13 }}>{po.company || "—"}</div><div style={{ fontSize: 12, color: color.ink.soft }}>{aed(po.amount)} · {po.method || "—"} · {po.date}</div></div>
                       {String(po.status).toLowerCase() === "pending" ? <Button variant="primary" onClick={() => act({ kind: "payout.approve", id: po.id })} disabled={busy}>Mark paid</Button> : <StatusBadge tone="positive" label={po.status} />}
                     </div>
                   ))}
@@ -504,7 +504,7 @@ export default function AdminPage() {
               <button onClick={() => setAdding(false)} aria-label="Close" style={{ border: 0, background: "transparent", fontSize: 20, color: color.ink.soft, cursor: "pointer" }}>×</button>
             </div>
             <div style={{ padding: 22, display: "flex", flexDirection: "column", gap: 16, maxHeight: "76vh", overflowY: "auto" }}>
-              {prefillNote ? <div style={{ background: "rgba(34,211,166,0.10)", border: `1px solid ${color.status.positive}`, color: color.status.positive, borderRadius: 9, padding: "9px 13px", fontSize: 12.5, fontWeight: 600 }}>{prefillNote}</div> : null}
+              {prefillNote ? <div style={{ background: "rgba(34,211,166,0.10)", border: `1px solid ${color.status.positive}`, color: color.status.positive, borderRadius: 9, padding: "9px 13px", fontSize: 13, fontWeight: 600 }}>{prefillNote}</div> : null}
               <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
                 <div><label style={lbl}>Specialty / Job title *</label><input value={f.name} onChange={(e) => set("name", e.target.value)} placeholder="e.g. Registered Nurse" style={fieldS} autoFocus /></div>
                 <div><label style={lbl}>Category *</label><input value={f.category} onChange={(e) => set("category", e.target.value)} placeholder="e.g. Healthcare" style={fieldS} /></div>
@@ -533,7 +533,7 @@ export default function AdminPage() {
                   <div style={{ gridColumn: "1 / -1" }}><label style={lbl}>LinkedIn URL</label><input value={f.linkedIn} onChange={(e) => set("linkedIn", e.target.value)} style={fieldS} /></div>
                   <div style={{ gridColumn: "1 / -1" }}><label style={lbl}>Internal notes</label><textarea value={f.notes} onChange={(e) => set("notes", e.target.value)} rows={2} style={{ ...fieldS, height: "auto", padding: 10, resize: "vertical" }} /></div>
                   <div style={{ gridColumn: "1 / -1" }}><label style={lbl}>CV / Resume (PDF, DOC, JPG — max 5 MB)</label>
-                    <input type="file" accept=".pdf,.doc,.docx,.jpg,.jpeg,.png" onChange={uploadCv} style={{ fontSize: 12.5 }} />
+                    <input type="file" accept=".pdf,.doc,.docx,.jpg,.jpeg,.png" onChange={uploadCv} style={{ fontSize: 13 }} />
                     {f.cvName ? <span style={{ fontSize: 12, color: color.status.positive, marginLeft: 8 }}>✓ {f.cvName}</span> : null}
                   </div>
                 </div>

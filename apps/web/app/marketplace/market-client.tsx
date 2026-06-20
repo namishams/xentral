@@ -33,7 +33,7 @@ function liveCalc(l: MarketLead): { price: number; countdown: string; remainMs: 
 
 function Chip({ label, on }: { label: string; on: boolean }) {
   return (
-    <span style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 5, height: 30, borderRadius: 7, fontSize: 11.5, fontWeight: 600,
+    <span style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 5, height: 30, borderRadius: 7, fontSize: 12, fontWeight: 600,
       border: `1px solid ${on ? color.status.positive + "55" : color.line.DEFAULT}`,
       background: on ? "color-mix(in srgb, " + color.status.positive + " 9%, " + color.surface.card + ")" : color.surface.page,
       color: on ? color.status.positive : color.ink.soft, opacity: on ? 1 : 0.55 }}>{on ? "🔓" : "🔒"} {label}</span>
@@ -64,21 +64,21 @@ function Card({ l, onBuy, busy, watched, onWatch, onBid, onAsk, credits }: { l: 
       <div style={{ padding: "12px 14px 14px", display: "flex", flexDirection: "column", gap: 11 }}>
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8 }}>
           <span style={{ display: "inline-flex", gap: 6, alignItems: "center", flexWrap: "wrap" }}>
-            <span style={{ fontSize: 10.5, fontWeight: 700, background: q.bg, color: q.fg, borderRadius: 6, padding: "3px 8px" }}>{q.label}</span>
-            <span style={{ fontSize: 10.5, fontWeight: 600, background: color.brand.primaryTint, color: color.brand.primary, borderRadius: 6, padding: "3px 8px" }}>{l.freshLabel}</span>
+            <span style={{ fontSize: 11, fontWeight: 700, background: q.bg, color: q.fg, borderRadius: 6, padding: "3px 8px" }}>{q.label}</span>
+            <span style={{ fontSize: 11, fontWeight: 600, background: color.brand.primaryTint, color: color.brand.primary, borderRadius: 6, padding: "3px 8px" }}>{l.freshLabel}</span>
             <span style={{ fontSize: 11, color: l.spots <= 1 ? color.status.negative : color.ink.soft, fontWeight: l.spots <= 1 ? 700 : 400 }}>👥 {l.spots <= 1 ? "Last spot!" : `${l.spots} spots`}</span>
           </span>
           <span style={{ fontSize: 11, color: color.ink.soft }}>👁 {l.views}</span>
         </div>
         <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 8 }}>
           <span><span style={{ display: "block", fontSize: 15, fontWeight: 700, color: color.ink.DEFAULT }}>{l.title}</span><span style={{ fontSize: 11, fontWeight: 600, letterSpacing: 0.3, color: color.ink.soft }}>{l.categoryLabel}</span></span>
-          <span style={{ textAlign: "right", fontSize: 11.5, color: color.ink.soft }}>🌐 {l.region}<br />{l.city}</span>
+          <span style={{ textAlign: "right", fontSize: 12, color: color.ink.soft }}>🌐 {l.region}<br />{l.city}</span>
         </div>
         <div style={{ fontSize: 12, fontStyle: "italic", color: color.ink.mid, lineHeight: "17px", borderLeft: `2px solid ${color.line.DEFAULT}`, paddingLeft: 8 }}>Verified professional lead — contact details revealed after purchase.</div>
         <div style={{ border: `1px solid ${color.line.DEFAULT}`, borderRadius: 9, padding: "10px 12px", background: color.surface.page }}>
           <div style={{ fontSize: 10, fontWeight: 700, letterSpacing: 0.5, color: color.ink.soft, marginBottom: 6 }}>🔒 CONTACT PREVIEW</div>
-          <div style={{ fontSize: 12.5, color: color.ink.mid, marginBottom: 3, fontFamily: "monospace" }}>👤 {l.maskedName}</div>
-          <div style={{ fontSize: 12.5, color: color.ink.mid, fontFamily: "monospace" }}>📞 {l.maskedPhone}</div>
+          <div style={{ fontSize: 13, color: color.ink.mid, marginBottom: 3, fontFamily: "monospace" }}>👤 {l.maskedName}</div>
+          <div style={{ fontSize: 13, color: color.ink.mid, fontFamily: "monospace" }}>📞 {l.maskedPhone}</div>
         </div>
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 7 }}>
           <Chip label="Phone" on={l.channels.phone} /><Chip label="WhatsApp" on={l.channels.whatsapp} /><Chip label="Email" on={l.channels.email} />
@@ -88,18 +88,18 @@ function Card({ l, onBuy, busy, watched, onWatch, onBid, onAsk, credits }: { l: 
           <span>
             <span style={{ display: "block", fontSize: 10, fontWeight: 700, letterSpacing: 0.5, color: color.ink.soft }}>CURRENT PRICE</span>
             <span style={{ fontSize: 26, fontWeight: 800, color: critical ? color.status.negative : flash ? color.brand.primary : color.ink.DEFAULT, fontVariantNumeric: "tabular-nums" }}>{aed(price)}</span>
-            {off > 0 ? <span style={{ display: "block", fontSize: 11.5, color: color.ink.soft }}><span style={{ textDecoration: "line-through" }}>{aed(l.basePrice)}</span> <span style={{ color: color.status.positive, fontWeight: 700 }}>−{off}%</span></span> : <span style={{ display: "block", height: 16 }} />}
+            {off > 0 ? <span style={{ display: "block", fontSize: 12, color: color.ink.soft }}><span style={{ textDecoration: "line-through" }}>{aed(l.basePrice)}</span> <span style={{ color: color.status.positive, fontWeight: 700 }}>−{off}%</span></span> : <span style={{ display: "block", height: 16 }} />}
           </span>
           {live.atFloor ? (
             <span style={{ textAlign: "right", fontSize: 11, color: color.status.critical, fontWeight: 700 }}>↓ Floor price<br /><span style={{ color: color.ink.soft, fontWeight: 400 }}>Lowest possible</span></span>
           ) : (
-            <span style={{ textAlign: "right", fontSize: 11.5, color: critical ? color.status.negative : color.ink.soft }}>−{aed(l.dropAmount)} in<br /><span style={{ fontWeight: 800, fontSize: 14, color: critical ? color.status.negative : color.ink.DEFAULT, fontVariantNumeric: "tabular-nums" }}>⏱ {live.countdown}</span></span>
+            <span style={{ textAlign: "right", fontSize: 12, color: critical ? color.status.negative : color.ink.soft }}>−{aed(l.dropAmount)} in<br /><span style={{ fontWeight: 800, fontSize: 14, color: critical ? color.status.negative : color.ink.DEFAULT, fontVariantNumeric: "tabular-nums" }}>⏱ {live.countdown}</span></span>
           )}
         </div>
         <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
           <button onClick={() => onWatch(l.id)} aria-label="Save" title={watched ? "Saved" : "Save to watchlist"} style={{ width: 36, height: 36, borderRadius: 8, border: `1px solid ${watched ? "#df9a00" : color.line.strong}`, background: watched ? "#fff7e6" : color.surface.card, display: "flex", alignItems: "center", justifyContent: "center", color: watched ? "#df9a00" : color.ink.soft, cursor: "pointer", fontSize: 15 }}>{watched ? "★" : "☆"}</button>
-          <button onClick={() => onAsk(l)} style={{ height: 36, padding: "0 12px", borderRadius: 8, border: `1px solid ${color.line.strong}`, background: color.surface.card, color: color.ink.mid, fontSize: 12.5, fontWeight: 600, cursor: "pointer" }}>❓ Ask</button>
-          <button onClick={() => onBid(l)} style={{ flex: 1, height: 36, borderRadius: 8, border: `1px solid ${color.line.strong}`, background: color.surface.card, color: color.ink.mid, fontSize: 12.5, fontWeight: 600, cursor: "pointer" }}>💬 Make offer</button>
+          <button onClick={() => onAsk(l)} style={{ height: 36, padding: "0 12px", borderRadius: 8, border: `1px solid ${color.line.strong}`, background: color.surface.card, color: color.ink.mid, fontSize: 13, fontWeight: 600, cursor: "pointer" }}>❓ Ask</button>
+          <button onClick={() => onBid(l)} style={{ flex: 1, height: 36, borderRadius: 8, border: `1px solid ${color.line.strong}`, background: color.surface.card, color: color.ink.mid, fontSize: 13, fontWeight: 600, cursor: "pointer" }}>💬 Make offer</button>
         </div>
         {enough ? (
           <button onClick={() => onBuy(l, price)} disabled={busy} style={{ height: 46, borderRadius: 10, border: 0, background: busy ? color.line.strong : critical ? color.status.negative : color.brand.primary, color: color.ink.onPrimary, fontSize: 15, fontWeight: 700, cursor: busy ? "default" : "pointer" }}>{busy ? "Processing…" : `Buy — ${aed(price)}`}</button>
@@ -195,9 +195,9 @@ export function MarketplaceClient({ initialRows, startSaved }: { initialRows: Ma
         <div>
           <div style={{ display: "flex", alignItems: "center", gap: 12, flexWrap: "wrap" }}>
             <h1 style={{ fontSize: 22, fontWeight: 700, color: color.ink.DEFAULT, margin: 0 }}>🏪 Lead Marketplace</h1>
-            <span style={{ fontSize: 12.5, color: color.status.negative, fontWeight: 600 }}>🔥 {hot} hot</span>
-            <span style={{ fontSize: 12.5, color: color.ink.soft }}>{ALL.length} leads</span>
-            {watched.size > 0 ? <span style={{ fontSize: 12.5, color: "#df9a00", fontWeight: 600 }}>★ {watched.size} saved</span> : null}
+            <span style={{ fontSize: 13, color: color.status.negative, fontWeight: 600 }}>🔥 {hot} hot</span>
+            <span style={{ fontSize: 13, color: color.ink.soft }}>{ALL.length} leads</span>
+            {watched.size > 0 ? <span style={{ fontSize: 13, color: "#df9a00", fontWeight: 600 }}>★ {watched.size} saved</span> : null}
           </div>
           <div style={{ fontSize: 13, color: color.ink.mid, marginTop: 3 }}>Verified leads · Prices drop automatically every interval</div>
         </div>
@@ -236,9 +236,9 @@ export function MarketplaceClient({ initialRows, startSaved }: { initialRows: Ma
         <select value={region} onChange={(e) => setRegion(e.target.value)} style={{ height: 32, borderRadius: 8, border: `1px solid ${color.line.strong}`, background: color.surface.card, color: color.ink.DEFAULT, fontSize: 13, padding: "0 10px" }}>{regions.map((r) => <option key={r} value={r}>{r === "all" ? "All regions" : r}</option>)}</select>
         <select value={sort} onChange={(e) => setSort(e.target.value)} style={{ height: 32, borderRadius: 8, border: `1px solid ${color.line.strong}`, background: color.surface.card, color: color.ink.DEFAULT, fontSize: 13, padding: "0 10px" }}>{SORTS.map(([id, lab]) => <option key={id} value={id}>{lab}</option>)}</select>
         <span style={{ display: "inline-flex", border: `1px solid ${color.line.strong}`, borderRadius: 8, overflow: "hidden" }}>
-          {FILTERS.map(([id, lab]) => <button key={id} onClick={() => setSeg(id)} style={{ border: 0, background: seg === id ? color.brand.primaryTint : color.surface.card, color: seg === id ? color.brand.primary : color.ink.mid, fontSize: 12.5, fontWeight: 600, padding: "6px 12px", cursor: "pointer" }}>{lab}</button>)}
+          {FILTERS.map(([id, lab]) => <button key={id} onClick={() => setSeg(id)} style={{ border: 0, background: seg === id ? color.brand.primaryTint : color.surface.card, color: seg === id ? color.brand.primary : color.ink.mid, fontSize: 13, fontWeight: 600, padding: "6px 12px", cursor: "pointer" }}>{lab}</button>)}
         </span>
-        <button onClick={() => setOnlyWatched((v) => !v)} style={{ height: 32, borderRadius: 8, border: `1px solid ${onlyWatched ? "#df9a00" : color.line.strong}`, background: onlyWatched ? "#fff7e6" : color.surface.card, color: onlyWatched ? "#b8780a" : color.ink.mid, fontSize: 12.5, fontWeight: 600, padding: "0 12px", cursor: "pointer" }}>{onlyWatched ? `★ Saved (${watched.size})` : "☆ Saved"}</button>
+        <button onClick={() => setOnlyWatched((v) => !v)} style={{ height: 32, borderRadius: 8, border: `1px solid ${onlyWatched ? "#df9a00" : color.line.strong}`, background: onlyWatched ? "#fff7e6" : color.surface.card, color: onlyWatched ? "#b8780a" : color.ink.mid, fontSize: 13, fontWeight: 600, padding: "0 12px", cursor: "pointer" }}>{onlyWatched ? `★ Saved (${watched.size})` : "☆ Saved"}</button>
         <span style={{ flex: 1 }} />
         <Button onClick={saveSearch}>Save search</Button>
       </div>
@@ -266,7 +266,7 @@ function ConfirmPurchaseModal({ lead, price, credits, busy, onConfirm, onClose }
   const after = credits != null ? Math.max(0, credits - price) : null;
   const rowS: React.CSSProperties = { display: "flex", justifyContent: "space-between", alignItems: "center", padding: "8px 0" };
   const ck = (on: boolean, set: (v: boolean) => void, label: string) => (
-    <label style={{ display: "flex", gap: 10, alignItems: "flex-start", padding: "8px 0", cursor: "pointer", fontSize: 12.5, color: color.ink.mid, lineHeight: "17px" }}>
+    <label style={{ display: "flex", gap: 10, alignItems: "flex-start", padding: "8px 0", cursor: "pointer", fontSize: 13, color: color.ink.mid, lineHeight: "17px" }}>
       <input type="checkbox" checked={on} onChange={(e) => set(e.target.checked)} style={{ marginTop: 2, flexShrink: 0 }} />
       <span>{label}</span>
     </label>
@@ -283,16 +283,16 @@ function ConfirmPurchaseModal({ lead, price, credits, busy, onConfirm, onClose }
           <div style={{ fontSize: 11, fontWeight: 600, letterSpacing: 0.3, color: color.ink.soft, marginBottom: 10 }}>{lead.categoryLabel} · {lead.region}</div>
           <div style={{ borderTop: `1px solid ${color.line.DEFAULT}`, borderBottom: `1px solid ${color.line.DEFAULT}`, padding: "4px 0", marginBottom: 14 }}>
             <div style={rowS}><span style={{ fontSize: 13, color: color.ink.mid }}>Amount</span><span style={{ fontSize: 20, fontWeight: 800, color: color.ink.DEFAULT }}>{aed(price)}</span></div>
-            {after != null ? <div style={rowS}><span style={{ fontSize: 13, color: color.ink.mid }}>Balance after</span><span style={{ fontSize: 13.5, fontWeight: 600, color: color.ink.DEFAULT }}>{aed(after)}</span></div> : null}
+            {after != null ? <div style={rowS}><span style={{ fontSize: 13, color: color.ink.mid }}>Balance after</span><span style={{ fontSize: 14, fontWeight: 600, color: color.ink.DEFAULT }}>{aed(after)}</span></div> : null}
           </div>
-          <div style={{ fontSize: 10.5, fontWeight: 700, letterSpacing: 0.4, color: color.ink.soft, textTransform: "uppercase", marginBottom: 2 }}>Confirm all to proceed:</div>
+          <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: 0.4, color: color.ink.soft, textTransform: "uppercase", marginBottom: 2 }}>Confirm all to proceed:</div>
           {ck(c1, setC1, "I understand this purchase is final and credits are non-refundable except for invalid contact information.")}
           {ck(c2, setC2, `I authorize deduction of ${aed(price)} from my balance.`)}
           {ck(c3, setC3, "I agree disputes must be filed within 24 hours of purchase.")}
           <div style={{ background: "#fff7ed", border: `1px solid ${color.status.critical}33`, color: color.status.critical, borderRadius: 9, padding: "9px 12px", fontSize: 12, fontWeight: 500, margin: "10px 0 16px" }}>⚠ Contact info revealed instantly. Disputes accepted within 24h only.</div>
           <div style={{ display: "flex", gap: 10 }}>
-            <button onClick={onClose} style={{ flex: 1, height: 42, borderRadius: 10, border: `1px solid ${color.line.strong}`, background: color.surface.card, color: color.ink.mid, fontSize: 13.5, fontWeight: 600, cursor: "pointer" }}>Cancel</button>
-            <button onClick={onConfirm} disabled={!allChecked || busy} style={{ flex: 1, height: 42, borderRadius: 10, border: 0, background: allChecked && !busy ? color.brand.primary : color.line.strong, color: color.ink.onPrimary, fontSize: 13.5, fontWeight: 700, cursor: allChecked && !busy ? "pointer" : "default" }}>{busy ? "Processing…" : "Confirm & Buy"}</button>
+            <button onClick={onClose} style={{ flex: 1, height: 42, borderRadius: 10, border: `1px solid ${color.line.strong}`, background: color.surface.card, color: color.ink.mid, fontSize: 14, fontWeight: 600, cursor: "pointer" }}>Cancel</button>
+            <button onClick={onConfirm} disabled={!allChecked || busy} style={{ flex: 1, height: 42, borderRadius: 10, border: 0, background: allChecked && !busy ? color.brand.primary : color.line.strong, color: color.ink.onPrimary, fontSize: 14, fontWeight: 700, cursor: allChecked && !busy ? "pointer" : "default" }}>{busy ? "Processing…" : "Confirm & Buy"}</button>
           </div>
         </div>
       </div>
@@ -305,7 +305,7 @@ function TopupModal({ bank, state, setState, onSubmit, onClose }: { bank: Bank |
   const copy = (v: string) => navigator.clipboard?.writeText(v).catch(() => {});
   const row = (k: string, v: string, mono?: boolean) => (
     <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 8, padding: "7px 0", borderBottom: `1px solid ${color.line.DEFAULT}` }}>
-      <span style={{ fontSize: 11.5, color: color.ink.soft }}>{k}</span>
+      <span style={{ fontSize: 12, color: color.ink.soft }}>{k}</span>
       <span style={{ display: "inline-flex", alignItems: "center", gap: 7 }}><span style={{ fontSize: 13, fontWeight: 600, color: color.ink.DEFAULT, fontFamily: mono ? "monospace" : undefined }}>{v}</span><button onClick={() => copy(v)} title="Copy" style={{ border: 0, background: "transparent", cursor: "pointer", color: color.ink.soft, fontSize: 13 }}>⧉</button></span>
     </div>
   );
@@ -357,7 +357,7 @@ function InsufficientModal({ required, credits, onTopup, onClose }: { required: 
       <div onClick={(e) => e.stopPropagation()} style={{ width: "100%", maxWidth: 380, background: color.surface.card, borderRadius: 16, boxShadow: "0 30px 70px -18px rgba(16,24,38,0.5)", padding: 22, textAlign: "center" }}>
         <div style={{ fontSize: 32 }}>👛</div>
         <h2 style={{ margin: "8px 0 4px", fontSize: 17, fontWeight: 700, color: color.ink.DEFAULT }}>Not enough credits</h2>
-        <div style={{ fontSize: 13.5, color: color.ink.mid }}>This lead costs <strong style={{ color: color.ink.DEFAULT }}>{aed(required)}</strong>. You have {aed(credits)} — top up <strong style={{ color: color.ink.DEFAULT }}>{aed(Math.max(0, required - credits))}</strong> more to buy it.</div>
+        <div style={{ fontSize: 14, color: color.ink.mid }}>This lead costs <strong style={{ color: color.ink.DEFAULT }}>{aed(required)}</strong>. You have {aed(credits)} — top up <strong style={{ color: color.ink.DEFAULT }}>{aed(Math.max(0, required - credits))}</strong> more to buy it.</div>
         <button onClick={onTopup} style={{ width: "100%", height: 44, borderRadius: 10, border: 0, background: color.brand.primary, color: color.ink.onPrimary, fontSize: 14, fontWeight: 700, cursor: "pointer", marginTop: 16 }}>Top up credits</button>
         <button onClick={onClose} style={{ width: "100%", height: 38, borderRadius: 10, border: `1px solid ${color.line.strong}`, background: color.surface.card, color: color.ink.mid, fontSize: 13, fontWeight: 600, cursor: "pointer", marginTop: 8 }}>Maybe later</button>
       </div>
@@ -392,7 +392,7 @@ function BidSlideOver({ lead, onClose, onDone }: { lead: MarketLead; onClose: ()
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, marginBottom: 16 }}>
           {[["Current price", aed(lead.price)], ["Offers placed", String(ctx?.bidCount ?? 0)], ["Highest offer", ctx?.highBid ? aed(ctx.highBid) : "—"], ["Your offer", ctx?.myBid ? `${aed(ctx.myBid)}${ctx.myRank ? ` · #${ctx.myRank}` : ""}` : "—"]].map(([k, v]) => (
             <div key={k} style={{ border: `1px solid ${color.line.DEFAULT}`, borderRadius: 9, padding: "9px 11px", background: color.surface.page }}>
-              <div style={{ fontSize: 10.5, fontWeight: 700, letterSpacing: 0.3, color: color.ink.soft, textTransform: "uppercase" }}>{k}</div>
+              <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: 0.3, color: color.ink.soft, textTransform: "uppercase" }}>{k}</div>
               <div style={{ fontSize: 15, fontWeight: 700, color: color.ink.DEFAULT, marginTop: 2 }}>{v}</div>
             </div>
           ))}
@@ -402,7 +402,7 @@ function BidSlideOver({ lead, onClose, onDone }: { lead: MarketLead; onClose: ()
         <Input type="number" value={amount} onChange={(e) => setAmount(e.target.value)} style={{ width: "100%", marginTop: 4, marginBottom: 12 }} />
         <label style={{ fontSize: 11, fontWeight: 700, color: color.ink.soft, textTransform: "uppercase" }}>Message (optional)</label>
         <textarea value={message} onChange={(e) => setMessage(e.target.value)} rows={3} style={{ width: "100%", boxSizing: "border-box", marginTop: 4, marginBottom: 14, border: `1px solid ${color.line.strong}`, borderRadius: 9, padding: "8px 11px", fontSize: 13, color: color.ink.DEFAULT, resize: "vertical" }} placeholder="Tell the seller why you're a strong buyer…" />
-        {err ? <div style={{ fontSize: 12.5, color: color.status.negative, marginBottom: 10, fontWeight: 600 }}>{err}</div> : null}
+        {err ? <div style={{ fontSize: 13, color: color.status.negative, marginBottom: 10, fontWeight: 600 }}>{err}</div> : null}
         <button onClick={submit} disabled={busy} style={{ width: "100%", height: 42, borderRadius: 9, border: 0, background: busy ? color.line.strong : color.brand.primary, color: color.ink.onPrimary, fontSize: 14, fontWeight: 700, cursor: busy ? "default" : "pointer" }}>{busy ? "Submitting…" : (ctx?.myBid ? "Update offer" : "Submit offer")}</button>
         <p style={{ fontSize: 11, color: color.ink.soft, marginTop: 10 }}>Offers are reviewed by the seller. You're only charged if your offer is accepted.</p>
       </div>
@@ -434,10 +434,10 @@ function AskSlideOver({ lead, onClose }: { lead: MarketLead; onClose: () => void
         <div style={{ fontSize: 13, color: color.ink.mid, marginBottom: 14 }}>{lead.title} · {lead.categoryLabel} · {lead.region}</div>
         <textarea value={text} onChange={(e) => setText(e.target.value)} rows={3} style={{ width: "100%", boxSizing: "border-box", border: `1px solid ${color.line.strong}`, borderRadius: 9, padding: "8px 11px", fontSize: 13, color: color.ink.DEFAULT, resize: "vertical" }} placeholder="e.g. Is the candidate available immediately? Which emirate are they in?" />
         <button onClick={submit} disabled={busy} style={{ width: "100%", marginTop: 10, height: 42, borderRadius: 9, border: 0, background: busy ? color.line.strong : color.brand.primary, color: color.ink.onPrimary, fontSize: 14, fontWeight: 700, cursor: busy ? "default" : "pointer" }}>{busy ? "Sending…" : "Send question"}</button>
-        {note ? <div style={{ fontSize: 12.5, fontWeight: 600, color: note.startsWith("✓") ? color.status.positive : color.status.negative, marginTop: 10 }}>{note}</div> : null}
+        {note ? <div style={{ fontSize: 13, fontWeight: 600, color: note.startsWith("✓") ? color.status.positive : color.status.negative, marginTop: 10 }}>{note}</div> : null}
         <div style={{ marginTop: 20, fontSize: 11, fontWeight: 700, letterSpacing: 0.4, color: color.ink.soft, textTransform: "uppercase" }}>Answered questions</div>
         <div style={{ marginTop: 8 }}>
-          {questions.length === 0 ? <div style={{ fontSize: 12.5, color: color.ink.soft, padding: "10px 0" }}>No answered questions yet.</div> :
+          {questions.length === 0 ? <div style={{ fontSize: 13, color: color.ink.soft, padding: "10px 0" }}>No answered questions yet.</div> :
             questions.map((qq) => (
               <div key={qq.id} style={{ borderTop: `1px solid ${color.line.DEFAULT}`, padding: "10px 0" }}>
                 <div style={{ fontSize: 13, fontWeight: 600, color: color.ink.DEFAULT }}>Q: {qq.question}</div>

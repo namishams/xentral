@@ -63,11 +63,11 @@ export default function WarehouseRecordPage({ params }: { params: { id: string }
               <span style={{ fontSize: 14, fontWeight: 700, color: color.ink.DEFAULT, width: 44, textAlign: "right" }}>{w.capacityPct}%</span>
             </div>
           </Panel>
-          <Panel title="Stock at this location" action={<a href="/inventory" style={{ fontSize: 12.5, color: color.brand.primary, textDecoration: "none" }}>Open inventory ↗</a>}>
-            {stock.length === 0 ? <div style={{ fontSize: 12.5, color: color.ink.soft }}>No tracked stock here.</div> :
+          <Panel title="Stock at this location" action={<a href="/inventory" style={{ fontSize: 13, color: color.brand.primary, textDecoration: "none" }}>Open inventory ↗</a>}>
+            {stock.length === 0 ? <div style={{ fontSize: 13, color: color.ink.soft }}>No tracked stock here.</div> :
               stock.map((i) => (
                 <a key={i.id} href={`/inventory/${i.id}`} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "10px 0", borderTop: `1px solid ${color.line.DEFAULT}`, textDecoration: "none" }}>
-                  <span><span style={{ fontSize: 13.5, fontWeight: 600, color: color.ink.DEFAULT, display: "block" }}>{i.name}</span><span style={{ fontSize: 12, color: color.ink.soft }}>{i.sku}</span></span>
+                  <span><span style={{ fontSize: 14, fontWeight: 600, color: color.ink.DEFAULT, display: "block" }}>{i.name}</span><span style={{ fontSize: 12, color: color.ink.soft }}>{i.sku}</span></span>
                   <span style={{ fontSize: 13, color: color.ink.mid }}>{i.onHand} on hand · {i.reserved} reserved</span>
                 </a>
               ))}
@@ -80,7 +80,7 @@ export default function WarehouseRecordPage({ params }: { params: { id: string }
             <SumRow label="Capacity"><StatusBadge tone={w.capacityPct >= 85 ? "critical" : w.capacityPct >= 60 ? "warning" : "positive"} label={`${w.capacityPct}%`} /></SumRow>
           </Panel>
           <Panel title="Attachments" action={<Button>Upload</Button>}>
-            <div style={{ fontSize: 12.5, color: color.ink.soft, padding: "4px 0" }}>No files yet — layout, lease.</div>
+            <div style={{ fontSize: 13, color: color.ink.soft, padding: "4px 0" }}>No files yet — layout, lease.</div>
           </Panel>
         </div>
       </div>

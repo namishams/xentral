@@ -24,13 +24,13 @@ const UAE_BANKS: { name: string; code: string }[] = [
 ];
 const PRESETS = ["#0064d9", "#0098a6", "#188918", "#6b3fd4", "#b3261e", "#1d2733"];
 
-const lbl: React.CSSProperties = { display: "block", fontSize: 11.5, fontWeight: 700, letterSpacing: 0.3, color: color.ink.soft, textTransform: "uppercase", marginBottom: 5 };
+const lbl: React.CSSProperties = { display: "block", fontSize: 12, fontWeight: 700, letterSpacing: 0.3, color: color.ink.soft, textTransform: "uppercase", marginBottom: 5 };
 const hintS: React.CSSProperties = { fontSize: 11, color: color.ink.soft, marginTop: 4 };
 const errS: React.CSSProperties = { fontSize: 11, fontWeight: 600, color: "#c0392b", marginTop: 4 };
 const selS: React.CSSProperties = { width: "100%", boxSizing: "border-box", height: 36, border: `1px solid ${color.line.strong}`, borderRadius: 8, padding: "0 10px", fontSize: 13, color: color.ink.DEFAULT, background: color.surface.card, outline: "none" };
 const taS: React.CSSProperties = { width: "100%", boxSizing: "border-box", border: `1px solid ${color.line.strong}`, borderRadius: 8, padding: 10, fontSize: 13, resize: "vertical", fontFamily: "inherit", color: color.ink.DEFAULT, background: color.surface.card };
 const uploadBtn: React.CSSProperties = { display: "inline-flex", alignItems: "center", height: 32, padding: "0 12px", background: color.surface.card, border: `1px solid ${color.line.strong}`, borderRadius: 8, fontSize: 12, fontWeight: 600, color: color.ink.DEFAULT, cursor: "pointer", flexShrink: 0 };
-const previewLink: React.CSSProperties = { display: "inline-flex", alignItems: "center", height: 32, padding: "0 12px", background: color.surface.card, border: `1px solid ${color.line.strong}`, borderRadius: 8, fontSize: 12.5, fontWeight: 600, color: color.brand.primary, textDecoration: "none" };
+const previewLink: React.CSSProperties = { display: "inline-flex", alignItems: "center", height: 32, padding: "0 12px", background: color.surface.card, border: `1px solid ${color.line.strong}`, borderRadius: 8, fontSize: 13, fontWeight: 600, color: color.brand.primary, textDecoration: "none" };
 
 function Section({ icon, title, description, children }: { icon: string; title: string; description?: string; children: React.ReactNode }) {
   return (
@@ -38,7 +38,7 @@ function Section({ icon, title, description, children }: { icon: string; title: 
       <div style={{ display: "flex", alignItems: "flex-start", gap: 12, borderBottom: `1px solid ${color.line.DEFAULT}`, padding: "14px 18px" }}>
         <span style={{ width: 34, height: 34, flexShrink: 0, borderRadius: 9, background: color.brand.primaryTint, color: color.brand.primary, display: "inline-flex", alignItems: "center", justifyContent: "center", fontSize: 16 }}>{icon}</span>
         <div style={{ minWidth: 0 }}>
-          <h2 style={{ fontSize: 14.5, fontWeight: 700, color: color.ink.DEFAULT, margin: 0, lineHeight: 1.3 }}>{title}</h2>
+          <h2 style={{ fontSize: 14, fontWeight: 700, color: color.ink.DEFAULT, margin: 0, lineHeight: 1.3 }}>{title}</h2>
           {description ? <p style={{ fontSize: 12, color: color.ink.soft, margin: "3px 0 0", lineHeight: 1.5 }}>{description}</p> : null}
         </div>
       </div>
@@ -118,7 +118,7 @@ export default function BooksSettingsPage() {
 
       {loading ? <div style={{ padding: 40, textAlign: "center", color: color.ink.soft }}>Loading…</div> : (
         <>
-          {err ? <div style={{ background: "#fdecea", border: "1px solid #f5c6c2", color: "#a4322a", borderRadius: 10, padding: "10px 14px", fontSize: 12.5, marginBottom: 14 }}>{err}</div> : null}
+          {err ? <div style={{ background: "#fdecea", border: "1px solid #f5c6c2", color: "#a4322a", borderRadius: 10, padding: "10px 14px", fontSize: 13, marginBottom: 14 }}>{err}</div> : null}
           <div style={{ display: "grid", gridTemplateColumns: "minmax(0,1.55fr) minmax(0,1fr)", gap: 18, alignItems: "start" }}>
             <div>
               {/* 1 — Company & legal */}
@@ -171,7 +171,7 @@ export default function BooksSettingsPage() {
                   <div>
                     <label style={lbl}>Company logo</label>
                     <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-                      {str(s.logoUrl) ? <img src={str(s.logoUrl)} alt="Logo" style={{ height: 38, maxWidth: 130, objectFit: "contain", border: `1px solid ${color.line.DEFAULT}`, borderRadius: 7, background: "#fff", padding: 3 }} /> : <span style={{ fontSize: 11.5, color: color.ink.soft }}>No logo — company name used</span>}
+                      {str(s.logoUrl) ? <img src={str(s.logoUrl)} alt="Logo" style={{ height: 38, maxWidth: 130, objectFit: "contain", border: `1px solid ${color.line.DEFAULT}`, borderRadius: 7, background: "#fff", padding: 3 }} /> : <span style={{ fontSize: 12, color: color.ink.soft }}>No logo — company name used</span>}
                       <label style={uploadBtn}>Upload<input type="file" accept=".png,.jpg,.jpeg" style={{ display: "none" }} onChange={upload("logo")} /></label>
                     </div>
                     <p style={hintS}>PNG or JPG, max 2 MB. Transparent PNG looks best.</p>
@@ -179,7 +179,7 @@ export default function BooksSettingsPage() {
                   <div>
                     <label style={lbl}>Signature (printed on offers)</label>
                     <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-                      {str(s.signatureUrl) ? <img src={str(s.signatureUrl)} alt="Signature" style={{ height: 38, maxWidth: 130, objectFit: "contain", border: `1px solid ${color.line.DEFAULT}`, borderRadius: 7, background: "#fff", padding: 3 }} /> : <span style={{ fontSize: 11.5, color: color.ink.soft }}>No signature image</span>}
+                      {str(s.signatureUrl) ? <img src={str(s.signatureUrl)} alt="Signature" style={{ height: 38, maxWidth: 130, objectFit: "contain", border: `1px solid ${color.line.DEFAULT}`, borderRadius: 7, background: "#fff", padding: 3 }} /> : <span style={{ fontSize: 12, color: color.ink.soft }}>No signature image</span>}
                       <label style={uploadBtn}>Upload<input type="file" accept=".png,.jpg,.jpeg" style={{ display: "none" }} onChange={upload("signature")} /></label>
                     </div>
                   </div>
@@ -215,12 +215,12 @@ export default function BooksSettingsPage() {
                 </Grid>
                 <div><label style={lbl}>Signature name on offers</label><Input value={ts("signatureName")} onChange={(e) => setT("signatureName", e.target.value)} placeholder="e.g. Nami Shams, Managing Director" style={{ width: "100%" }} /></div>
                 <div style={{ display: "flex", flexWrap: "wrap", alignItems: "center", gap: 14, paddingTop: 2 }}>
-                  <label style={{ display: "inline-flex", alignItems: "center", gap: 8, fontSize: 12.5, color: color.ink.mid, cursor: "pointer" }}>
+                  <label style={{ display: "inline-flex", alignItems: "center", gap: 8, fontSize: 13, color: color.ink.mid, cursor: "pointer" }}>
                     <input type="checkbox" checked={tc.showSignature !== false} onChange={(e) => setT("showSignature", e.target.checked)} style={{ width: 16, height: 16, accentColor: color.brand.primary }} /> Show signature block on offers
                   </label>
                   <a href="/api/books/preview?kind=QUOTE" target="_blank" rel="noopener noreferrer" style={previewLink}>Preview offer PDF</a>
                   <a href="/api/books/preview?kind=INVOICE" target="_blank" rel="noopener noreferrer" style={previewLink}>Preview invoice PDF</a>
-                  <span style={{ fontSize: 11.5, color: color.ink.soft }}>Save settings first, then preview</span>
+                  <span style={{ fontSize: 12, color: color.ink.soft }}>Save settings first, then preview</span>
                 </div>
               </Section>
 
@@ -273,7 +273,7 @@ export default function BooksSettingsPage() {
                   </div>
                 </Grid>
                 {cs("entityType") === "freezone" ? (
-                  <label style={{ display: "inline-flex", alignItems: "center", gap: 8, fontSize: 12.5, color: color.ink.DEFAULT, cursor: "pointer" }}>
+                  <label style={{ display: "inline-flex", alignItems: "center", gap: 8, fontSize: 13, color: color.ink.DEFAULT, cursor: "pointer" }}>
                     <input type="checkbox" checked={cc.isQFZP === true} onChange={(e) => setC("isQFZP", e.target.checked)} style={{ width: 16, height: 16, accentColor: color.brand.primary }} /> Qualifying Free Zone Person (0% on qualifying income)
                   </label>
                 ) : null}
@@ -306,7 +306,7 @@ export default function BooksSettingsPage() {
 
             {/* Live preview */}
             <div style={{ position: "sticky", top: 16 }}>
-              <div style={{ fontSize: 11.5, fontWeight: 700, letterSpacing: 0.3, color: color.ink.soft, textTransform: "uppercase", marginBottom: 8 }}>Live preview</div>
+              <div style={{ fontSize: 12, fontWeight: 700, letterSpacing: 0.3, color: color.ink.soft, textTransform: "uppercase", marginBottom: 8 }}>Live preview</div>
               <div style={{ background: "#fff", border: `1px solid ${color.line.DEFAULT}`, borderRadius: 12, overflow: "hidden", boxShadow: "0 12px 32px -16px rgba(20,28,38,0.25)" }}>
                 <div style={{ height: ts("style") === "minimal" ? 4 : 0, background: accent }} />
                 <div style={{ padding: 22, color: "#1d2733" }}>

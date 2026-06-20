@@ -38,7 +38,7 @@ export default function AiPage() {
           <span style={{ width: 40, height: 40, borderRadius: 11, background: `linear-gradient(135deg, ${color.brand.primary}, #6b3fd4)`, color: "#fff", display: "inline-flex", alignItems: "center", justifyContent: "center", fontSize: 20 }}>✦</span>
           <div>
             <h1 style={{ margin: 0, fontSize: 20, fontWeight: 800, color: color.ink.DEFAULT }}>Ask Xentral AI</h1>
-            <div style={{ fontSize: 12.5, color: color.ink.soft }}>Your workspace copilot · CRM, invoicing, WhatsApp &amp; more</div>
+            <div style={{ fontSize: 13, color: color.ink.soft }}>Your workspace copilot · CRM, invoicing, WhatsApp &amp; more</div>
           </div>
         </div>
 
@@ -67,7 +67,7 @@ export default function AiPage() {
         {empty ? (
           <div style={{ display: "flex", gap: 8, flexWrap: "wrap", margin: "14px 0 10px" }}>
             {SUGGESTIONS.map((s) => (
-              <button key={s} onClick={() => send(s)} style={{ fontSize: 12.5, padding: "7px 12px", borderRadius: 999, border: `1px solid ${color.line.strong}`, background: color.surface.card, color: color.ink.mid, cursor: "pointer" }}>{s}</button>
+              <button key={s} onClick={() => send(s)} style={{ fontSize: 13, padding: "7px 12px", borderRadius: 999, border: `1px solid ${color.line.strong}`, background: color.surface.card, color: color.ink.mid, cursor: "pointer" }}>{s}</button>
             ))}
           </div>
         ) : <div style={{ height: 12 }} />}

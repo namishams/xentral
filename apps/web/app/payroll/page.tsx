@@ -17,7 +17,7 @@ const TONE: Record<Emp["status"], BadgeTone> = { ready: "positive", hold: "warni
 
 const COLS: Column<Emp>[] = [
   { key: "name", header: "Employee", render: (r) => <span><span style={{ fontWeight: 600, color: color.ink.DEFAULT, display: "block" }}>{r.name}</span><span style={{ fontSize: 12, color: color.ink.soft }}>{r.role}</span></span> },
-  { key: "iban", header: "IBAN", width: 140, render: (r) => <span style={{ color: color.ink.soft, fontSize: 12.5 }}>{r.iban}</span> },
+  { key: "iban", header: "IBAN", width: 140, render: (r) => <span style={{ color: color.ink.soft, fontSize: 13 }}>{r.iban}</span> },
   { key: "salary", header: "Net salary", width: 130, align: "right", render: (r) => <span style={{ fontWeight: 600 }}>{aed(r.salary)}</span> },
   { key: "status", header: "WPS status", width: 120, render: (r) => <StatusBadge tone={TONE[r.status]} label={r.status} /> },
 ];

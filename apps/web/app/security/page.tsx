@@ -16,7 +16,7 @@ function Row({ label, hint, right }: { label: string; hint?: string; right: Reac
   return (
     <div style={{ display: "flex", alignItems: "center", gap: 12, padding: "12px 0", borderTop: `1px solid ${color.line.DEFAULT}` }}>
       <div style={{ flex: 1, minWidth: 0 }}>
-        <div style={{ fontSize: 13.5, color: color.ink.DEFAULT }}>{label}</div>
+        <div style={{ fontSize: 14, color: color.ink.DEFAULT }}>{label}</div>
         {hint ? <div style={{ fontSize: 12, color: color.ink.soft }}>{hint}</div> : null}
       </div>
       {right}

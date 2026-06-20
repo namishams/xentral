@@ -48,7 +48,7 @@ export default function ProcurementPage() {
     setOpen(false); setSupplierId(""); setNewSupplier(""); setExpectedDate(""); setNotes(""); setLines([blank()]); load();
   }
 
-  const lab: React.CSSProperties = { display: "block", fontSize: 10.5, fontWeight: 700, letterSpacing: 0.3, color: color.ink.soft, textTransform: "uppercase", marginBottom: 5 };
+  const lab: React.CSSProperties = { display: "block", fontSize: 11, fontWeight: 700, letterSpacing: 0.3, color: color.ink.soft, textTransform: "uppercase", marginBottom: 5 };
   const inS: React.CSSProperties = { width: "100%", boxSizing: "border-box", height: 36, border: `1px solid ${color.line.strong}`, borderRadius: 7, padding: "0 9px", fontSize: 13, color: color.ink.DEFAULT, background: color.surface.card, outline: "none" };
 
   const COLS: Column<PO>[] = [
@@ -103,7 +103,7 @@ export default function ProcurementPage() {
                 <input value={l.qty} inputMode="decimal" onChange={(e) => setLine(i, { qty: e.target.value })} style={inS} />
                 <input value={l.unitPrice} inputMode="decimal" placeholder="0.00" onChange={(e) => setLine(i, { unitPrice: e.target.value })} style={inS} />
                 <input value={l.vatRate} inputMode="decimal" onChange={(e) => setLine(i, { vatRate: e.target.value })} style={inS} />
-                <span style={{ textAlign: "right", fontSize: 12.5, fontWeight: 600, fontVariantNumeric: "tabular-nums" }}>{net.toFixed(2)}</span>
+                <span style={{ textAlign: "right", fontSize: 13, fontWeight: 600, fontVariantNumeric: "tabular-nums" }}>{net.toFixed(2)}</span>
                 <button aria-label="Remove" onClick={() => setLines((ls) => ls.length > 1 ? ls.filter((_, k) => k !== i) : [blank()])} style={{ width: 28, height: 30, borderRadius: 6, border: `1px solid ${color.line.strong}`, background: color.surface.card, color: color.ink.soft, cursor: "pointer" }}>×</button>
               </div>
             ); })}

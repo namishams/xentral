@@ -51,9 +51,9 @@ export default function EmailSettingsPage() {
     setMsg({ kind: "ok", text: `Test email sent to ${d.to} as "${d.from}".` });
   }
 
-  const labelS: React.CSSProperties = { display: "block", fontSize: 10.5, fontWeight: 700, letterSpacing: 0.3, color: color.ink.soft, textTransform: "uppercase", marginBottom: 5 };
-  const inS: React.CSSProperties = { width: "100%", boxSizing: "border-box", height: 36, border: `1px solid ${color.line.strong}`, borderRadius: 8, padding: "0 11px", fontSize: 13.5, color: color.ink.DEFAULT, background: color.surface.card, outline: "none" };
-  const hint: React.CSSProperties = { fontSize: 11.5, color: color.ink.soft, marginTop: 4 };
+  const labelS: React.CSSProperties = { display: "block", fontSize: 11, fontWeight: 700, letterSpacing: 0.3, color: color.ink.soft, textTransform: "uppercase", marginBottom: 5 };
+  const inS: React.CSSProperties = { width: "100%", boxSizing: "border-box", height: 36, border: `1px solid ${color.line.strong}`, borderRadius: 8, padding: "0 11px", fontSize: 14, color: color.ink.DEFAULT, background: color.surface.card, outline: "none" };
+  const hint: React.CSSProperties = { fontSize: 12, color: color.ink.soft, marginTop: 4 };
 
   if (loading) return <AppShell active="settings"><div style={{ padding: 40, textAlign: "center", color: color.ink.soft }}>Loading…</div></AppShell>;
 
@@ -83,7 +83,7 @@ export default function EmailSettingsPage() {
                 <input value={from} onChange={(e) => setFrom(e.target.value)} placeholder="hello@yourcompany.ae" style={inS} />
                 <div style={hint}>Usually the same as your SMTP username. Replies come back here.</div>
               </div>
-              <div style={{ background: color.surface.sunken, borderRadius: 8, padding: "10px 12px", fontSize: 12.5, color: color.ink.mid }}>
+              <div style={{ background: color.surface.sunken, borderRadius: 8, padding: "10px 12px", fontSize: 13, color: color.ink.mid }}>
                 Preview: <strong style={{ color: color.ink.DEFAULT }}>{(fromName || "—")} &lt;{from || "address@domain"}&gt;</strong>
               </div>
             </div>
@@ -114,7 +114,7 @@ export default function EmailSettingsPage() {
         </Panel>
       </div>
 
-      <p style={{ fontSize: 11.5, color: color.ink.soft, marginTop: 16, lineHeight: 1.5 }}>
+      <p style={{ fontSize: 12, color: color.ink.soft, marginTop: 16, lineHeight: 1.5 }}>
         These settings power quotes, invoices, campaigns and the email composer. If left empty, the workspace falls back to the platform default mail server{envFallback ? " (currently active)" : ""}. Common ports: 587 (STARTTLS) or 465 (SSL).
       </p>
     </AppShell>
